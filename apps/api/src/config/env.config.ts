@@ -1,0 +1,35 @@
+import { registerAs } from '@nestjs/config';
+
+export default registerAs('app', () => ({
+  port: parseInt(process.env.APP_PORT || '3000', 10),
+  env: process.env.APP_ENV || 'dev',
+  jwtSecret: process.env.JWT_SECRET || 'default-secret-change-me',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  uploadDir: process.env.UPLOAD_DIR || './uploads',
+  maxImageSize: parseInt(process.env.MAX_IMAGE_SIZE || '2097152', 10),
+  maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '104857600', 10),
+}));
+
+export const databaseConfig = registerAs('database', () => ({
+  url: process.env.DATABASE_URL || '',
+}));
+
+export const redisConfig = registerAs('redis', () => ({
+  host: process.env.REDIS_HOST || '127.0.0.1',
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  password: process.env.REDIS_PASSWORD || undefined,
+  db: parseInt(process.env.REDIS_DB || '0', 10),
+}));
+
+export const mailConfig = registerAs('mail', () => ({
+  host: process.env.MAIL_HOST || '',
+  port: parseInt(process.env.MAIL_PORT || '587', 10),
+  user: process.env.MAIL_USER || '',
+  pass: process.env.MAIL_PASS || '',
+  from: process.env.MAIL_FROM || '',
+}));
+
+export const wechatConfig = registerAs('wechat', () => ({
+  appid: process.env.WECHAT_APPID || '',
+  secret: process.env.WECHAT_SECRET || '',
+}));

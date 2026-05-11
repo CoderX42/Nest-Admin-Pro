@@ -1,0 +1,54 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ConfigService } from './config.service';
+import { CreateConfigDto, UpdateConfigDto, QueryConfigDto } from './dto/config.dto';
+import { JwtAuthGuard } from '../../../auth/jwt.guard';
+
+@ApiTags('System - Config')
+@Controller('system/config')
+@UseGuards(JwtAuthGuard)
+export class ConfigController {
+  constructor(private readonly configService: ConfigService) {}
+
+  @Get('list')
+  @ApiOperation({ summary: 'Get config list' })
+  async list(@Query() query: QueryConfigDto) {
+    return this.configService.list(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get config by ID' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.configService.findOne(id);
+  }
+
+  @Get('key/:key')
+  @ApiOperation({ summary: 'Get config by key' })
+  async findByKey(@Param('key') key: string) {
+    return this.configService.findByKey(key);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create config' })
+  async create(@Body() dto: CreateConfigDto) {
+    return this.configService.create(dto);
+  }
+
+  @Put()
+  @ApiOperation({ summary: 'Update config' })
+  async update(@Body() dto: UpdateConfigDto) {
+    return this.configService.update(dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete config' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.configService.remove(id);
+  }
+
+  @Put('refresh')
+  @ApiOperation({ summary: 'Refresh config cache' })
+  async refresh() {
+    return this.configService.refresh();
+  }
+}
