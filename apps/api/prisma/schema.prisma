@@ -1,6 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../node_modules/@prisma/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -16,21 +15,22 @@ model SysUser {
   username  String   @unique @db.VarChar(50)
   password  String   @db.VarChar(200)
   nickname  String   @db.VarChar(50)
-  avatar    String   @db.VarChar(255)?.Default("")
-  email     String   @db.VarChar(100)?
-  phone     String   @db.VarChar(20)?
-  status    Int      @default(1) // 1=正常 0=禁用
-  remark    String   @db.VarChar(500)?
+  avatar    String   @db.VarChar(255) @default("")
+  email     String?  @db.VarChar(100)
+  phone     String?  @db.VarChar(20)
+  status    Int      @default(1)
+  remark    String?  @db.VarChar(500)
   deptId    BigInt?
-  postIds   String   @db.VarChar(200)?.Default("") // JSON array
-  roles     SysRole[]
-  dept      SysDept? @relation(fields: [deptId], references: [id])
-  loginLog  SysLoginLog[]
-  operLog   SysOperLog[]
+  postIds   String   @db.VarChar(200) @default("")
   createTime DateTime @default(now())
   updateTime DateTime @updatedAt
   deleteTime DateTime?
   isDelete  Int      @default(0)
+
+  roles     SysRole[]
+  dept      SysDept? @relation(fields: [deptId], references: [id])
+  loginLog  SysLoginLog[]
+  operLog   SysOperLog[]
 
   @@index([username])
   @@index([deptId])
@@ -42,12 +42,13 @@ model SysRole {
   name        String    @db.VarChar(50)
   code        String    @unique @db.VarChar(50)
   status      Int       @default(1)
-  dataScope   Int       @default(1) // 1=全部 2=自定义 3=本部门 4=本部门及以下 5=仅本人
-  deptIds     String?   @db.VarChar(200)?.Default("") // JSON array for custom data scope
-  menuIds     String?   @db.VarChar(500)?.Default("") // JSON array
+  dataScope   Int       @default(1)
+  deptIds     String?   @db.VarChar(200) @default("")
+  menuIds     String?   @db.VarChar(500) @default("")
   remark      String?   @db.VarChar(500)
   createTime  DateTime  @default(now())
   updateTime  DateTime  @updatedAt
+
   users       SysUser[]
 
   @@index([code])
@@ -63,6 +64,7 @@ model SysDept {
   leaderId   BigInt?
   createTime DateTime  @default(now())
   updateTime DateTime  @updatedAt
+
   children   SysDept[]  @relation("DeptChildren")
   parent     SysDept?   @relation("DeptChildren", fields: [parentId], references: [id])
   users      SysUser[]
@@ -90,19 +92,20 @@ model SysPost {
 model SysMenu {
   id          BigInt    @id @default(autoincrement())
   name        String    @db.VarChar(50)
-  type        Int       @default(1) // 1=目录 2=菜单 3=按钮
+  type        Int       @default(1)
   parentId    BigInt    @default(0)
   path        String?   @db.VarChar(255)
   component   String?   @db.VarChar(255)
   icon        String?   @db.VarChar(100)
   sort        Int       @default(0)
-  perms       String?   @db.VarChar(100) // 权限标识，如 system:user:list
+  perms       String?   @db.VarChar(100)
   status      Int       @default(1)
-  external    Int       @default(0) // 是否外部链接 0=否 1=是
-  keepAlive   Int       @default(0) // 是否KeepAlive 0=否 1=是
-  show        Int       @default(1) // 是否显示 0=隐藏 1=显示
+  external    Int       @default(0)
+  keepAlive   Int       @default(0)
+  show        Int       @default(1)
   createTime  DateTime  @default(now())
   updateTime  DateTime  @updatedAt
+
   children    SysMenu[]  @relation("MenuChildren")
   parent      SysMenu?   @relation("MenuChildren", fields: [parentId], references: [id])
 
@@ -120,6 +123,7 @@ model SysDictType {
   remark     String?   @db.VarChar(500)
   createTime DateTime  @default(now())
   updateTime DateTime  @updatedAt
+
   items      SysDictData[]
 
   @@index([code])
@@ -136,6 +140,7 @@ model SysDictData {
   remark     String?      @db.VarChar(500)
   createTime DateTime     @default(now())
   updateTime DateTime     @updatedAt
+
   dictType   SysDictType  @relation(fields: [dictTypeId], references: [id])
 
   @@index([dictTypeId])
@@ -149,7 +154,7 @@ model SysConfig {
   name       String    @db.VarChar(100)
   key        String    @unique @db.VarChar(100)
   value      String    @db.Text
-  type       String?   @db.VarChar(20)?.Default("string") // string number boolean
+  type       String    @db.VarChar(20) @default("string")
   remark     String?   @db.VarChar(500)
   status     Int       @default(1)
   createTime DateTime  @default(now())
@@ -163,8 +168,8 @@ model SysNotice {
   id         BigInt    @id @default(autoincrement())
   title      String    @db.VarChar(200)
   content    String    @db.Text
-  type       Int       @default(1) // 1=通知 2=公告
-  status     Int       @default(1) // 1=正常 0=关闭
+  type       Int       @default(1)
+  status     Int       @default(1)
   publishTime DateTime?
   createTime DateTime  @default(now())
   updateTime DateTime  @updatedAt
@@ -184,9 +189,10 @@ model SysLoginLog {
   location   String?   @db.VarChar(255)
   os         String?   @db.VarChar(100)
   browser    String?   @db.VarChar(100)
-  status     Int       @default(1) // 1=成功 0=失败
+  status     Int       @default(1)
   msg        String?   @db.VarChar(255)
   createTime DateTime  @default(now())
+
   user       SysUser?  @relation(fields: [userId], references: [id])
 
   @@index([username])
@@ -207,10 +213,11 @@ model SysOperLog {
   respResult String?   @db.Text
   status     Int       @default(1)
   errorMsg   String?   @db.Text
-  duration   Int? // 耗时 ms
+  duration   Int?
   ip         String?   @db.VarChar(50)
   location   String?   @db.VarChar(255)
   createTime DateTime  @default(now())
+
   user       SysUser?  @relation(fields: [userId], references: [id])
 
   @@index([userId])
@@ -220,32 +227,33 @@ model SysOperLog {
 
 // ================== 定时任务模块 ==================
 
-// 定时任务
 model SysJob {
   id         BigInt    @id @default(autoincrement())
   name       String    @db.VarChar(100)
-  handler     String    @db.VarChar(100)
+  handler    String    @db.VarChar(100)
   cron       String?   @db.VarChar(100)
-  interval   Int? // 固定间隔秒数
-  type       Int       @default(1) // 1=Cron 2=固定间隔 3=固定延迟
-  status     Int       @default(1) // 1=正常 0=停用
+  interval   Int?
+  type       Int       @default(1)
+  status     Int       @default(1)
   remark     String?   @db.VarChar(500)
   createTime DateTime  @default(now())
   updateTime DateTime  @updatedAt
+
+  logs       SysJobLog[]
 
   @@index([handler])
   @@index([status])
 }
 
-// 任务执行日志
 model SysJobLog {
   id         BigInt    @id @default(autoincrement())
   jobId      BigInt
-  status     Int       @default(1) // 1=成功 0=失败
+  status     Int       @default(1)
   resp       String?   @db.Text
   errorMsg   String?   @db.Text
-  duration   Int? // 耗时 ms
+  duration   Int?
   createTime DateTime  @default(now())
+
   job        SysJob    @relation(fields: [jobId], references: [id])
 
   @@index([jobId])
@@ -254,50 +262,49 @@ model SysJobLog {
 
 // ================== 代码生成模块 ==================
 
-// 代码生成配置
 model GenTable {
-  id          BigInt    @id @default(autoincrement())
-  tableName   String    @db.VarChar(100)
+  id           BigInt    @id @default(autoincrement())
+  tableName    String    @db.VarChar(100)
   tableComment String?  @db.VarChar(200)
-  moduleName  String    @db.VarChar(50)
-  businessName String   @db.VarChar(50)
-  entityName  String    @db.VarChar(50)
-  author      String    @db.VarChar(50)
-  tablePrefix String?   @db.VarChar(50)
-  createTime  DateTime  @default(now())
-  updateTime  DateTime  @updatedAt
-  fields      GenTableField[]
+  moduleName   String    @db.VarChar(50)
+  businessName String    @db.VarChar(50)
+  entityName   String    @db.VarChar(50)
+  author       String    @db.VarChar(50)
+  tablePrefix  String?  @db.VarChar(50)
+  createTime   DateTime  @default(now())
+  updateTime   DateTime  @updatedAt
+
+  fields       GenTableField[]
 
   @@index([tableName])
 }
 
-// 代码生成字段配置
 model GenTableField {
-  id           BigInt     @id @default(autoincrement())
-  tableId      BigInt
-  columnName   String     @db.VarChar(100)
-  columnComment String?   @db.VarChar(200)
-  columnType   String     @db.VarChar(50)
-  tsType       String?    @db.VarChar(50)
-  isPk         Int?       @default(0)
-  isRequired   Int?       @default(0)
-  isList       Int?       @default(1)
-  isForm       Int?       @default(1)
-  formType     String?    @db.VarChar(50)
-  queryType    String?    @db.VarChar(50)
-  sort         Int         @default(0)
-  dictType     String?    @db.VarChar(50)
-  createTime   DateTime   @default(now())
-  updateTime   DateTime   @updatedAt
-  table        GenTable   @relation(fields: [tableId], references: [id])
+  id            BigInt     @id @default(autoincrement())
+  tableId       BigInt
+  columnName    String     @db.VarChar(100)
+  columnComment String?    @db.VarChar(200)
+  columnType    String     @db.VarChar(50)
+  tsType        String?    @db.VarChar(50)
+  isPk          Int?       @default(0)
+  isRequired    Int?       @default(0)
+  isList        Int?       @default(1)
+  isForm        Int?       @default(1)
+  formType      String?    @db.VarChar(50)
+  queryType     String?    @db.VarChar(50)
+  sort          Int        @default(0)
+  dictType      String?    @db.VarChar(50)
+  createTime    DateTime   @default(now())
+  updateTime    DateTime   @updatedAt
+
+  table         GenTable   @relation(fields: [tableId], references: [id])
 
   @@index([tableId])
   @@index([sort])
 }
 
-// ================== 系统租户模块（扩展） ==================
+// ================== 系统租户模块 ==================
 
-// 租户表
 model SysTenant {
   id          BigInt    @id @default(autoincrement())
   name        String    @db.VarChar(100)

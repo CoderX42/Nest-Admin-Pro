@@ -36,7 +36,6 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      // Log failed login
       await this.prisma.sysLoginLog.create({
         data: {
           userId: user.id,
@@ -51,15 +50,13 @@ export class AuthService {
 
     const payload = { sub: user.id, username: user.username };
     const token = this.jwtService.sign(payload);
-
-    // Store token in Redis for online user management
     await this.redis.setOnlineUser(token, String(user.id));
 
-    // Log successful login
     await this.prisma.sysLoginLog.create({
       data: {
         userId: user.id,
         username: user.username,
+        ip: '127.0.0.1',
         status: 1,
         msg: 'Login successful',
       },
@@ -84,11 +81,9 @@ export class AuthService {
     const existing = await this.prisma.sysUser.findUnique({
       where: { username: data.username },
     });
-
     if (existing) {
       throw new BadRequestException('Username already exists');
     }
-
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await this.prisma.sysUser.create({
       data: {
@@ -97,7 +92,6 @@ export class AuthService {
         nickname: data.nickname || data.username,
       },
     });
-
     return { id: user.id, username: user.username };
   }
 
@@ -108,14 +102,9 @@ export class AuthService {
       fontSize: 40,
       background: '#f0f2f5',
     });
-
     const key = `captcha:${Date.now()}`;
-    await this.redis.set(key, captcha.text, 120); // 2 minutes expiry
-
-    return {
-      key,
-      img: captcha.data,
-    };
+    await this.redis.set(key, captcha.text, 120);
+    return { key, img: captcha.data };
   }
 
   async validateCaptcha(key: string, text: string): Promise<boolean> {
@@ -135,18 +124,12 @@ export class AuthService {
   async getUserInfo(userId: number) {
     const user = await this.prisma.sysUser.findUnique({
       where: { id: userId },
-      include: {
-        roles: { include: { menuIds: true } },
-        dept: true,
-        posts: true,
-      },
+      include: { roles: true, dept: true },
     });
-
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    // Get accessible menus based on role menuIds
     const allMenuIds = new Set<string>();
     for (const role of user.roles) {
       try {
@@ -174,5 +157,9 @@ export class AuthService {
       permissions: Array.from(allMenuIds),
       menus,
     };
+  }
+
+  async getOnlineUsers() {
+    return this.redis.getOnlineUsers();
   }
 }

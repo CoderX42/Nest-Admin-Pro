@@ -1,4 +1,4 @@
-import { Controller, Get, Query, ParseIntPipe, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Query, Param, ParseIntPipe, UseGuards, HttpCode, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { LoginLogService } from './login-log.service';
 import { JwtAuthGuard } from '../../../auth/jwt.guard';
@@ -11,7 +11,12 @@ export class LoginLogController {
 
   @Get('list')
   @ApiOperation({ summary: 'Get login log list' })
-  async list(@Query('page') page: number, @Query('limit') limit: number, @Query('username') username: string, @Query('status') status: number) {
+  async list(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('username') username: string,
+    @Query('status') status: number,
+  ) {
     return this.loginLogService.list({ page: page || 1, limit: limit || 10, username, status });
   }
 

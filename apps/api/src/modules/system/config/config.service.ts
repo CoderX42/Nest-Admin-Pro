@@ -37,10 +37,8 @@ export class ConfigService {
   async update(dto: UpdateConfigDto) {
     const config = await this.prisma.sysConfig.findUnique({ where: { id: dto.id } });
     if (!config) throw new NotFoundException('Config not found');
-    const updated = await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.name, value: dto.value, type: dto.type, status: dto.status, remark: dto.remark } });
-    // Update Redis cache
-    await this.redis.set(`config:${dto.key}`, dto.value);
-    return updated;
+    await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.name, value: dto.value, type: dto.type, status: dto.status, remark: dto.remark } });
+    if (config.key) await this.redis.set(`config:${config.key}`, dto.value);
   }
 
   async remove(id: number) {

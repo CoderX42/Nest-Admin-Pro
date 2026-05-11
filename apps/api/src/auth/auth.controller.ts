@@ -1,17 +1,8 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Req,
-  Get,
-  Headers,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Req, Headers, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, CaptchaDto } from './dto/auth.dto';
-import { Public, RequirePermission } from './guards';
+import { Public } from './guards';
 import { JwtAuthGuard } from './jwt.guard';
 
 @ApiTags('Authentication')

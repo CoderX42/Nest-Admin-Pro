@@ -1,0 +1,61 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "Login",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "Home"
+      }
+    },
+    {
+      "path": "pages/center/index",
+      "style": {
+        "navigationBarTitleText": "User Center"
+      }
+    },
+    {
+      "path": "pages/user/profile",
+      "style": {
+        "navigationBarTitleText": "Personal Info"
+      }
+    },
+    {
+      "path": "pages/user/password",
+      "style": {
+        "navigationBarTitleText": "Change Password"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Nest-Admin-Pro",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/home.png",
+        "selectedIconPath": "static/home-active.png",
+        "text": "Home"
+      },
+      {
+        "pagePath": "pages/center/index",
+        "iconPath": "static/user.png",
+        "selectedIconPath": "static/user-active.png",
+        "text": "Center"
+      }
+    ]
+  }
+}

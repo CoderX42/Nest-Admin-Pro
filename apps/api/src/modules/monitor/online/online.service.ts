@@ -14,7 +14,7 @@ export class OnlineService {
       if (userId) {
         const user = await this.prisma.sysUser.findUnique({
           where: { id: parseInt(userId) },
-          select: { id: true, username: true, nickname: true, avatar: true, email: true, phone: true, lastLoginTime: true },
+          select: { id: true, username: true, nickname: true, avatar: true, email: true, phone: true },
         });
         if (user) {
           users.push({ token, ...user });

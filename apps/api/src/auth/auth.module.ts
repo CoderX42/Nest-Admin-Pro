@@ -17,7 +17,7 @@ import { RolesGuard, PermissionGuard } from './guards';
         secret: configService.get<string>('app.jwtSecret') || 'default-secret',
         signOptions: {
           expiresIn: configService.get<string>('app.jwtExpiresIn') || '7d',
-        },
+        } as any,
       }),
       inject: [ConfigService],
     }),

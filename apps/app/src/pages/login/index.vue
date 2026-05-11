@@ -1,0 +1,162 @@
+<template>
+  <view class="login-container">
+    <view class="login-box">
+      <view class="login-header">
+        <image src="/static/logo.png" class="logo" mode="aspectFit" />
+        <text class="title">Nest-Admin-Pro</text>
+        <text class="subtitle">全栈快速开发框架</text>
+      </view>
+
+      <view class="login-form">
+        <input v-model="form.username" placeholder="Username" class="input" />
+        <input v-model="form.password" type="password" placeholder="Password" class="input" />
+        <input v-model="form.captcha" placeholder="Captcha" class="input captcha-input" />
+        <image v-if="captcha.img" :src="captcha.img" class="captcha-img" @click="refreshCaptcha" />
+        <button type="primary" class="login-btn" @click="handleLogin">Login</button>
+        <view class="login-tips">
+          <text>Username: admin</text>
+          <text>Password: admin123</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { reactive } from 'vue';
+import { authApi } from '../../api';
+import { useUserStore } from '../../stores/user';
+
+const userStore = useUserStore();
+
+const form = reactive({
+  username: 'admin',
+  password: 'admin123',
+  captcha: '',
+});
+
+const captcha = reactive({
+  key: '',
+  img: '',
+});
+
+const refreshCaptcha = async () => {
+  try {
+    const res: any = await authApi.captcha();
+    captcha.key = res.key;
+    captcha.img = res.img;
+  } catch (e) {
+    console.error('Failed to load captcha', e);
+  }
+};
+
+const handleLogin = async () => {
+  if (!form.username || !form.password) {
+    uni.showToast({ title: 'Please enter username and password', icon: 'none' });
+    return;
+  }
+  try {
+    const res: any = await authApi.login(form);
+    userStore.setToken(res.token);
+    const info: any = await authApi.getUserInfo();
+    userStore.setUserInfo(info.user);
+    uni.showToast({ title: 'Login successful', icon: 'success' });
+    setTimeout(() => {
+      uni.redirectTo({ url: '/pages/index/index' });
+    }, 500);
+  } catch (e: any) {
+    uni.showToast({ title: e.message || 'Login failed', icon: 'none' });
+    refreshCaptcha();
+  }
+};
+
+refreshCaptcha();
+</script>
+
+<style scoped>
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.login-box {
+  width: 600rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.logo {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+
+.subtitle {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-top: 10rpx;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+
+.input {
+  height: 88rpx;
+  border: 1px solid #dcdfe6;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+}
+
+.captcha-input {
+  width: 60%;
+}
+
+.captcha-img {
+  width: 200rpx;
+  height: 80rpx;
+  position: absolute;
+  right: 60rpx;
+  top: 360rpx;
+}
+
+.login-btn {
+  height: 88rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-tips {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #999;
+}
+</style>

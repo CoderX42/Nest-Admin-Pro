@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, HttpCode, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { OperLogService } from './oper-log.service';
 import { JwtAuthGuard } from '../../../auth/jwt.guard';

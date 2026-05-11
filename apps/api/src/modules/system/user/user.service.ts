@@ -48,7 +48,7 @@ export class UserService {
   async findOne(id: number) {
     const user = await this.prisma.sysUser.findUnique({
       where: { id, isDelete: 0 },
-      include: { dept: true, roles: true, posts: true },
+      include: { dept: true, roles: true },
     });
     if (!user) throw new NotFoundException('User not found');
     return { ...user, password: undefined };
@@ -65,13 +65,13 @@ export class UserService {
       data: {
         username: dto.username,
         password: hashedPassword,
-        nickname: dto.nickname,
-        email: dto.email,
-        phone: dto.phone,
+        nickname: dto.nickname ?? '',
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
         status: dto.status ?? 1,
-        remark: dto.remark,
-        deptId: dto.deptId,
-        postIds: dto.postIds ? JSON.stringify(dto.postIds) : undefined,
+        remark: dto.remark ?? null,
+        deptId: dto.deptId ?? null,
+        postIds: dto.postIds ? JSON.stringify(dto.postIds) : "",
       },
       select: { id: true, username: true },
     });
