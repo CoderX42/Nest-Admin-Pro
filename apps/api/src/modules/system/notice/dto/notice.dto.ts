@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsDateString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateNoticeDto {
   @ApiProperty({ example: 'System Update Notice' }) @IsString() title: string;
@@ -22,6 +23,6 @@ export class QueryNoticeDto {
   @IsOptional() @IsString() title?: string;
   @IsOptional() @IsInt() type?: number;
   @IsOptional() @IsInt() status?: number;
-  @IsOptional() @IsInt() page?: number;
-  @IsOptional() @IsInt() limit?: number;
+  @Type(() => Number) @IsInt() @Min(1) @IsOptional() page?: number;
+  @Type(() => Number) @IsInt() @Min(1) @IsOptional() limit?: number;
 }

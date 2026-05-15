@@ -26,7 +26,7 @@ cp .env.example .env
 
 ```env
 # 数据库
-DATABASE_URL="mysql://root:password@localhost:3306/nest_admin_pro"
+DATABASE_URL="mysql://root:password@localhost:3306/ruoyi_vue_plus"
 
 # Redis
 REDIS_HOST=localhost
@@ -55,7 +55,7 @@ pnpm prisma generate
 pnpm prisma migrate dev --name init
 
 # 导入种子数据（可选）
-mysql -u root -p nest_admin_pro < ../../scripts/seed.sql
+mysql -u root -p ruoyi_vue_plus < ../../scripts/seed.sql
 ```
 
 ### 4. 启动服务
@@ -177,7 +177,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=mysql://root:password@mysql:3306/nest_admin_pro
+      - DATABASE_URL=mysql://root:password@mysql:3306/ruoyi_vue_plus
       - REDIS_HOST=redis
     depends_on:
       - mysql
@@ -194,7 +194,7 @@ services:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: nest_admin_pro
+      MYSQL_DATABASE: ruoyi_vue_plus
     volumes:
       - mysql_data:/var/lib/mysql
     ports:

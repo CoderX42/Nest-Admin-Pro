@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreatePostDto {
   @ApiProperty({ example: 'Frontend Engineer' }) @IsString() name: string;
@@ -21,6 +22,6 @@ export class QueryPostDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() code?: string;
   @IsOptional() @IsInt() status?: number;
-  @IsOptional() @IsInt() page?: number;
-  @IsOptional() @IsInt() limit?: number;
+  @Type(() => Number) @IsInt() @Min(1) @IsOptional() page?: number;
+  @Type(() => Number) @IsInt() @Min(1) @IsOptional() limit?: number;
 }

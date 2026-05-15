@@ -19,22 +19,17 @@
       >
         <template v-for="item in menus" :key="item.id">
           <el-sub-menu v-if="item.children?.length" :index="String(item.id)">
-            <template #title>
-              <el-icon><component :is="item.icon || 'Folder'" /></el-icon>
-              <span>{{ item.name }}</span>
-            </template>
+            <template #title>{{ item.name }}</template>
             <el-menu-item
               v-for="child in item.children"
               :key="child.id"
               :index="child.path || `/system/${child.name}`"
             >
-              <el-icon><component :is="child.icon || 'Document'" /></el-icon>
-              <span>{{ child.name }}</span>
+              {{ child.name }}
             </el-menu-item>
           </el-sub-menu>
           <el-menu-item v-else :index="item.path || `/system/${item.name}`">
-            <el-icon><component :is="item.icon || 'Folder'" /></el-icon>
-            <span>{{ item.name }}</span>
+            {{ item.name }}
           </el-menu-item>
         </template>
       </el-menu>

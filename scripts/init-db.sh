@@ -8,7 +8,7 @@ DB_HOST=${DB_HOST:-"localhost"}
 DB_PORT=${DB_PORT:-3306}
 DB_USER=${DB_USER:-"root"}
 DB_PASSWORD=${DB_PASSWORD:-""}
-DB_NAME=${DB_NAME:-"nest_admin_pro"}
+DB_NAME=${DB_NAME:-"ruoyi_vue_plus"}
 
 # 颜色
 GREEN='\033[0;32m'

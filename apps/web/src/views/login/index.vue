@@ -103,8 +103,9 @@ const rules = {
 const refreshCaptcha = async () => {
   try {
     const res: any = await authApi.captcha();
-    captchaData.key = res.key;
-    captchaData.img = res.img;
+    captchaData.key = res.data.key;
+    captchaData.img = 'data:image/svg+xml;utf-8,' + encodeURIComponent(res.data.img);
+    form.captchaKey = res.data.key;
   } catch (e) {
     ElMessage.error('Failed to load captcha');
   }

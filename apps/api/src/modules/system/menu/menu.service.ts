@@ -23,10 +23,10 @@ export class MenuService {
     return this.buildTree(menus);
   }
 
-  private buildTree(menus: any[], parentId = 0): any[] {
+  private buildTree(menus: any[], parentId: number = 0): any[] {
     return menus
-      .filter((m) => m.parentId === parentId)
-      .map((m) => ({ ...m, children: this.buildTree(menus, m.id) }));
+      .filter((m) => Number(m.parentId) === parentId)
+      .map((m) => ({ ...m, children: this.buildTree(menus, Number(m.id)) }));
   }
 
   async buildRoute(userId: number) {

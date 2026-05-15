@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'admin' })
@@ -112,12 +113,16 @@ export class QueryUserDto {
   deptId?: number;
 
   @ApiProperty({ example: 1, required: false })
+  @Type(() => Number)
   @IsInt()
+  @Min(1)
   @IsOptional()
   page?: number;
 
   @ApiProperty({ example: 10, required: false })
+  @Type(() => Number)
   @IsInt()
+  @Min(1)
   @IsOptional()
   limit?: number;
 }

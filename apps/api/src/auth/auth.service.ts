@@ -11,6 +11,11 @@ import * as bcrypt from 'bcryptjs';
 import * as svgCaptcha from 'svg-captcha';
 import { ApiResponse } from '../common/api-response';
 
+// Fix BigInt serialization
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -143,6 +148,24 @@ export class AuthService {
       orderBy: { sort: 'asc' },
     });
 
+    // Build nested tree structure
+    const menuMap = new Map<number, any>();
+    const rootMenus: any[] = [];
+    menus.forEach((m) => {
+      menuMap.set(Number(m.id), { ...m, children: [] });
+    });
+    menus.forEach((m) => {
+      const menu = menuMap.get(Number(m.id))!;
+      if (Number(m.parentId) === 0) {
+        rootMenus.push(menu);
+      } else {
+        const parent = menuMap.get(Number(m.parentId));
+        if (parent) {
+          parent.children.push(menu);
+        }
+      }
+    });
+
     return {
       user: {
         id: user.id,
@@ -155,7 +178,7 @@ export class AuthService {
         roles: user.roles.map((r) => r.name),
       },
       permissions: Array.from(allMenuIds),
-      menus,
+      menus: rootMenus,
     };
   }
 

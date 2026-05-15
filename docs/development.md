@@ -195,7 +195,7 @@ pnpm dev:mp-weixin  # 微信小程序
 
 ```env
 # 数据库
-DATABASE_URL=mysql://root:password@localhost:3306/nest_admin_pro
+DATABASE_URL=mysql://root:password@localhost:3306/ruoyi_vue_plus
 
 # Redis
 REDIS_HOST=localhost

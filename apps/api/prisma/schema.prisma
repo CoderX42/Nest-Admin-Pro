@@ -100,9 +100,9 @@ model SysMenu {
   sort        Int       @default(0)
   perms       String?   @db.VarChar(100)
   status      Int       @default(1)
-  external    Int       @default(0)
+  external    Int       @default(0) @map("is_external")
   keepAlive   Int       @default(0)
-  show        Int       @default(1)
+  show        Int       @default(1) @map("is_show")
   createTime  DateTime  @default(now())
   updateTime  DateTime  @updatedAt
 
