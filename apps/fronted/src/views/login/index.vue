@@ -1,9 +1,19 @@
 <template>
   <div class="login-container">
+    <div class="login-preferences">
+      <el-select v-model="currentTheme" size="small" style="width: 112px" :aria-label="t('common.theme')" @change="handleThemeChange">
+        <el-option v-for="theme in themeOptions" :key="theme" :label="t(`theme.${theme}`)" :value="theme" />
+      </el-select>
+      <el-select v-model="currentLocale" size="small" style="width: 104px" :aria-label="t('common.language')" @change="handleLocaleChange">
+        <el-option label="中文" value="zh-CN" />
+        <el-option label="English" value="en-US" />
+      </el-select>
+    </div>
+
     <div class="login-box">
       <div class="login-header">
-        <h1>Nest-Admin-Pro</h1>
-        <p>全栈快速开发框架</p>
+        <h1>{{ t('login.title') }}</h1>
+        <p>{{ t('login.subtitle') }}</p>
       </div>
 
       <el-form
@@ -16,7 +26,7 @@
         <el-form-item prop="username">
           <el-input
             v-model="form.username"
-            placeholder="Username"
+            :placeholder="t('login.username')"
             size="large"
             :prefix-icon="User"
           />
@@ -26,7 +36,7 @@
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="Password"
+            :placeholder="t('login.password')"
             size="large"
             :prefix-icon="Lock"
             show-password
@@ -36,14 +46,14 @@
         <el-form-item prop="captcha">
           <el-input
             v-model="form.captcha"
-            placeholder="Captcha"
+            :placeholder="t('login.captcha')"
             size="large"
             :prefix-icon="CircleCheck"
             style="width: 60%"
           />
           <div class="captcha-img" @click="refreshCaptcha">
             <img v-if="captchaData.img" :src="captchaData.img" alt="captcha" />
-            <span v-else>Click to load</span>
+            <span v-else>{{ t('login.loadCaptcha') }}</span>
           </div>
         </el-form-item>
 
@@ -55,13 +65,13 @@
             style="width: 100%"
             @click="handleLogin"
           >
-            Login
+            {{ t('login.submit') }}
           </el-button>
         </el-form-item>
 
         <div class="login-tips">
-          <span>Username: admin</span>
-          <span>Password: admin123</span>
+          <span>{{ t('login.defaultUsername') }}</span>
+          <span>{{ t('login.defaultPassword') }}</span>
         </div>
       </el-form>
     </div>
@@ -69,18 +79,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { computed, ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/modules/user';
 import { authApi } from '@/api';
 import { ElMessage } from 'element-plus';
 import { User, Lock, CircleCheck } from '@element-plus/icons-vue';
 import type { FormInstance } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { setLocale, type Locale } from '@/i18n';
+import { applyTheme, initTheme, themeOptions, type ThemeName } from '@/utils/appearance';
 
 const router = useRouter();
 const userStore = useUserStore();
+const { t, locale } = useI18n();
 const formRef = ref<FormInstance>();
 const loading = ref(false);
+const currentTheme = ref<ThemeName>(initTheme());
+const currentLocale = ref<Locale>(locale.value as Locale);
 
 const form = reactive({
   username: 'admin',
@@ -94,11 +110,11 @@ const captchaData = reactive({
   img: '',
 });
 
-const rules = {
-  username: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
-  password: [{ required: true, message: 'Please enter password', trigger: 'blur' }],
-  captcha: [{ required: true, message: 'Please enter captcha', trigger: 'blur' }],
-};
+const rules = computed(() => ({
+  username: [{ required: true, message: t('login.usernameRequired'), trigger: 'blur' }],
+  password: [{ required: true, message: t('login.passwordRequired'), trigger: 'blur' }],
+  captcha: [{ required: true, message: t('login.captchaRequired'), trigger: 'blur' }],
+}));
 
 const refreshCaptcha = async () => {
   try {
@@ -107,7 +123,7 @@ const refreshCaptcha = async () => {
     captchaData.img = 'data:image/svg+xml;utf-8,' + encodeURIComponent(res.img);
     form.captchaKey = res.key;
   } catch (e) {
-    ElMessage.error('Failed to load captcha');
+    ElMessage.error(t('login.captchaFailed'));
   }
 };
 
@@ -120,15 +136,24 @@ const handleLogin = async () => {
     loading.value = true;
     try {
       await userStore.login(form.username, form.password);
-      ElMessage.success('Login successful');
+      ElMessage.success(t('login.success'));
       router.push('/');
     } catch (e: any) {
-      ElMessage.error(e.message || 'Login failed');
+      ElMessage.error(e.message || t('login.failed'));
       refreshCaptcha();
     } finally {
       loading.value = false;
     }
   });
+};
+
+const handleThemeChange = (theme: ThemeName) => {
+  applyTheme(theme);
+};
+
+const handleLocaleChange = (value: Locale) => {
+  setLocale(value);
+  currentLocale.value = value;
 };
 
 onMounted(() => {
@@ -142,15 +167,27 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary), transparent 8%) 0%, var(--app-bg) 100%);
+  position: relative;
+}
+
+.login-preferences {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
 }
 
 .login-box {
   width: 400px;
   padding: 40px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
 }
 
 .login-header {
@@ -160,13 +197,13 @@ onMounted(() => {
 
 .login-header h1 {
   font-size: 28px;
-  color: #333;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
 .login-header p {
   font-size: 14px;
-  color: #999;
+  color: var(--muted);
 }
 
 .login-form {
@@ -178,13 +215,13 @@ onMounted(() => {
   height: 40px;
   margin-left: 10px;
   cursor: pointer;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: #999;
+  color: var(--muted);
   overflow: hidden;
 }
 
@@ -198,7 +235,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #999;
+  color: var(--muted);
   margin-top: 10px;
 }
 </style>

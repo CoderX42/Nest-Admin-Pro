@@ -1,70 +1,70 @@
 <template>
-  <div class="dashboard">
-    <el-row :gutter="16">
-      <el-col :span="6">
+  <div class="dashboard space-y-5">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #409eff">
+          <div class="stat-icon stat-icon-primary">
             <el-icon :size="32"><User /></el-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ stats.totalUsers }}</div>
-            <div class="stat-label">Total Users</div>
+            <div class="stat-label">{{ t('dashboard.totalUsers') }}</div>
           </div>
         </div>
-      </el-col>
-      <el-col :span="6">
+      </div>
+      <div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #67c23a">
+          <div class="stat-icon stat-icon-success">
             <el-icon :size="32"><Key /></el-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ stats.totalRoles }}</div>
-            <div class="stat-label">Total Roles</div>
+            <div class="stat-label">{{ t('dashboard.totalRoles') }}</div>
           </div>
         </div>
-      </el-col>
-      <el-col :span="6">
+      </div>
+      <div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #e6a23c">
+          <div class="stat-icon stat-icon-warning">
             <el-icon :size="32"><Connection /></el-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ stats.onlineUsers }}</div>
-            <div class="stat-label">Online Users</div>
+            <div class="stat-label">{{ t('dashboard.onlineUsers') }}</div>
           </div>
         </div>
-      </el-col>
-      <el-col :span="6">
+      </div>
+      <div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #f56c6c">
+          <div class="stat-icon stat-icon-danger">
             <el-icon :size="32"><Bell /></el-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ stats.totalNotices }}</div>
-            <div class="stat-label">Notices</div>
+            <div class="stat-label">{{ t('dashboard.notices') }}</div>
           </div>
         </div>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
-    <el-row :gutter="16" style="margin-top: 20px">
+    <el-row :gutter="16">
       <el-col :span="12">
-        <el-card header="Server Info">
+        <el-card :header="t('dashboard.serverInfo')">
           <div class="server-info" v-if="serverInfo">
             <div class="info-item">
-              <span class="label">OS:</span>
+              <span class="label">{{ t('dashboard.os') }}:</span>
               <span class="value">{{ serverInfo.os }}</span>
             </div>
             <div class="info-item">
-              <span class="label">CPU:</span>
+              <span class="label">{{ t('dashboard.cpu') }}:</span>
               <span class="value">{{ serverInfo.cpuUsage }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Memory:</span>
+              <span class="label">{{ t('dashboard.memory') }}:</span>
               <span class="value">{{ serverInfo.mem?.usage }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Uptime:</span>
+              <span class="label">{{ t('dashboard.uptime') }}:</span>
               <span class="value">{{ serverInfo.uptime }}</span>
             </div>
           </div>
@@ -72,18 +72,18 @@
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card header="Recent Login Logs">
+        <el-card :header="t('dashboard.recentLoginLogs')">
           <el-table :data="recentLogs" style="width: 100%">
-            <el-table-column prop="username" label="User" width="120" />
-            <el-table-column prop="ip" label="IP" width="140" />
-            <el-table-column prop="status" label="Status" width="80">
+            <el-table-column prop="username" :label="t('dashboard.user')" width="120" />
+            <el-table-column prop="ip" :label="t('dashboard.ip')" width="140" />
+            <el-table-column prop="status" :label="t('dashboard.status')" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? 'Success' : 'Failed' }}
+                  {{ row.status === 1 ? t('dashboard.success') : t('dashboard.failed') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="createTime" label="Time" />
+            <el-table-column prop="createTime" :label="t('dashboard.time')" />
           </el-table>
         </el-card>
       </el-col>
@@ -94,6 +94,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { userApi, roleApi, onlineApi, noticeApi, serverApi, loginLogApi } from '@/api';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const stats = ref({
   totalUsers: 0,
@@ -138,10 +140,11 @@ onMounted(async () => {
 .stat-card {
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-icon {
@@ -155,15 +158,20 @@ onMounted(async () => {
   margin-right: 16px;
 }
 
+.stat-icon-primary { background: var(--primary); }
+.stat-icon-success { background: var(--success); }
+.stat-icon-warning { background: var(--warning); }
+.stat-icon-danger { background: var(--danger); }
+
 .stat-value {
   font-size: 28px;
   font-weight: bold;
-  color: #333;
+  color: var(--text);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #999;
+  color: var(--muted);
   margin-top: 4px;
 }
 
@@ -179,12 +187,12 @@ onMounted(async () => {
 }
 
 .info-item .label {
-  color: #666;
+  color: var(--muted);
   width: 80px;
 }
 
 .info-item .value {
-  color: #333;
+  color: var(--text);
   font-weight: 500;
 }
 </style>
