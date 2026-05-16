@@ -7,6 +7,8 @@ export class OperLogService {
 
   async list(query: { page?: number; limit?: number; username?: string; module?: string }) {
     const { page = 1, limit = 10, username, module } = query;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
     const where: any = {};
     if (username) where.username = { contains: username };
     if (module) where.module = { contains: module };
@@ -14,7 +16,7 @@ export class OperLogService {
       this.prisma.sysOperLog.count({ where }),
       this.prisma.sysOperLog.findMany({
         where, orderBy: { createTime: 'desc' },
-        skip: (page - 1) * limit, take: limit,
+        skip: (pageNum - 1) * limitNum, take: limitNum,
       }),
     ]);
     return { total, items };
