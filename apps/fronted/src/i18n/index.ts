@@ -74,6 +74,9 @@ const messages = {
       professional: '专业',
       midnight: '暗色',
       compact: '紧凑',
+      sunset: '日落暖橙',
+      cyber: '赛博霓虹',
+      purple: '现代紫黑',
     },
     login: {
       title: 'Nest-Admin-Pro',
@@ -353,6 +356,9 @@ const messages = {
       professional: 'Professional',
       midnight: 'Midnight',
       compact: 'Compact',
+      sunset: 'Sunset',
+      cyber: 'Cyber',
+      purple: 'Modern Purple',
     },
     login: {
       title: 'Nest-Admin-Pro',

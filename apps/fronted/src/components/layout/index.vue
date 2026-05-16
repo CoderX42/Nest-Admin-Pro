@@ -50,7 +50,17 @@
               :aria-label="t('common.theme')"
               @change="handleThemeChange"
             >
-              <el-option v-for="theme in themeOptions" :key="theme" :label="t(`theme.${theme}`)" :value="theme" />
+              <el-option
+                v-for="theme in themeOptions"
+                :key="theme"
+                :label="t(`theme.${theme}`)"
+                :value="theme"
+              >
+                <div class="theme-option">
+                  <span class="theme-dot" :style="{ background: getThemeColor(theme) }" />
+                  <span>{{ t(`theme.${theme}`) }}</span>
+                </div>
+              </el-option>
             </el-select>
           </div>
 
@@ -101,7 +111,8 @@ import { ElMessage } from 'element-plus';
 import { Fold, Expand, Box, Brush, Switch } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { setLocale, type Locale } from '@/i18n';
-import { applyTheme, initTheme, themeOptions, type ThemeName } from '@/utils/appearance';
+import { themeOptions, themeMetas, type ThemeName } from '@/utils/appearance';
+import { useThemeStore } from '@/store/theme';
 
 const route = useRoute();
 const router = useRouter();
@@ -109,7 +120,8 @@ const userStore = useUserStore();
 const { t, locale } = useI18n();
 
 const isCollapsed = ref(false);
-const currentTheme = ref<ThemeName>(initTheme());
+const themeStore = useThemeStore();
+const currentTheme = computed(() => themeStore.currentTheme);
 const currentLocale = ref<Locale>(locale.value as Locale);
 const activeMenu = computed(() => route.path);
 const currentRoute = computed(() => route);
@@ -173,15 +185,22 @@ onMounted(async () => {
 });
 
 const handleCommand = async (command: string) => {
-  if (command === 'logout') {
+  if (command === 'profile') {
+    router.push('/profile');
+  } else if (command === 'logout') {
     await userStore.logout();
     router.push('/login');
     ElMessage.success(t('common.loggedOut'));
   }
 };
 
+const getThemeColor = (theme: ThemeName) => {
+  const meta = themeMetas.find((m) => m.name === theme);
+  return meta?.colors[0] || '#4f46e5';
+};
+
 const handleThemeChange = (theme: ThemeName) => {
-  applyTheme(theme);
+  themeStore.setTheme(theme);
 };
 
 const handleLocaleChange = (value: Locale) => {
@@ -315,5 +334,18 @@ const handleLocaleChange = (value: Locale) => {
 
 .user-dropdown:hover {
   background: var(--soft-surface);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
 }
 </style>

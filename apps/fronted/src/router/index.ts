@@ -99,6 +99,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/monitor/cache/index.vue'),
         meta: { title: 'Cache Monitor', titleKey: 'nav.cache', icon: 'Cpu', perm: 'monitor:cache:info' },
       },
+      {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('../views/profile/index.vue'),
+        meta: { title: 'Profile', titleKey: 'common.profile', icon: 'User' },
+      },
     ],
   },
 ];
