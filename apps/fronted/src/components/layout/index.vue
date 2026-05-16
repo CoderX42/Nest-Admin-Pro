@@ -300,6 +300,8 @@ const handleLocaleChange = (value: Locale) => {
   background: transparent;
   padding: var(--page-padding);
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .user-dropdown {

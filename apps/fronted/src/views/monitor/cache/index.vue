@@ -1,15 +1,18 @@
 <template>
   <div class="page-container">
     <div class="search-bar">
-      <el-input v-model="keyPattern" placeholder="Key pattern (e.g. config:*)" style="width: 300px" clearable />
-      <el-button type="primary" :icon="Search" @click="loadKeys">Search Keys</el-button>
-      <el-button type="success" :icon="Refresh" @click="loadInfo">Refresh Info</el-button>
-      <el-button type="danger" :icon="Delete" @click="handleClear">Clear All Cache</el-button>
+      <el-input v-model="keyPattern" :placeholder="t('monitor.cache.placeholderKey')" style="width: 300px" clearable />
+      <el-button type="primary" :icon="Search" @click="loadKeys"
+      >{{ t('common.action.search') }}</el-button>
+      <el-button type="success" :icon="Refresh" @click="loadInfo"
+      >{{ t('common.action.refresh') }}</el-button>
+      <el-button type="danger" :icon="Delete" @click="handleClear"
+      >{{ t('common.action.clean') }}</el-button>
     </div>
 
     <el-row :gutter="16">
       <el-col :span="12">
-        <el-card header="Redis Info">
+        <el-card :header="t('monitor.cache.cacheInfo')">
           <div class="info-grid" v-if="info">
             <div class="info-item" v-for="(v, k) in info" :key="k">
               <span class="label">{{ k }}:</span>
@@ -20,16 +23,18 @@
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card header="Cache Keys">
+        <el-card :header="t('monitor.cache.cacheKeys')">
           <template #header>
-            <span>Keys ({{ keys.length }})</span>
+            <span>{{ t('monitor.cache.cacheKeys') }} ({{ keys.length }})</span>
           </template>
           <el-table :data="keyRows" size="small" max-height="400" style="width: 100%">
-            <el-table-column prop="key" label="Key" show-overflow-tooltip />
-            <el-table-column label="Actions" width="160">
+            <el-table-column prop="key" :label="t('monitor.cache.key')" show-overflow-tooltip />
+            <el-table-column :label="t('common.field.actions')" width="160">
               <template #default="{ row }">
-                <el-button size="small" text type="primary" @click="handleViewValue(row)">View</el-button>
-                <el-button size="small" text type="danger" @click="handleDeleteKey(row)">Delete</el-button>
+                <el-button size="small" text type="primary" @click="handleViewValue(row)"
+                >{{ t('common.action.view') }}</el-button>
+                <el-button size="small" text type="danger" @click="handleDeleteKey(row)"
+                >{{ t('common.action.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -37,10 +42,11 @@
       </el-col>
     </el-row>
 
-    <el-dialog v-model="valueDialogVisible" title="Cache Value" width="600px">
+    <el-dialog v-model="valueDialogVisible" :title="t('monitor.cache.value')" width="600px">
       <el-input v-model="cacheValue" type="textarea" :rows="10" readonly />
       <template #footer>
-        <el-button @click="valueDialogVisible = false">Close</el-button>
+        <el-button @click="valueDialogVisible = false"
+        >{{ t('common.action.cancel') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -48,9 +54,12 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { cacheApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Refresh, Delete } from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 const info = ref<any>(null);
 const keys = ref<string[]>([]);
@@ -61,12 +70,12 @@ const keyRows = computed(() => keys.value.map((key) => ({ key })));
 
 const loadInfo = async () => {
   try { info.value = await cacheApi.info(); }
-  catch { ElMessage.error('Failed to load cache info'); }
+  catch { ElMessage.error(t('common.message.loadFailed')); }
 };
 
 const loadKeys = async () => {
   try { keys.value = await cacheApi.keys(keyPattern.value); }
-  catch { ElMessage.error('Failed to load keys'); }
+  catch { ElMessage.error(t('common.message.loadFailed')); }
 };
 
 const handleViewValue = async (row: { key: string }) => {
@@ -76,16 +85,16 @@ const handleViewValue = async (row: { key: string }) => {
 };
 
 const handleDeleteKey = async (row: { key: string }) => {
-  await ElMessageBox.confirm(`Delete key "${row.key}"?`, 'Confirm', { type: 'warning' });
+  await ElMessageBox.confirm(t('common.message.confirmDelete', { name: row.key }), t('common.action.confirm'), { type: 'warning' });
   await cacheApi.delete(row.key);
-  ElMessage.success('Deleted');
+  ElMessage.success(t('common.message.deleteSuccess'));
   loadKeys();
 };
 
 const handleClear = async () => {
-  await ElMessageBox.confirm('Clear all cache? This will affect system performance.', 'Confirm', { type: 'warning' });
+  await ElMessageBox.confirm(t('common.message.confirmClean'), t('common.action.confirm'), { type: 'warning' });
   await cacheApi.clear();
-  ElMessage.success('Cache cleared');
+  ElMessage.success(t('common.message.cleanSuccess'));
   loadKeys();
 };
 
