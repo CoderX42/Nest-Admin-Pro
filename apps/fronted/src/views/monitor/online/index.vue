@@ -48,6 +48,5 @@ onMounted(() => loadData());
 </script>
 
 <style scoped>
-.page-container { background: #fff; padding: 20px; border-radius: 8px; }
 .toolbar { margin-bottom: 16px; }
 </style>

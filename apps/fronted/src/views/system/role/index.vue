@@ -217,8 +217,7 @@ onMounted(() => { loadData(); loadMenuTree(); loadDeptTree(); });
 </script>
 
 <style scoped>
-.page-container { background: #fff; padding: 20px; border-radius: 8px; }
 .search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .toolbar { margin-bottom: 16px; }
-.perm-section-title { margin-bottom: 12px; font-weight: 600; color: #303133; }
+.perm-section-title { margin-bottom: 12px; font-weight: 600; color: var(--text); }
 </style>

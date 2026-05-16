@@ -93,7 +93,6 @@ onMounted(() => { loadInfo(); loadKeys(); });
 </script>
 
 <style scoped>
-.page-container { background: #fff; padding: 20px; border-radius: 8px; }
 .search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .info-item { font-size: 13px; }

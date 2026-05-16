@@ -284,12 +284,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-container {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-}
-
 .search-bar {
   display: flex;
   gap: 12px;

@@ -201,6 +201,8 @@ const handleLocaleChange = (value: Locale) => {
   border-right: 1px solid var(--sidebar-border);
   transition: width 0.24s ease, background 0.24s ease;
   overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .logo-container {
@@ -253,6 +255,8 @@ const handleLocaleChange = (value: Locale) => {
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   padding: 0 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .header-left,
@@ -293,7 +297,7 @@ const handleLocaleChange = (value: Locale) => {
 }
 
 .layout-main {
-  background: var(--app-bg);
+  background: transparent;
   padding: var(--page-padding);
   overflow-y: auto;
 }

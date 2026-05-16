@@ -60,7 +60,7 @@ onMounted(() => loadData());
 </script>
 
 <style scoped>
-.page-container { background: #fff; padding: 20px; border-radius: 8px; }
+
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .info-item { display: flex; align-items: center; gap: 8px; }
 .label { color: #666; min-width: 100px; }

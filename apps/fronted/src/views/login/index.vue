@@ -168,7 +168,9 @@ onMounted(() => {
   justify-content: center;
   min-height: 100vh;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--primary), transparent 8%) 0%, var(--app-bg) 100%);
+    radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--primary), transparent 70%) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, color-mix(in srgb, var(--danger), transparent 75%) 0%, transparent 40%),
+    var(--app-bg);
   position: relative;
 }
 
@@ -182,12 +184,19 @@ onMounted(() => {
 }
 
 .login-box {
-  width: 400px;
-  padding: 40px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  width: 420px;
+  padding: 48px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+}
+
+html[data-theme='midnight'] .login-box {
+  background: rgba(15, 23, 42, 0.35);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .login-header {
@@ -216,7 +225,7 @@ onMounted(() => {
   margin-left: 10px;
   cursor: pointer;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--control-radius);
   display: flex;
   align-items: center;
   justify-content: center;
