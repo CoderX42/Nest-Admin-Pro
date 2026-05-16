@@ -1,5 +1,44 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
+export class UpdateProfileDto {
+  @ApiProperty({ example: 'Administrator', required: false })
+  @IsString()
+  @IsOptional()
+  nickname?: string;
+
+  @ApiProperty({ example: 'admin@example.com', required: false })
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @ApiProperty({ example: '13800138000', required: false })
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  remark?: string;
+}
+
+export class UpdatePasswordDto {
+  @ApiProperty({ example: 'admin123' })
+  @IsString()
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @ApiProperty({ example: 'newpassword123' })
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
+}
 
 export class LoginDto {
   @ApiProperty({ example: 'admin' })

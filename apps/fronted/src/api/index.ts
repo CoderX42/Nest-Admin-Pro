@@ -126,6 +126,13 @@ export const cacheApi = {
   delete: (key: string) => request.post('/monitor/cache/delete', null, { params: { key } }),
 };
 
+// Profile API
+export const profileApi = {
+  getProfile: () => request.get('/auth/profile'),
+  updateProfile: (data: any) => request.put('/auth/profile', data),
+  updatePassword: (data: { oldPassword: string; newPassword: string }) => request.put('/auth/profile/password', data),
+};
+
 // File API
 export const fileApi = {
   upload: (formData: FormData) =>

@@ -8,6 +8,7 @@ interface UserInfo {
   avatar: string;
   email: string;
   phone: string;
+  remark?: string;
   deptName?: string;
   roles: string[];
 }

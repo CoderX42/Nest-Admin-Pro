@@ -185,4 +185,89 @@ export class AuthService {
   async getOnlineUsers() {
     return this.redis.getOnlineUsers();
   }
+
+  async getProfile(userId: number) {
+    const user = await this.prisma.sysUser.findUnique({
+      where: { id: userId, isDelete: 0 },
+      include: { roles: true, dept: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    let postIds: number[] = [];
+    try {
+      postIds = JSON.parse(user.postIds || '[]');
+    } catch {}
+
+    const posts = postIds.length
+      ? await this.prisma.sysPost.findMany({
+          where: { id: { in: postIds.map(BigInt) } },
+          select: { id: true, name: true },
+        })
+      : [];
+
+    return {
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      email: user.email,
+      phone: user.phone,
+      remark: user.remark,
+      status: user.status,
+      deptName: user.dept?.name,
+      roles: user.roles.map((r) => ({ id: r.id, name: r.name, code: r.code })),
+      posts: posts.map((p) => ({ id: p.id, name: p.name })),
+    };
+  }
+
+  async updateProfile(userId: number, dto: { nickname?: string; email?: string; phone?: string; avatar?: string; remark?: string }) {
+    const data: any = {};
+    if (dto.nickname !== undefined) data.nickname = dto.nickname;
+    if (dto.email !== undefined) data.email = dto.email || null;
+    if (dto.phone !== undefined) data.phone = dto.phone || null;
+    if (dto.avatar !== undefined) data.avatar = dto.avatar;
+    if (dto.remark !== undefined) data.remark = dto.remark || null;
+
+    const user = await this.prisma.sysUser.update({
+      where: { id: userId },
+      data,
+      include: { roles: true, dept: true },
+    });
+
+    return {
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      email: user.email,
+      phone: user.phone,
+      remark: user.remark,
+      deptName: user.dept?.name,
+      roles: user.roles.map((r) => r.name),
+    };
+  }
+
+  async updatePassword(userId: number, oldPassword: string, newPassword: string) {
+    const user = await this.prisma.sysUser.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isValid) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.sysUser.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    return ApiResponse.success(null, 'Password updated successfully');
+  }
 }

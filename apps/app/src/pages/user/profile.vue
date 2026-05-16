@@ -23,6 +23,10 @@
         <text class="form-label">Phone</text>
         <input v-model="form.phone" class="form-input" placeholder="Enter phone" />
       </view>
+      <view class="form-item">
+        <text class="form-label">Remark</text>
+        <input v-model="form.remark" class="form-input" placeholder="Enter remark" />
+      </view>
     </view>
 
     <view class="submit-btn">
@@ -45,6 +49,7 @@ const form = reactive({
   email: '',
   phone: '',
   avatar: '',
+  remark: '',
 });
 
 onShow(async () => {

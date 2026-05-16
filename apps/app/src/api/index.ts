@@ -11,9 +11,9 @@ export const authApi = {
 };
 
 export const userApi = {
-  getProfile: () => get('/user/profile'),
-  updateProfile: (data: any) => put('/user/profile', data),
-  updatePassword: (data: { oldPassword: string; newPassword: string }) => put('/user/password', data),
+  getProfile: () => get('/auth/profile'),
+  updateProfile: (data: any) => put('/auth/profile', data),
+  updatePassword: (data: { oldPassword: string; newPassword: string }) => put('/auth/profile/password', data),
   uploadAvatar: (filePath: string) => {
     return new Promise((resolve, reject) => {
       const token = uni.getStorageSync('token');
