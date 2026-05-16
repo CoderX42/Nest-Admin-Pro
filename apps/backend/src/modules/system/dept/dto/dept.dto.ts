@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateDeptDto {
   @ApiProperty({ example: 'Technology Department' })
@@ -21,5 +22,5 @@ export class UpdateDeptDto {
 
 export class QueryDeptDto {
   @IsOptional() @IsString() name?: string;
-  @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
 }

@@ -19,13 +19,13 @@ export class UpdateRoleDto {
   id: number;
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsInt() dataScope?: number;
-  @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
 }
 
 export class QueryRoleDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() code?: string;
-  @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
   @Type(() => Number) @IsInt() @Min(1) @IsOptional() page?: number;
   @Type(() => Number) @IsInt() @Min(1) @IsOptional() limit?: number;
 }

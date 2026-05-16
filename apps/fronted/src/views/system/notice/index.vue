@@ -91,15 +91,39 @@ const loadData = async () => {
 
 const resetQuery = () => { queryParams.title = ''; queryParams.type = undefined; queryParams.status = undefined; loadData(); };
 const handleCreate = () => { Object.assign(form, { id: undefined, title: '', content: '', type: 1, status: 1, publishTime: '' }); dialogTitle.value = 'Add Notice'; dialogVisible.value = true; };
-const handleEdit = (row: any) => { Object.assign(form, row); dialogTitle.value = 'Edit Notice'; dialogVisible.value = true; };
+const handleEdit = (row: any) => {
+  Object.assign(form, {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    type: row.type,
+    status: row.status,
+    publishTime: row.publishTime || '',
+  });
+  dialogTitle.value = 'Edit Notice';
+  dialogVisible.value = true;
+};
 
 const handleSubmit = async () => {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
-      if (form.id) { await noticeApi.update(form); ElMessage.success('Updated'); }
-      else { await noticeApi.create(form); ElMessage.success('Created'); }
+      const payload = {
+        id: form.id,
+        title: form.title,
+        content: form.content,
+        type: form.type,
+        status: form.status,
+        publishTime: form.publishTime || undefined,
+      };
+      if (form.id) { await noticeApi.update(payload); ElMessage.success('Updated'); }
+      else {
+        const createPayload: any = { ...payload };
+        delete createPayload.id;
+        await noticeApi.create(createPayload);
+        ElMessage.success('Created');
+      }
       dialogVisible.value = false;
       loadData();
     } catch (e: any) { ElMessage.error(e.message); }

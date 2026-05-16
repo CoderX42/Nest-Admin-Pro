@@ -1,10 +1,10 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
-const request: AxiosInstance = axios.create({
+const request: any = axios.create({
   baseURL,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
@@ -12,14 +12,14 @@ const request: AxiosInstance = axios.create({
 
 // Request interceptor
 request.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error: any) => Promise.reject(error),
 );
 
 // Response interceptor
@@ -34,9 +34,9 @@ request.interceptors.response.use(
       }
       return Promise.reject(new Error(res.message || 'Error'));
     }
-    return res;
+    return res.data;
   },
-  (error) => {
+  (error: any) => {
     const message = error.response?.data?.message || error.message || 'Network error';
     ElMessage.error(message);
     if (error.response?.status === 401) {

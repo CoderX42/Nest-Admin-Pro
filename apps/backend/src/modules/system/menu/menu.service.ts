@@ -12,7 +12,8 @@ export class MenuService {
     if (name) where.name = { contains: name };
     if (type !== undefined) where.type = type;
     if (status !== undefined) where.status = status;
-    return this.prisma.sysMenu.findMany({ where, orderBy: [{ sort: 'asc' }, { id: 'asc' }] });
+    const menus = await this.prisma.sysMenu.findMany({ where, orderBy: [{ sort: 'asc' }, { id: 'asc' }] });
+    return this.buildTree(menus);
   }
 
   async tree() {
@@ -24,8 +25,9 @@ export class MenuService {
   }
 
   private buildTree(menus: any[], parentId: number = 0): any[] {
+    const ids = new Set(menus.map((m) => Number(m.id)));
     return menus
-      .filter((m) => Number(m.parentId) === parentId)
+      .filter((m) => Number(m.parentId) === parentId || (parentId === 0 && !ids.has(Number(m.parentId))))
       .map((m) => ({ ...m, children: this.buildTree(menus, Number(m.id)) }));
   }
 

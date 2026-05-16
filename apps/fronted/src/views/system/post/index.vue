@@ -41,7 +41,7 @@
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="Post Code" prop="code">
-          <el-input v-model="form.code" />
+          <el-input v-model="form.code" :disabled="!!form.id" />
         </el-form-item>
         <el-form-item label="Sort">
           <el-input-number v-model="form.sort" :min="0" :max="9999" />
@@ -113,8 +113,14 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
-      if (form.id) { await postApi.update(form); ElMessage.success('Updated successfully'); }
-      else { await postApi.create(form); ElMessage.success('Created successfully'); }
+      if (form.id) {
+        await postApi.update({ id: form.id, name: form.name, sort: form.sort, status: form.status, remark: form.remark });
+        ElMessage.success('Updated successfully');
+      }
+      else {
+        await postApi.create({ name: form.name, code: form.code, sort: form.sort, status: form.status, remark: form.remark });
+        ElMessage.success('Created successfully');
+      }
       dialogVisible.value = false;
       loadData();
     } catch (e: any) { ElMessage.error(e.message || 'Operation failed'); }

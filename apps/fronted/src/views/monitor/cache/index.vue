@@ -24,7 +24,7 @@
           <template #header>
             <span>Keys ({{ keys.length }})</span>
           </template>
-          <el-table :data="keys" size="small" max-height="400" style="width: 100%">
+          <el-table :data="keyRows" size="small" max-height="400" style="width: 100%">
             <el-table-column prop="key" label="Key" show-overflow-tooltip />
             <el-table-column label="Actions" width="160">
               <template #default="{ row }">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { cacheApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Refresh, Delete } from '@element-plus/icons-vue';
@@ -57,6 +57,7 @@ const keys = ref<string[]>([]);
 const keyPattern = ref('*');
 const valueDialogVisible = ref(false);
 const cacheValue = ref('');
+const keyRows = computed(() => keys.value.map((key) => ({ key })));
 
 const loadInfo = async () => {
   try { info.value = await cacheApi.info(); }
@@ -68,15 +69,15 @@ const loadKeys = async () => {
   catch { ElMessage.error('Failed to load keys'); }
 };
 
-const handleViewValue = async (key: string) => {
-  const res: any = await cacheApi.value(key);
+const handleViewValue = async (row: { key: string }) => {
+  const res: any = await cacheApi.value(row.key);
   cacheValue.value = typeof res === 'object' ? JSON.stringify(res, null, 2) : String(res);
   valueDialogVisible.value = true;
 };
 
-const handleDeleteKey = async (key: string) => {
-  await ElMessageBox.confirm(`Delete key "${key}"?`, 'Confirm', { type: 'warning' });
-  await cacheApi.delete(key);
+const handleDeleteKey = async (row: { key: string }) => {
+  await ElMessageBox.confirm(`Delete key "${row.key}"?`, 'Confirm', { type: 'warning' });
+  await cacheApi.delete(row.key);
   ElMessage.success('Deleted');
   loadKeys();
 };

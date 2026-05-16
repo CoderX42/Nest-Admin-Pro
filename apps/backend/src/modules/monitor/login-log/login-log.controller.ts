@@ -17,7 +17,12 @@ export class LoginLogController {
     @Query('username') username: string,
     @Query('status') status: number,
   ) {
-    return this.loginLogService.list({ page: page || 1, limit: limit || 10, username, status });
+    return this.loginLogService.list({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      username,
+      status: status !== undefined ? Number(status) : undefined,
+    });
   }
 
   @Get(':id')

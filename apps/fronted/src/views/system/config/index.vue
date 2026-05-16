@@ -85,8 +85,14 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
-      if (form.id) { await configApi.update(form); ElMessage.success('Updated'); }
-      else { await configApi.create(form); ElMessage.success('Created'); }
+      if (form.id) {
+        await configApi.update({ id: form.id, name: form.name, value: form.value, type: form.type, status: form.status, remark: form.remark });
+        ElMessage.success('Updated');
+      }
+      else {
+        await configApi.create({ name: form.name, key: form.key, value: form.value, type: form.type, status: form.status, remark: form.remark });
+        ElMessage.success('Created');
+      }
       dialogVisible.value = false;
       loadData();
     } catch (e: any) { ElMessage.error(e.message); }

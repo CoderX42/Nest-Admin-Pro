@@ -5,8 +5,8 @@ import { Type } from 'class-transformer';
 export class CreateNoticeDto {
   @ApiProperty({ example: 'System Update Notice' }) @IsString() title: string;
   @ApiProperty({ example: 'System will be updated at 2:00 AM...' }) @IsString() content: string;
-  @IsOptional() @IsInt() type?: number;
-  @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() type?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
   @IsOptional() @IsDateString() publishTime?: string;
 }
 

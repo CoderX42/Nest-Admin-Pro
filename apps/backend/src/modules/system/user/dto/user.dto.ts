@@ -103,11 +103,13 @@ export class QueryUserDto {
   nickname?: string;
 
   @ApiProperty({ example: 1, required: false })
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   status?: number;
 
   @ApiProperty({ example: 1, required: false })
+  @Type(() => Number)
   @IsInt()
   @IsOptional()
   deptId?: number;

@@ -1,5 +1,15 @@
 <template>
   <div class="page-container">
+    <div class="search-bar">
+      <el-input v-model="queryParams.name" placeholder="Department Name" style="width: 220px" clearable @clear="loadData" />
+      <el-select v-model="queryParams.status" placeholder="Status" style="width: 140px" clearable @clear="loadData">
+        <el-option label="Enabled" :value="1" />
+        <el-option label="Disabled" :value="0" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="loadData">Search</el-button>
+      <el-button :icon="Refresh" @click="resetQuery">Reset</el-button>
+    </div>
+
     <div class="toolbar">
       <el-button type="primary" :icon="Plus" @click="handleCreate">Add Department</el-button>
     </div>
@@ -22,8 +32,16 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="Parent" v-if="form.id">
-          <el-tree-select v-model="form.parentId" :data="deptTree" check-strictly clearable placeholder="Root department" style="width: 100%" />
+        <el-form-item label="Parent">
+          <el-tree-select
+            v-model="form.parentId"
+            :data="deptTree"
+            :props="{ label: 'name', value: 'id', children: 'children' }"
+            check-strictly
+            clearable
+            placeholder="Root department"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="Name" prop="name">
           <el-input v-model="form.name" />
@@ -50,7 +68,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { deptApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Edit, Delete } from '@element-plus/icons-vue';
+import { Plus, Edit, Delete, Search, Refresh } from '@element-plus/icons-vue';
 import type { FormInstance } from 'element-plus';
 
 const loading = ref(false);
@@ -59,6 +77,7 @@ const deptTree = ref<any[]>([]);
 const dialogVisible = ref(false);
 const dialogTitle = ref('Add Department');
 const formRef = ref<FormInstance>();
+const queryParams = reactive({ name: '', status: undefined as number | undefined });
 
 const form = reactive<any>({ id: undefined, parentId: 0, name: '', sort: 0, status: 1 });
 const rules = { name: [{ required: true, message: 'Please enter department name', trigger: 'blur' }] };
@@ -66,10 +85,9 @@ const rules = { name: [{ required: true, message: 'Please enter department name'
 const loadData = async () => {
   loading.value = true;
   try {
-    const res: any = await deptApi.tree();
+    const res: any = await deptApi.list(queryParams);
     tableData.value = res;
-    // Flatten tree for tree-select options
-    deptTree.value = [{ id: 0, name: 'Root' }, ...flattenTree(res)];
+    deptTree.value = [{ id: 0, name: 'Root', children: res }];
   } catch (e) {
     ElMessage.error('Failed to load data');
   } finally {
@@ -77,12 +95,10 @@ const loadData = async () => {
   }
 };
 
-const flattenTree = (nodes: any[], result: any[] = []): any[] => {
-  for (const node of nodes) {
-    result.push({ id: node.id, name: node.name });
-    if (node.children?.length) flattenTree(node.children, result);
-  }
-  return result;
+const resetQuery = () => {
+  queryParams.name = '';
+  queryParams.status = undefined;
+  loadData();
 };
 
 const handleCreate = () => {
@@ -122,5 +138,6 @@ onMounted(() => loadData());
 
 <style scoped>
 .page-container { background: #fff; padding: 20px; border-radius: 8px; }
+.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .toolbar { margin-bottom: 16px; }
 </style>

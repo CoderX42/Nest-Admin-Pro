@@ -7,7 +7,12 @@
         <el-option label="Menu" :value="2" />
         <el-option label="Button" :value="3" />
       </el-select>
+      <el-select v-model="queryParams.status" placeholder="Status" style="width: 120px" clearable @clear="loadData">
+        <el-option label="Enabled" :value="1" />
+        <el-option label="Disabled" :value="0" />
+      </el-select>
       <el-button type="primary" :icon="Search" @click="loadData">Search</el-button>
+      <el-button :icon="Refresh" @click="resetQuery">Reset</el-button>
     </div>
 
     <div class="toolbar">
@@ -42,8 +47,16 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="Parent Menu" v-if="form.parentId">
-          <el-tree-select v-model="form.parentId" :data="menuTree" check-strictly clearable placeholder="Root menu" style="width: 100%" />
+        <el-form-item label="Parent Menu">
+          <el-tree-select
+            v-model="form.parentId"
+            :data="menuTree"
+            :props="{ label: 'name', value: 'id', children: 'children' }"
+            check-strictly
+            clearable
+            placeholder="Root menu"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="Type" prop="type">
           <el-radio-group v-model="form.type">
@@ -67,6 +80,12 @@
         <el-form-item label="Icon" v-if="form.type !== 3">
           <el-input v-model="form.icon" placeholder="Element Plus icon name" />
         </el-form-item>
+        <el-form-item label="Visible" v-if="form.type !== 3">
+          <el-switch v-model="form.show" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="Keep Alive" v-if="form.type === 2">
+          <el-switch v-model="form.keepAlive" :active-value="1" :inactive-value="0" />
+        </el-form-item>
         <el-form-item label="Sort">
           <el-input-number v-model="form.sort" :min="0" :max="9999" />
         </el-form-item>
@@ -89,7 +108,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { menuApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue';
+import { Plus, Edit, Delete, Search, Refresh } from '@element-plus/icons-vue';
 import type { FormInstance } from 'element-plus';
 
 const loading = ref(false);
@@ -99,8 +118,8 @@ const dialogVisible = ref(false);
 const dialogTitle = ref('Add Menu');
 const formRef = ref<FormInstance>();
 
-const queryParams = reactive({ name: '', type: undefined as number | undefined });
-const form = reactive<any>({ id: undefined, parentId: 0, type: 1, name: '', path: '', component: '', perms: '', icon: '', sort: 0, status: 1 });
+const queryParams = reactive({ name: '', type: undefined as number | undefined, status: undefined as number | undefined });
+const form = reactive<any>({ id: undefined, parentId: 0, type: 1, name: '', path: '', component: '', perms: '', icon: '', sort: 0, status: 1, show: 1, keepAlive: 0, external: 0 });
 const rules = { name: [{ required: true, message: 'Please enter menu name', trigger: 'blur' }] };
 
 const loadData = async () => {
@@ -108,31 +127,31 @@ const loadData = async () => {
   try {
     const res: any = await menuApi.list(queryParams);
     tableData.value = res;
+    await loadMenuTree();
   } catch (e) { ElMessage.error('Failed to load data'); }
   finally { loading.value = false; }
 };
 
 const loadMenuTree = async () => {
   const res: any = await menuApi.tree();
-  menuTree.value = [{ id: 0, name: 'Root' }, ...flattenTree(res)];
+  menuTree.value = [{ id: 0, name: 'Root', children: res }];
 };
 
-const flattenTree = (nodes: any[], result: any[] = []): any[] => {
-  for (const node of nodes) {
-    result.push({ id: node.id, name: node.name });
-    if (node.children?.length) flattenTree(node.children, result);
-  }
-  return result;
+const resetQuery = () => {
+  queryParams.name = '';
+  queryParams.type = undefined;
+  queryParams.status = undefined;
+  loadData();
 };
 
 const handleCreate = (parentId: number) => {
-  Object.assign(form, { id: undefined, parentId: parentId || 0, type: 1, name: '', path: '', component: '', perms: '', icon: '', sort: 0, status: 1 });
+  Object.assign(form, { id: undefined, parentId: parentId || 0, type: 1, name: '', path: '', component: '', perms: '', icon: '', sort: 0, status: 1, show: 1, keepAlive: 0, external: 0 });
   dialogTitle.value = parentId ? 'Add Child Menu' : 'Add Menu';
   dialogVisible.value = true;
 };
 
 const handleEdit = (row: any) => {
-  Object.assign(form, { id: row.id, parentId: row.parentId, type: row.type, name: row.name, path: row.path, component: row.component, perms: row.perms, icon: row.icon, sort: row.sort, status: row.status });
+  Object.assign(form, { id: row.id, parentId: row.parentId, type: row.type, name: row.name, path: row.path, component: row.component, perms: row.perms, icon: row.icon, sort: row.sort, status: row.status, show: row.show, keepAlive: row.keepAlive, external: row.external });
   dialogTitle.value = 'Edit Menu';
   dialogVisible.value = true;
 };

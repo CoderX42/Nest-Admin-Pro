@@ -11,10 +11,11 @@ export class DeptService {
     const where: any = {};
     if (name) where.name = { contains: name };
     if (status !== undefined) where.status = status;
-    return this.prisma.sysDept.findMany({
+    const depts = await this.prisma.sysDept.findMany({
       where,
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
+    return this.buildTree(depts);
   }
 
   async tree() {
@@ -26,11 +27,12 @@ export class DeptService {
   }
 
   private buildTree(depts: any[], parentId = 0): any[] {
+    const ids = new Set(depts.map((d) => Number(d.id)));
     return depts
-      .filter((d) => d.parentId === parentId)
+      .filter((d) => Number(d.parentId) === parentId || (parentId === 0 && !ids.has(Number(d.parentId))))
       .map((d) => ({
         ...d,
-        children: this.buildTree(depts, d.id),
+        children: this.buildTree(depts, Number(d.id)),
       }));
   }
 

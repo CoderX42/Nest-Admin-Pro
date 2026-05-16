@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateMenuDto {
   @ApiProperty({ example: 'User Management' }) @IsString() name: string;
@@ -34,6 +35,6 @@ export class UpdateMenuDto {
 
 export class QueryMenuDto {
   @IsOptional() @IsString() name?: string;
-  @IsOptional() @IsInt() type?: number;
-  @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() type?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
 }

@@ -33,9 +33,9 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(username: string, password: string) {
       const res: any = await authApi.login({ username, password });
-      this.token = res.data.token;
-      this.userInfo = res.data.userInfo;
-      localStorage.setItem('token', res.data.token);
+      this.token = res.token;
+      this.userInfo = res.userInfo;
+      localStorage.setItem('token', res.token);
       // Fetch full userInfo with menus and permissions
       await this.getUserInfo();
       return res;
@@ -44,11 +44,9 @@ export const useUserStore = defineStore('user', {
     async getUserInfo() {
       if (!this.token) return null;
       const res: any = await authApi.getUserInfo();
-      // API returns { code, data: { user, menus, permissions } }
-      const data = res.data || res;
-      this.userInfo = data.user;
-      this.menus = data.menus || [];
-      this.permissions = data.permissions || [];
+      this.userInfo = res.user;
+      this.menus = res.menus || [];
+      this.permissions = res.permissions || [];
       return res;
     },
 

@@ -61,7 +61,7 @@
     <el-dialog v-model="typeDialogVisible" :title="typeDialogTitle" width="500px">
       <el-form ref="typeFormRef" :model="typeForm" :rules="typeRules" label-width="100px">
         <el-form-item label="Name" prop="name"><el-input v-model="typeForm.name" /></el-form-item>
-        <el-form-item label="Code" prop="code"><el-input v-model="typeForm.code" /></el-form-item>
+        <el-form-item label="Code" prop="code"><el-input v-model="typeForm.code" :disabled="!!typeForm.id" /></el-form-item>
         <el-form-item label="Status">
           <el-radio-group v-model="typeForm.status">
             <el-radio :label="1">Enabled</el-radio>
@@ -143,8 +143,14 @@ const handleTypeSubmit = async () => {
   await typeFormRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
-      if (typeForm.id) { await dictApi.typeUpdate(typeForm); ElMessage.success('Updated'); }
-      else { await dictApi.typeCreate(typeForm); ElMessage.success('Created'); }
+      if (typeForm.id) {
+        await dictApi.typeUpdate({ id: typeForm.id, name: typeForm.name, status: typeForm.status, remark: typeForm.remark });
+        ElMessage.success('Updated');
+      }
+      else {
+        await dictApi.typeCreate({ name: typeForm.name, code: typeForm.code, status: typeForm.status, remark: typeForm.remark });
+        ElMessage.success('Created');
+      }
       typeDialogVisible.value = false;
       loadTypes();
     } catch (e: any) { ElMessage.error(e.message); }

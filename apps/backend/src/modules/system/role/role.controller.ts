@@ -19,12 +19,6 @@ export class RoleController {
     return this.roleService.list(query);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get role by ID' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roleService.findOne(id);
-  }
-
   @Post()
   @ApiOperation({ summary: 'Create role' })
   async create(@Body() dto: CreateRoleDto) {
@@ -66,5 +60,11 @@ export class RoleController {
   @ApiOperation({ summary: 'Get role menu IDs' })
   async getRoleMenus(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.getRoleMenus(id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get role by ID' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.roleService.findOne(id);
   }
 }

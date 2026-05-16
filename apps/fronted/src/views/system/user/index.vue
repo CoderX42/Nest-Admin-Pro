@@ -27,9 +27,22 @@
       <el-table-column prop="dept" label="Department" width="150">
         <template #default="{ row }">{{ row.dept?.name || '-' }}</template>
       </el-table-column>
+      <el-table-column label="Roles" width="180">
+        <template #default="{ row }">
+          <el-tag v-for="role in row.roles || []" :key="role.id" size="small" style="margin-right: 4px">
+            {{ role.name }}
+          </el-tag>
+          <span v-if="!row.roles?.length">-</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="status" label="Status" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? 'Enabled' : 'Disabled' }}</el-tag>
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="(status: number) => handleStatusChange(row, status)"
+          />
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="Created" width="180" />
@@ -73,7 +86,25 @@
           <el-input v-model="form.phone" />
         </el-form-item>
         <el-form-item label="Department">
-          <el-tree-select v-model="form.deptId" :data="deptTree" check-strictly clearable placeholder="Select department" />
+          <el-tree-select
+            v-model="form.deptId"
+            :data="deptTree"
+            :props="{ label: 'name', value: 'id', children: 'children' }"
+            check-strictly
+            clearable
+            placeholder="Select department"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="Posts">
+          <el-select v-model="form.postIds" multiple clearable placeholder="Select posts" style="width: 100%">
+            <el-option v-for="post in postOptions" :key="post.id" :label="post.name" :value="post.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Roles">
+          <el-select v-model="form.roleIds" multiple clearable placeholder="Select roles" style="width: 100%">
+            <el-option v-for="role in roleOptions" :key="role.id" :label="role.name" :value="role.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="Status">
           <el-radio-group v-model="form.status">
@@ -92,7 +123,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { userApi, deptApi } from '@/api';
+import { userApi, deptApi, postApi, roleApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search, Refresh } from '@element-plus/icons-vue';
 import type { FormInstance } from 'element-plus';
@@ -105,8 +136,10 @@ const dialogVisible = ref(false);
 const dialogTitle = ref('Add User');
 const formRef = ref<FormInstance>();
 const deptTree = ref<any[]>([]);
+const postOptions = ref<any[]>([]);
+const roleOptions = ref<any[]>([]);
 
-const form = reactive<any>({ username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, status: 1 });
+const form = reactive<any>({ username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, postIds: [], roleIds: [], status: 1 });
 const rules = {
   username: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
   password: [{ required: true, min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }],
@@ -130,6 +163,27 @@ const loadDeptTree = async () => {
   deptTree.value = res;
 };
 
+const loadOptions = async () => {
+  const [postRes, roleRes]: any[] = await Promise.all([
+    postApi.list({ page: 1, limit: 1000 }),
+    roleApi.list({ page: 1, limit: 1000 }),
+  ]);
+  postOptions.value = postRes.items || [];
+  roleOptions.value = roleRes.items || [];
+};
+
+const parsePostIds = (value: unknown) => {
+  if (Array.isArray(value)) return value.map(Number);
+  if (typeof value === 'string' && value) {
+    try {
+      return JSON.parse(value).map(Number);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 const resetQuery = () => {
   queryParams.username = '';
   queryParams.nickname = '';
@@ -138,13 +192,24 @@ const resetQuery = () => {
 };
 
 const handleCreate = () => {
-  Object.assign(form, { id: undefined, username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, status: 1 });
+  Object.assign(form, { id: undefined, username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, postIds: [], roleIds: [], status: 1 });
   dialogTitle.value = 'Add User';
   dialogVisible.value = true;
 };
 
 const handleEdit = (row: any) => {
-  Object.assign(form, { id: row.id, username: row.username, password: '', nickname: row.nickname, email: row.email, phone: row.phone, deptId: row.deptId, status: row.status });
+  Object.assign(form, {
+    id: row.id,
+    username: row.username,
+    password: '',
+    nickname: row.nickname,
+    email: row.email,
+    phone: row.phone,
+    deptId: row.deptId,
+    postIds: parsePostIds(row.postIds),
+    roleIds: (row.roles || []).map((role: any) => Number(role.id)),
+    status: row.status,
+  });
   dialogTitle.value = 'Edit User';
   dialogVisible.value = true;
 };
@@ -154,11 +219,30 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
+      const payload = {
+        id: form.id,
+        username: form.username,
+        password: form.password,
+        nickname: form.nickname,
+        email: form.email,
+        phone: form.phone,
+        deptId: form.deptId,
+        postIds: form.postIds,
+        status: form.status,
+      };
       if (form.id) {
-        await userApi.update(form);
+        const updatePayload: any = { ...payload };
+        delete updatePayload.username;
+        await userApi.update(updatePayload);
+        await userApi.assignRoles(form.id, form.roleIds || []);
         ElMessage.success('Updated successfully');
       } else {
-        await userApi.create(form);
+        const createPayload: any = { ...payload };
+        delete createPayload.id;
+        const created: any = await userApi.create(createPayload);
+        if (form.roleIds?.length && created?.id) {
+          await userApi.assignRoles(created.id, form.roleIds);
+        }
         ElMessage.success('Created successfully');
       }
       dialogVisible.value = false;
@@ -167,6 +251,16 @@ const handleSubmit = async () => {
       ElMessage.error(e.message || 'Operation failed');
     }
   });
+};
+
+const handleStatusChange = async (row: any, status: number) => {
+  try {
+    await userApi.changeStatus(row.id, status);
+    ElMessage.success('Status updated');
+  } catch (e: any) {
+    row.status = status === 1 ? 0 : 1;
+    ElMessage.error(e.message || 'Operation failed');
+  }
 };
 
 const handleResetPwd = async (row: any) => {
@@ -185,6 +279,7 @@ const handleDelete = async (row: any) => {
 onMounted(() => {
   loadData();
   loadDeptTree();
+  loadOptions();
 });
 </script>
 

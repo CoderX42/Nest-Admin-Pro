@@ -16,16 +16,16 @@ export class ConfigController {
     return this.configService.list(query);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get config by ID' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.configService.findOne(id);
-  }
-
   @Get('key/:key')
   @ApiOperation({ summary: 'Get config by key' })
   async findByKey(@Param('key') key: string) {
     return this.configService.findByKey(key);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get config by ID' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.configService.findOne(id);
   }
 
   @Post()

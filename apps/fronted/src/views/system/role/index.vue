@@ -25,7 +25,12 @@
       </el-table-column>
       <el-table-column prop="status" label="Status" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? 'Enabled' : 'Disabled' }}</el-tag>
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="(status: number) => handleStatusChange(row, status)"
+          />
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="Created" width="180" />
@@ -46,7 +51,7 @@
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="Role Code" prop="code">
-          <el-input v-model="form.code" />
+          <el-input v-model="form.code" :disabled="!!form.id" />
         </el-form-item>
         <el-form-item label="Data Scope">
           <el-select v-model="form.dataScope" style="width: 100%">
@@ -73,6 +78,11 @@
     <!-- Permission Dialog -->
     <el-dialog v-model="permDialogVisible" title="Assign Permissions" width="500px">
       <el-tree ref="menuTreeRef" :data="menuTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
+      <template v-if="currentDataScope === 2">
+        <el-divider />
+        <div class="perm-section-title">Data Scope Departments</div>
+        <el-tree ref="deptTreeRef" :data="deptTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
+      </template>
       <template #footer>
         <el-button @click="permDialogVisible = false">Cancel</el-button>
         <el-button type="primary" @click="handlePermSubmit">Confirm</el-button>
@@ -83,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { roleApi, menuApi } from '@/api';
+import { roleApi, menuApi, deptApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search, Refresh, Key } from '@element-plus/icons-vue';
 import type { FormInstance } from 'element-plus';
@@ -98,10 +108,13 @@ const permDialogVisible = ref(false);
 const dialogTitle = ref('Add Role');
 const formRef = ref<FormInstance>();
 const menuTreeRef = ref<InstanceType<typeof ElTree>>();
+const deptTreeRef = ref<InstanceType<typeof ElTree>>();
 
 const form = reactive<any>({ id: undefined, name: '', code: '', dataScope: 1, status: 1 });
 const currentRoleId = ref<number>();
+const currentDataScope = ref(1);
 const menuTree = ref<any[]>([]);
+const deptTree = ref<any[]>([]);
 const rules = { name: [{ required: true, message: 'Please enter role name', trigger: 'blur' }], code: [{ required: true, message: 'Please enter role code', trigger: 'blur' }] };
 
 const getDataScopeLabel = (scope: number) => ['All Data', 'Custom Data', 'Department Data', 'Department & Children', 'Only Self'][scope - 1] || 'Unknown';
@@ -124,6 +137,11 @@ const loadMenuTree = async () => {
   menuTree.value = res;
 };
 
+const loadDeptTree = async () => {
+  const res: any = await deptApi.tree();
+  deptTree.value = res;
+};
+
 const resetQuery = () => { queryParams.name = ''; queryParams.status = undefined; loadData(); };
 
 const handleCreate = () => {
@@ -143,8 +161,14 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
     try {
-      if (form.id) { await roleApi.update(form); ElMessage.success('Updated successfully'); }
-      else { await roleApi.create(form); ElMessage.success('Created successfully'); }
+      if (form.id) {
+        await roleApi.update({ id: form.id, name: form.name, dataScope: form.dataScope, status: form.status });
+        ElMessage.success('Updated successfully');
+      }
+      else {
+        await roleApi.create({ name: form.name, code: form.code, dataScope: form.dataScope });
+        ElMessage.success('Created successfully');
+      }
       dialogVisible.value = false;
       loadData();
     } catch (e: any) { ElMessage.error(e.message || 'Operation failed'); }
@@ -153,21 +177,33 @@ const handleSubmit = async () => {
 
 const handleAssignPerm = async (row: any) => {
   currentRoleId.value = row.id;
-  await loadMenuTree();
+  currentDataScope.value = row.dataScope;
+  await Promise.all([loadMenuTree(), loadDeptTree()]);
   const res: any = await roleApi.getRoleMenus(row.id);
   permDialogVisible.value = true;
   setTimeout(() => {
-    if (res.menuIds?.length) {
-      menuTreeRef.value?.setCheckedKeys(res.menuIds.map((id: string) => parseInt(id)), false);
-    }
+    menuTreeRef.value?.setCheckedKeys((res.menuIds || []).map((id: string) => parseInt(id)), false);
+    deptTreeRef.value?.setCheckedKeys((res.deptIds || []).map((id: string) => parseInt(id)), false);
   }, 100);
 };
 
 const handlePermSubmit = async () => {
   const checkedKeys = menuTreeRef.value?.getCheckedKeys() || [];
-  await roleApi.assignPermissions(currentRoleId.value!, checkedKeys.map(String));
+  const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || [];
+  const deptKeys = currentDataScope.value === 2 ? deptTreeRef.value?.getCheckedKeys() || [] : [];
+  await roleApi.assignPermissions(currentRoleId.value!, [...checkedKeys, ...halfCheckedKeys].map(String), deptKeys.map(String));
   ElMessage.success('Permissions updated');
   permDialogVisible.value = false;
+};
+
+const handleStatusChange = async (row: any, status: number) => {
+  try {
+    await roleApi.changeStatus(row.id, status);
+    ElMessage.success('Status updated');
+  } catch (e: any) {
+    row.status = status === 1 ? 0 : 1;
+    ElMessage.error(e.message || 'Operation failed');
+  }
 };
 
 const handleDelete = async (row: any) => {
@@ -177,11 +213,12 @@ const handleDelete = async (row: any) => {
   loadData();
 };
 
-onMounted(() => { loadData(); loadMenuTree(); });
+onMounted(() => { loadData(); loadMenuTree(); loadDeptTree(); });
 </script>
 
 <style scoped>
 .page-container { background: #fff; padding: 20px; border-radius: 8px; }
 .search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .toolbar { margin-bottom: 16px; }
+.perm-section-title { margin-bottom: 12px; font-weight: 600; color: #303133; }
 </style>
