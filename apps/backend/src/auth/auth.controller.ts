@@ -15,7 +15,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'User login' })
   async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.username, dto.password);
+    return this.authService.login(dto);
   }
 
   @Public()

@@ -32,8 +32,8 @@ export const useUserStore = defineStore('user', {
   }),
 
   actions: {
-    async login(username: string, password: string) {
-      const res: any = await authApi.login({ username, password });
+    async login(form: { username: string; password: string; captchaKey: string; captchaText: string }) {
+      const res: any = await authApi.login(form);
       this.token = res.token;
       this.userInfo = res.userInfo;
       localStorage.setItem('token', res.token);

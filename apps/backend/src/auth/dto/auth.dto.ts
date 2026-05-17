@@ -50,6 +50,16 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty({ description: 'Captcha key from getCaptcha' })
+  @IsString()
+  @IsNotEmpty()
+  captchaKey: string;
+
+  @ApiProperty({ description: 'Captcha text entered by user' })
+  @IsString()
+  @IsNotEmpty()
+  captchaText: string;
 }
 
 export class RegisterDto {

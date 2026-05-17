@@ -10,6 +10,7 @@ import { RedisService } from '../cache/redis.service';
 import * as bcrypt from 'bcryptjs';
 import * as svgCaptcha from 'svg-captcha';
 import { ApiResponse } from '../common/api-response';
+import { LoginDto } from './dto/auth.dto';
 
 // Fix BigInt serialization
 (BigInt.prototype as any).toJSON = function () {
@@ -25,9 +26,14 @@ export class AuthService {
     private redis: RedisService,
   ) {}
 
-  async login(username: string, password: string) {
+  async login(dto: LoginDto) {
+    const valid = await this.validateCaptcha(dto.captchaKey, dto.captchaText);
+    if (!valid) {
+      throw new BadRequestException('Invalid or expired captcha');
+    }
+
     const user = await this.prisma.sysUser.findUnique({
-      where: { username },
+      where: { username: dto.username },
       include: { roles: true, dept: true },
     });
 
@@ -39,7 +45,7 @@ export class AuthService {
       throw new UnauthorizedException('Account is disabled');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       await this.prisma.sysLoginLog.create({
         data: {

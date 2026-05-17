@@ -2,7 +2,8 @@ import request from '../utils/request';
 
 // Auth API
 export const authApi = {
-  login: (data: { username: string; password: string }) => request.post('/auth/login', data),
+  login: (data: { username: string; password: string; captchaKey: string; captchaText: string }) =>
+    request.post('/auth/login', data),
   register: (data: { username: string; password: string; nickname?: string }) => request.post('/auth/register', data),
   captcha: () => request.get('/auth/captcha'),
   validateCaptcha: (key: string, text: string) => request.post('/auth/captcha/validate', { key, text }),

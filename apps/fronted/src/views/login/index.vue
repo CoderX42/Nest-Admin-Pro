@@ -135,7 +135,12 @@ const handleLogin = async () => {
 
     loading.value = true;
     try {
-      await userStore.login(form.username, form.password);
+      await userStore.login({
+        username: form.username,
+        password: form.password,
+        captchaKey: form.captchaKey,
+        captchaText: form.captcha,
+      });
       ElMessage.success(t('login.success'));
       router.push('/');
     } catch (e: any) {
