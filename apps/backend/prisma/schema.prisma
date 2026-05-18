@@ -31,6 +31,7 @@ model SysUser {
   dept      SysDept? @relation(fields: [deptId], references: [id])
   loginLog  SysLoginLog[]
   operLog   SysOperLog[]
+  files     SysFile[]
 
   @@index([username])
   @@index([deptId])
@@ -176,6 +177,33 @@ model SysNotice {
 
   @@index([type])
   @@index([status])
+}
+
+// 文件表
+model SysFile {
+  id           BigInt    @id @default(autoincrement())
+  originalName String   @db.VarChar(255)
+  fileName     String   @db.VarChar(255)
+  objectKey    String   @db.VarChar(500)
+  url          String   @db.VarChar(1000)
+  storage      String   @db.VarChar(50)
+  mimeType     String?  @db.VarChar(100)
+  ext          String?  @db.VarChar(20)
+  size         BigInt   @default(0)
+  uploaderId   BigInt?
+  uploaderName String? @db.VarChar(50)
+  createTime   DateTime @default(now())
+  updateTime   DateTime @updatedAt
+  deleteTime   DateTime?
+  isDelete     Int      @default(0)
+
+  uploader     SysUser? @relation(fields: [uploaderId], references: [id])
+
+  @@index([storage])
+  @@index([objectKey])
+  @@index([uploaderId])
+  @@index([createTime])
+  @@index([isDelete])
 }
 
 // ================== 日志监控模块 ==================

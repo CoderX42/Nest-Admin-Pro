@@ -54,7 +54,7 @@ INSERT INTO SysPost (id, name, code, sort, status, createTime, updateTime) VALUE
 -- 3. 初始化角色数据
 -- ============================================
 INSERT INTO SysRole (id, name, code, status, dataScope, menuIds, remark, createTime, updateTime) VALUES
-(1, '超级管理员', 'SUPER_ADMIN', 1, 1, '[1,2,3,100,101,102,103,104,105,106,107,200,201,202,203,204,300,301,500,501,502,503,504,505,506]', '拥有所有权限', NOW(), NOW()),
+(1, '超级管理员', 'SUPER_ADMIN', 1, 1, '[1,2,3,100,101,102,103,104,105,106,107,108,109,200,201,202,203,204,300,301,500,501,502,503,504,505,506,507,508]', '拥有所有权限', NOW(), NOW()),
 (2, '普通角色', 'NORMAL_ROLE', 1, 2, '[]', '普通用户角色', NOW(), NOW());
 
 -- ============================================
@@ -83,7 +83,9 @@ INSERT INTO SysMenu (id, name, type, parentId, path, component, icon, sort, perm
 (104, '角色管理', 2, 1, '/system/role', 'system/role/index', 'Role', 5, 'system:role:list', 1, 0, 1, 1, NOW(), NOW()),
 (105, '字典管理', 2, 1, '/system/dict', 'system/dict/index', 'Dict', 6, 'system:dict:list', 1, 0, 1, 1, NOW(), NOW()),
 (106, '参数管理', 2, 1, '/system/config', 'system/config/index', 'Config', 7, 'system:config:list', 1, 0, 1, 1, NOW(), NOW()),
-(107, '通知公告', 2, 1, '/system/notice', 'system/notice/index', 'Notice', 8, 'system:notice:list', 1, 0, 1, 1, NOW(), NOW()),
+(108, '文件配置', 2, 1, '/system/file-config', 'system/file-config/index', 'FolderOpened', 8, 'system:config:list', 1, 0, 1, 1, NOW(), NOW()),
+(109, '文件管理', 2, 1, '/system/file', 'system/file/index', 'Files', 9, 'system:file:list', 1, 0, 1, 1, NOW(), NOW()),
+(107, '通知公告', 2, 1, '/system/notice', 'system/notice/index', 'Notice', 10, 'system:notice:list', 1, 0, 1, 1, NOW(), NOW()),
 -- 系统监控子菜单
 (200, '登录日志', 2, 2, '/monitor/login-log', 'monitor/login-log/index', 'Log', 1, 'monitor:login:list', 1, 0, 1, 1, NOW(), NOW()),
 (201, '操作日志', 2, 2, '/monitor/oper-log', 'monitor/oper-log/index', 'Operation', 2, 'monitor:oper:list', 1, 0, 1, 1, NOW(), NOW()),
@@ -100,7 +102,9 @@ INSERT INTO SysMenu (id, name, type, parentId, path, component, icon, sort, perm
 (503, '用户删除', 3, 100, NULL, NULL, '', 4, 'system:user:remove', 1, 0, 0, 1, NOW(), NOW()),
 (504, '重置密码', 3, 100, NULL, NULL, '', 5, 'system:user:resetPwd', 1, 0, 0, 1, NOW(), NOW()),
 (505, '导出数据', 3, 100, NULL, NULL, '', 6, 'system:user:export', 1, 0, 0, 1, NOW(), NOW()),
-(506, '导入数据', 3, 100, NULL, NULL, '', 7, 'system:user:import', 1, 0, 0, 1, NOW(), NOW());
+(506, '导入数据', 3, 100, NULL, NULL, '', 7, 'system:user:import', 1, 0, 0, 1, NOW(), NOW()),
+(507, '文件查询', 3, 109, NULL, NULL, '', 1, 'system:file:list', 1, 0, 0, 1, NOW(), NOW()),
+(508, '文件删除', 3, 109, NULL, NULL, '', 2, 'system:file:remove', 1, 0, 0, 1, NOW(), NOW());
 
 -- ============================================
 -- 6. 初始化字典数据
@@ -139,7 +143,27 @@ INSERT INTO SysConfig (name, `key`, value, type, remark, status, createTime, upd
 ('登录验证码', 'sys_login_captcha', 'true', 'boolean', '是否开启登录验证码', 1, NOW(), NOW()),
 ('登录失败锁定', 'sys_login_locked', 'true', 'boolean', '是否启用登录失败锁定', 1, NOW(), NOW()),
 ('文件上传大小', 'sys_file_max_size', '10', 'number', '文件上传大小限制(MB)', 1, NOW(), NOW()),
-('允许文件类型', 'sys_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx', 'string', '允许上传的文件类型', 1, NOW(), NOW());
+('允许文件类型', 'sys_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx', 'string', '允许上传的文件类型', 1, NOW(), NOW()),
+('文件存储方式', 'file_storage', 'local', 'string', 'local / aliyun-oss / tencent-cos / qiniu-kodo / huawei-obs', 1, NOW(), NOW()),
+('本地上传目录', 'file_upload_dir', './uploads', 'string', '本地文件上传目录', 1, NOW(), NOW()),
+('图片上传大小', 'file_max_image_size', '2097152', 'number', '图片上传大小限制(字节)', 1, NOW(), NOW()),
+('文件上传大小', 'file_max_file_size', '104857600', 'number', '文件上传大小限制(字节)', 1, NOW(), NOW()),
+('对象存储 Region', 'file_cloud_region', '', 'string', '对象存储 Region/Zone', 1, NOW(), NOW()),
+('对象存储 Bucket', 'file_cloud_bucket', '', 'string', '对象存储 Bucket', 1, NOW(), NOW()),
+('对象存储 AccessKey ID', 'file_cloud_access_key_id', '', 'string', '对象存储 AccessKey ID/SecretId', 1, NOW(), NOW()),
+('对象存储 AccessKey Secret', 'file_cloud_access_key_secret', '', 'string', '对象存储 AccessKey Secret/SecretKey', 1, NOW(), NOW()),
+('对象存储 Endpoint', 'file_cloud_endpoint', '', 'string', '对象存储 Endpoint', 1, NOW(), NOW()),
+('对象存储前缀', 'file_cloud_prefix', 'uploads', 'string', '对象存储对象前缀', 1, NOW(), NOW()),
+('对象存储公开访问域名', 'file_cloud_public_url', '', 'string', '对象存储或 CDN 公开访问域名', 1, NOW(), NOW()),
+('对象存储 HTTPS', 'file_cloud_secure', 'true', 'boolean', '对象存储上传是否使用 HTTPS', 1, NOW(), NOW()),
+('OSS Region', 'file_oss_region', '', 'string', '阿里云 OSS Region', 1, NOW(), NOW()),
+('OSS Bucket', 'file_oss_bucket', '', 'string', '阿里云 OSS Bucket', 1, NOW(), NOW()),
+('OSS AccessKey ID', 'file_oss_access_key_id', '', 'string', '阿里云 OSS AccessKey ID', 1, NOW(), NOW()),
+('OSS AccessKey Secret', 'file_oss_access_key_secret', '', 'string', '阿里云 OSS AccessKey Secret', 1, NOW(), NOW()),
+('OSS Endpoint', 'file_oss_endpoint', '', 'string', '阿里云 OSS Endpoint', 1, NOW(), NOW()),
+('OSS 对象前缀', 'file_oss_prefix', 'uploads', 'string', 'OSS 对象前缀', 1, NOW(), NOW()),
+('OSS 公开访问域名', 'file_oss_public_url', '', 'string', 'OSS 或 CDN 公开访问域名', 1, NOW(), NOW()),
+('OSS HTTPS', 'file_oss_secure', 'true', 'boolean', 'OSS 上传是否使用 HTTPS', 1, NOW(), NOW());
 
 -- ============================================
 -- 8. 初始化通知公告

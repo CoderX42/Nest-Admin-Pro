@@ -141,3 +141,14 @@ export const fileApi = {
   uploadImage: (formData: FormData) =>
     request.post('/file/upload-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
+
+export const fileConfigApi = {
+  get: () => request.get('/file/config'),
+  update: (data: any) => request.put('/file/config', data),
+};
+
+export const fileManageApi = {
+  list: (params?: any) => request.get('/file/list', { params }),
+  detail: (id: number) => request.get(`/file/detail/${id}`),
+  delete: (id: number) => request.delete(`/file/${id}`),
+};

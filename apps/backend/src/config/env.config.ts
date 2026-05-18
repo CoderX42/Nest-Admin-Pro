@@ -8,6 +8,17 @@ export default registerAs('app', () => ({
   uploadDir: process.env.UPLOAD_DIR || './uploads',
   maxImageSize: parseInt(process.env.MAX_IMAGE_SIZE || '2097152', 10),
   maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '104857600', 10),
+  fileStorage: process.env.FILE_STORAGE || 'local',
+  fileCloudRegion: process.env.FILE_CLOUD_REGION || process.env.OSS_REGION || '',
+  fileCloudBucket: process.env.FILE_CLOUD_BUCKET || process.env.OSS_BUCKET || '',
+  fileCloudEndpoint: process.env.FILE_CLOUD_ENDPOINT || process.env.OSS_ENDPOINT || '',
+  fileCloudPrefix: process.env.FILE_CLOUD_PREFIX || process.env.OSS_PREFIX || 'uploads',
+  fileCloudPublicUrl: process.env.FILE_CLOUD_PUBLIC_URL || process.env.OSS_PUBLIC_URL || process.env.OSS_CDN_URL || '',
+  ossRegion: process.env.OSS_REGION || '',
+  ossBucket: process.env.OSS_BUCKET || '',
+  ossEndpoint: process.env.OSS_ENDPOINT || '',
+  ossPrefix: process.env.OSS_PREFIX || 'uploads',
+  ossPublicUrl: process.env.OSS_PUBLIC_URL || process.env.OSS_CDN_URL || '',
 }));
 
 export const databaseConfig = registerAs('database', () => ({

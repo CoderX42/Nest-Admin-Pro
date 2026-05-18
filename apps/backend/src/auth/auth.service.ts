@@ -141,26 +141,24 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const allMenuIds = new Set<string>();
-    for (const role of user.roles) {
-      try {
-        const ids = JSON.parse(role.menuIds || '[]');
-        ids.forEach((id: string) => allMenuIds.add(id));
-      } catch {}
-    }
+    const isSuperAdmin = user.roles.some((role) => role.code === 'SUPER_ADMIN');
+    const roleMenuIds = this.extractMenuIds(user.roles);
 
-    const menus = await this.prisma.sysMenu.findMany({
-      where: { id: { in: Array.from(allMenuIds).map(Number) }, status: 1 },
+    const grantedMenus = await this.prisma.sysMenu.findMany({
+      where: isSuperAdmin
+        ? { status: 1 }
+        : { id: { in: roleMenuIds.map(BigInt) }, status: 1 },
       orderBy: { sort: 'asc' },
     });
 
     // Build nested tree structure
     const menuMap = new Map<number, any>();
     const rootMenus: any[] = [];
-    menus.forEach((m) => {
+    const routeMenus = grantedMenus.filter((m) => m.type !== 3 && m.show === 1);
+    routeMenus.forEach((m) => {
       menuMap.set(Number(m.id), { ...m, children: [] });
     });
-    menus.forEach((m) => {
+    routeMenus.forEach((m) => {
       const menu = menuMap.get(Number(m.id))!;
       if (Number(m.parentId) === 0) {
         rootMenus.push(menu);
@@ -183,9 +181,25 @@ export class AuthService {
         deptName: user.dept?.name,
         roles: user.roles.map((r) => r.name),
       },
-      permissions: Array.from(allMenuIds),
+      permissions: grantedMenus.map((m) => m.perms).filter(Boolean),
       menus: rootMenus,
     };
+  }
+
+  private extractMenuIds(roles: { menuIds?: string | null }[]) {
+    const ids = new Set<number>();
+    for (const role of roles) {
+      try {
+        const parsed = JSON.parse(role.menuIds || '[]');
+        if (Array.isArray(parsed)) {
+          parsed.forEach((id) => {
+            const num = Number(id);
+            if (Number.isFinite(num)) ids.add(num);
+          });
+        }
+      } catch {}
+    }
+    return Array.from(ids);
   }
 
   async getOnlineUsers() {

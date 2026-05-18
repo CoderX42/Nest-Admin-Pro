@@ -13,6 +13,7 @@ import { FileModule } from './modules/file/file.module';
 import { GenModule } from './modules/gen/gen.module';
 import { GlobalExceptionFilter } from './common/exception.filter';
 import { TransformInterceptor } from './common/transform.interceptor';
+import { OperLogInterceptor } from './common/oper-log.interceptor';
 
 @Module({
   imports: [
@@ -47,6 +48,10 @@ import { TransformInterceptor } from './common/transform.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: OperLogInterceptor,
     },
   ],
 })

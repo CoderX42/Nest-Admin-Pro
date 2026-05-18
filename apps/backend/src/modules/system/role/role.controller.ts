@@ -6,32 +6,37 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, AssignPermDto } from './dto/role.dto';
 import { JwtAuthGuard } from '../../../auth/jwt.guard';
+import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Role Management')
 @Controller('system/role')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Get('list')
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Get role list' })
   async list(@Query() query: QueryRoleDto) {
     return this.roleService.list(query);
   }
 
   @Post()
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Create role' })
   async create(@Body() dto: CreateRoleDto) {
     return this.roleService.create(dto);
   }
 
   @Put()
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Update role' })
   async update(@Body() dto: UpdateRoleDto) {
     return this.roleService.update(dto);
   }
 
   @Delete(':id')
+  @RequirePermission('system:role:list')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete role' })
   async remove(@Param('id', ParseIntPipe) id: number) {
@@ -39,6 +44,7 @@ export class RoleController {
   }
 
   @Put('change-status/:id')
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Change role status' })
   async changeStatus(
     @Param('id', ParseIntPipe) id: number,
@@ -48,6 +54,7 @@ export class RoleController {
   }
 
   @Put('assign-permissions/:id')
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Assign permissions to role' })
   async assignPermissions(
     @Param('id', ParseIntPipe) id: number,
@@ -57,12 +64,14 @@ export class RoleController {
   }
 
   @Get('menu/:id')
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Get role menu IDs' })
   async getRoleMenus(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.getRoleMenus(id);
   }
 
   @Get(':id')
+  @RequirePermission('system:role:list')
   @ApiOperation({ summary: 'Get role by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.findOne(id);

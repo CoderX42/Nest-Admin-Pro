@@ -2,15 +2,17 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ServerService } from './server.service';
 import { JwtAuthGuard } from '../../../auth/jwt.guard';
+import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 import * as os from 'os';
 
 @ApiTags('Monitor - Server')
 @Controller('monitor/server')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @Get('info')
+  @RequirePermission('monitor:server:list')
   @ApiOperation({ summary: 'Get server info' })
   async info() {
     const cpuCount = os.cpus().length;

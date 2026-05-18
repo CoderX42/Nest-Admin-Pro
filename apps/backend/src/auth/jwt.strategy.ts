@@ -27,6 +27,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or disabled');
     }
 
+    const permissions = await this.extractPermissions(user.roles);
+
     return {
       id: user.id,
       username: user.username,
@@ -36,20 +38,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       phone: user.phone,
       deptId: user.deptId,
       roles: user.roles.map((r) => ({ id: r.id, code: r.code, name: r.name })),
-      permissions: this.extractPermissions(user.roles),
+      permissions,
     };
   }
 
-  private extractPermissions(roles: any[]): string[] {
-    const permissions: string[] = [];
+  private async extractPermissions(roles: any[]): Promise<string[]> {
+    if (roles.some((role) => role.code === 'SUPER_ADMIN')) {
+      const menus = await this.prisma.sysMenu.findMany({
+        where: { status: 1, perms: { not: '' } },
+        select: { perms: true },
+      });
+      return menus.map((menu) => menu.perms).filter(Boolean) as string[];
+    }
+
+    const menuIds = new Set<number>();
     for (const role of roles) {
       try {
-        const menuIds = JSON.parse(role.menuIds || '[]');
-        permissions.push(...menuIds);
+        const ids = JSON.parse(role.menuIds || '[]');
+        if (Array.isArray(ids)) {
+          ids.forEach((id) => {
+            const num = Number(id);
+            if (Number.isFinite(num)) menuIds.add(num);
+          });
+        }
       } catch {
         // ignore
       }
     }
-    return [...new Set(permissions)];
+
+    if (!menuIds.size) return [];
+
+    const menus = await this.prisma.sysMenu.findMany({
+      where: { id: { in: Array.from(menuIds).map(BigInt) }, status: 1, perms: { not: '' } },
+      select: { perms: true },
+    });
+    return [...new Set(menus.map((menu) => menu.perms).filter(Boolean) as string[])];
   }
 }

@@ -2,20 +2,23 @@ import { Controller, Get, Param, ParseIntPipe, UseGuards, HttpCode, Post } from 
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { OnlineService } from './online.service';
 import { JwtAuthGuard } from '../../../auth/jwt.guard';
+import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('Monitor - Online Users')
 @Controller('monitor/online')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard)
 export class OnlineController {
   constructor(private readonly onlineService: OnlineService) {}
 
   @Get('list')
+  @RequirePermission('monitor:online:list')
   @ApiOperation({ summary: 'Get online user list' })
   async list() {
     return this.onlineService.list();
   }
 
   @Post('force-logout/:token')
+  @RequirePermission('monitor:online:list')
   @HttpCode(200)
   @ApiOperation({ summary: 'Force logout user' })
   async forceLogout(@Param('token') token: string) {

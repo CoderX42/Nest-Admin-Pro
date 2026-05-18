@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import { useUserStore } from '../store/modules/user';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -63,6 +64,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Config', titleKey: 'nav.config', icon: 'Setting', perm: 'system:config:list' },
       },
       {
+        path: '/system/file-config',
+        name: 'FileConfig',
+        component: () => import('../views/system/file-config/index.vue'),
+        meta: { title: 'File Config', titleKey: 'nav.fileConfig', icon: 'FolderOpened', perm: 'system:config:list' },
+      },
+      {
+        path: '/system/file',
+        name: 'FileManagement',
+        component: () => import('../views/system/file/index.vue'),
+        meta: { title: 'File Management', titleKey: 'nav.file', icon: 'Files', perm: 'system:file:list' },
+      },
+      {
         path: '/system/notice',
         name: 'NoticeManagement',
         component: () => import('../views/system/notice/index.vue'),
@@ -73,13 +86,13 @@ const routes: RouteRecordRaw[] = [
         path: '/monitor/login-log',
         name: 'LoginLog',
         component: () => import('../views/monitor/login-log/index.vue'),
-        meta: { title: 'Login Log', titleKey: 'nav.loginLog', icon: 'Reading', perm: 'monitor:login-log:list' },
+        meta: { title: 'Login Log', titleKey: 'nav.loginLog', icon: 'Reading', perm: 'monitor:login:list' },
       },
       {
         path: '/monitor/oper-log',
         name: 'OperLog',
         component: () => import('../views/monitor/oper-log/index.vue'),
-        meta: { title: 'Operation Log', titleKey: 'nav.operLog', icon: 'List', perm: 'monitor:oper-log:list' },
+        meta: { title: 'Operation Log', titleKey: 'nav.operLog', icon: 'List', perm: 'monitor:oper:list' },
       },
       {
         path: '/monitor/online',
@@ -91,13 +104,13 @@ const routes: RouteRecordRaw[] = [
         path: '/monitor/server',
         name: 'ServerMonitor',
         component: () => import('../views/monitor/server/index.vue'),
-        meta: { title: 'Server Monitor', titleKey: 'nav.server', icon: 'Monitor', perm: 'monitor:server:info' },
+        meta: { title: 'Server Monitor', titleKey: 'nav.server', icon: 'Monitor', perm: 'monitor:server:list' },
       },
       {
         path: '/monitor/cache',
         name: 'CacheMonitor',
         component: () => import('../views/monitor/cache/index.vue'),
-        meta: { title: 'Cache Monitor', titleKey: 'nav.cache', icon: 'Cpu', perm: 'monitor:cache:info' },
+        meta: { title: 'Cache Monitor', titleKey: 'nav.cache', icon: 'Cpu', perm: 'monitor:cache:list' },
       },
       {
         path: '/profile',
@@ -115,13 +128,30 @@ const router = createRouter({
 });
 
 // Navigation guard
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const token = localStorage.getItem('token');
   if (to.path !== '/login' && !token) {
     next('/login');
   } else if (to.path === '/login' && token) {
     next('/');
   } else {
+    const requiredPerm = to.meta?.perm as string | undefined;
+    if (requiredPerm && token) {
+      const userStore = useUserStore();
+      if (!userStore.permissions.length) {
+        try {
+          await userStore.getUserInfo();
+        } catch {
+          userStore.reset();
+          next('/login');
+          return;
+        }
+      }
+      if (!userStore.permissions.includes(requiredPerm)) {
+        next('/dashboard');
+        return;
+      }
+    }
     next();
   }
 });

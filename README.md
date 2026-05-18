@@ -151,6 +151,19 @@ JWT_EXPIRES_IN=7d
 UPLOAD_DIR=./uploads
 MAX_IMAGE_SIZE=2097152
 MAX_FILE_SIZE=104857600
+
+# 文件存储：local / aliyun-oss / tencent-cos / qiniu-kodo / huawei-obs，默认 local
+FILE_STORAGE=local
+
+# 对象存储通用配置（FILE_STORAGE 非 local 时填写）
+FILE_CLOUD_REGION=oss-cn-hangzhou
+FILE_CLOUD_BUCKET=your-bucket
+FILE_CLOUD_ACCESS_KEY_ID=your-access-key-id
+FILE_CLOUD_ACCESS_KEY_SECRET=your-access-key-secret
+FILE_CLOUD_ENDPOINT=
+FILE_CLOUD_PREFIX=uploads
+FILE_CLOUD_PUBLIC_URL=https://cdn.example.com
+FILE_CLOUD_SECURE=true
 ```
 
 生成 Prisma Client：
