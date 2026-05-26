@@ -1,110 +1,106 @@
 <template>
-  <div class="page-container">
-    <div class="search-bar">
-      <el-input v-model="keyPattern" :placeholder="t('monitor.cache.placeholderKey')" style="width: 300px" clearable />
-      <el-button type="primary" :icon="Search" @click="loadKeys"
-      >{{ t('common.action.search') }}</el-button>
-      <el-button type="success" :icon="Refresh" @click="loadInfo"
-      >{{ t('common.action.refresh') }}</el-button>
-      <el-button type="danger" :icon="Delete" @click="handleClear"
-      >{{ t('common.action.clean') }}</el-button>
+  <div class="space-y-4">
+    <div class="card bg-base-100 shadow-sm border border-base-300 p-4">
+      <div class="flex flex-wrap gap-3 items-end">
+        <div class="form-control flex-1 min-w-64">
+          <label class="label py-0"><span class="label-text text-xs">{{ t('monitor.cache.key') }}</span></label>
+          <input v-model="keyPattern" :placeholder="t('monitor.cache.placeholderKey')" class="input input-bordered input-sm w-full" @keyup.enter="loadKeys" />
+        </div>
+        <button class="btn btn-sm btn-primary" @click="loadKeys">{{ t('common.action.search') }}</button>
+        <button class="btn btn-sm btn-success" @click="loadInfo">{{ t('common.action.refresh') }}</button>
+        <button class="btn btn-sm btn-error" @click="handleClear">{{ t('common.action.clean') }}</button>
+      </div>
     </div>
 
-    <el-row :gutter="16">
-      <el-col :span="12">
-        <el-card :header="t('monitor.cache.cacheInfo')">
-          <div class="info-grid" v-if="info">
-            <div class="info-item" v-for="(v, k) in info" :key="k">
-              <span class="label">{{ k }}:</span>
-              <span class="value">{{ v }}</span>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Cache info -->
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body p-4">
+          <h3 class="card-title text-sm font-semibold mb-3">{{ t('monitor.cache.cacheInfo') }}</h3>
+          <div v-if="info" class="space-y-2">
+            <div v-for="(v, k) in info" :key="k" class="flex justify-between text-sm py-1.5 border-b border-base-300 last:border-0">
+              <span class="text-base-content/60 font-mono text-xs">{{ k }}</span>
+              <span class="font-medium text-xs break-all">{{ v }}</span>
             </div>
           </div>
-          <el-skeleton v-else :rows="5" />
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card :header="t('monitor.cache.cacheKeys')">
-          <template #header>
-            <span>{{ t('monitor.cache.cacheKeys') }} ({{ keys.length }})</span>
-          </template>
-          <el-table :data="keyRows" size="small" max-height="400" style="width: 100%">
-            <el-table-column prop="key" :label="t('monitor.cache.key')" show-overflow-tooltip />
-            <el-table-column :label="t('common.field.actions')" width="160">
-              <template #default="{ row }">
-                <el-button size="small" text type="primary" @click="handleViewValue(row)"
-                >{{ t('common.action.view') }}</el-button>
-                <el-button size="small" text type="danger" @click="handleDeleteKey(row)"
-                >{{ t('common.action.delete') }}</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
+          <div v-else class="space-y-2">
+            <div class="h-4 bg-base-300 rounded animate-pulse w-3/4"></div>
+            <div class="h-4 bg-base-300 rounded animate-pulse w-1/2"></div>
+            <div class="h-4 bg-base-300 rounded animate-pulse w-2/3"></div>
+            <div class="h-4 bg-base-300 rounded animate-pulse w-1/3"></div>
+          </div>
+        </div>
+      </div>
 
-    <el-dialog v-model="valueDialogVisible" :title="t('monitor.cache.value')" width="600px">
-      <el-input v-model="cacheValue" type="textarea" :rows="10" readonly />
-      <template #footer>
-        <el-button @click="valueDialogVisible = false"
-        >{{ t('common.action.cancel') }}</el-button>
-      </template>
-    </el-dialog>
+      <!-- Cache keys -->
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="card-title text-sm font-semibold">{{ t('monitor.cache.cacheKeys') }} ({{ keys.length }})</h3>
+          </div>
+          <div class="overflow-x-auto max-h-80 overflow-y-auto">
+            <table class="table table-xs">
+              <thead><tr class="bg-base-200 text-xs"><th>{{ t('monitor.cache.key') }}</th><th class="w-36">{{ t('common.field.actions') }}</th></tr></thead>
+              <tbody>
+                <tr v-if="!keys.length"><td colspan="2" class="text-center text-base-content/40 py-4 text-sm">No keys</td></tr>
+                <tr v-for="key in keys" :key="key" class="hover:bg-base-200/50">
+                  <td class="text-xs font-mono truncate max-w-xs" :title="key">{{ key }}</td>
+                  <td>
+                    <div class="flex gap-1">
+                      <button class="btn btn-xs btn-ghost" @click="handleViewValue(key)">🔍</button>
+                      <button class="btn btn-xs btn-ghost" @click="handleDeleteKey(key)">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Value dialog -->
+    <dialog ref="valueDialogRef" class="modal">
+      <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">{{ t('monitor.cache.value') }}</h3>
+        <textarea :value="cacheValue" readonly class="textarea textarea-bordered w-full font-mono text-sm" rows="12"></textarea>
+        <div class="modal-action"><button class="btn" @click="valueDialogRef?.close()">{{ t('common.action.cancel') }}</button></div>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { cacheApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Refresh, Delete } from '@element-plus/icons-vue';
 
 const { t } = useI18n();
-
 const info = ref<any>(null);
 const keys = ref<string[]>([]);
 const keyPattern = ref('*');
-const valueDialogVisible = ref(false);
+const valueDialogRef = ref<HTMLDialogElement>();
 const cacheValue = ref('');
-const keyRows = computed(() => keys.value.map((key) => ({ key })));
 
-const loadInfo = async () => {
-  try { info.value = await cacheApi.info(); }
+const loadInfo = async () => { try { info.value = await cacheApi.info(); } catch { ElMessage.error(t('common.message.loadFailed')); } };
+const loadKeys = async () => { try { keys.value = await cacheApi.keys(keyPattern.value); } catch { ElMessage.error(t('common.message.loadFailed')); } };
+
+const handleViewValue = async (key: string) => {
+  try { const res: any = await cacheApi.value(key); cacheValue.value = typeof res === 'object' ? JSON.stringify(res, null, 2) : String(res); valueDialogRef.value?.showModal(); }
   catch { ElMessage.error(t('common.message.loadFailed')); }
 };
 
-const loadKeys = async () => {
-  try { keys.value = await cacheApi.keys(keyPattern.value); }
-  catch { ElMessage.error(t('common.message.loadFailed')); }
-};
-
-const handleViewValue = async (row: { key: string }) => {
-  const res: any = await cacheApi.value(row.key);
-  cacheValue.value = typeof res === 'object' ? JSON.stringify(res, null, 2) : String(res);
-  valueDialogVisible.value = true;
-};
-
-const handleDeleteKey = async (row: { key: string }) => {
-  await ElMessageBox.confirm(t('common.message.confirmDelete', { name: row.key }), t('common.action.confirm'), { type: 'warning' });
-  await cacheApi.delete(row.key);
-  ElMessage.success(t('common.message.deleteSuccess'));
-  loadKeys();
+const handleDeleteKey = async (key: string) => {
+  await ElMessageBox.confirm(t('common.message.confirmDelete', { name: key }), t('common.action.confirm'), { type: 'warning' });
+  await cacheApi.delete(key); ElMessage.success(t('common.message.deleteSuccess')); loadKeys();
 };
 
 const handleClear = async () => {
   await ElMessageBox.confirm(t('common.message.confirmClean'), t('common.action.confirm'), { type: 'warning' });
-  await cacheApi.clear();
-  ElMessage.success(t('common.message.cleanSuccess'));
-  loadKeys();
+  await cacheApi.clear(); ElMessage.success(t('common.message.cleanSuccess')); loadKeys();
 };
 
 onMounted(() => { loadInfo(); loadKeys(); });
 </script>
-
-<style scoped>
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.info-item { font-size: 13px; }
-.label { color: #666; }
-.value { color: #333; word-break: break-all; }
-</style>

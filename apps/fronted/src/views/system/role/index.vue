@@ -1,136 +1,134 @@
 <template>
-  <div class="page-container">
-    <div class="search-bar">
-      <el-input v-model="queryParams.name" :placeholder="t('system.role.placeholderName')" style="width: 200px" clearable @clear="loadData" />
-      <el-select v-model="queryParams.status" :placeholder="t('common.field.status')" style="width: 120px" clearable @clear="loadData"
-      >
-        <el-option :label="t('common.status.enabled')" :value="1" />
-        <el-option :label="t('common.status.disabled')" :value="0" />
-      </el-select>
-      <el-button type="primary" :icon="Search" @click="loadData"
-      >{{ t('common.action.search') }}</el-button
-      >
-      <el-button :icon="Refresh" @click="resetQuery"
-      >{{ t('common.action.reset') }}</el-button
-      >
+  <div class="space-y-4">
+    <!-- Search & toolbar -->
+    <div class="card bg-base-100 shadow-sm border border-base-300 p-4">
+      <div class="flex flex-wrap gap-3 items-end">
+        <div class="form-control flex-1 min-w-48">
+          <label class="label py-0"><span class="label-text text-xs">{{ t('system.role.roleName') }}</span></label>
+          <input v-model="queryParams.name" :placeholder="t('system.role.placeholderName')" class="input input-bordered input-sm w-full" @keyup.enter="loadData" />
+        </div>
+        <div class="form-control min-w-32">
+          <label class="label py-0"><span class="label-text text-xs">{{ t('common.field.status') }}</span></label>
+          <select v-model="queryParams.status" class="select select-bordered select-sm w-full">
+            <option :value="undefined">—</option>
+            <option :value="1">{{ t('common.status.enabled') }}</option>
+            <option :value="0">{{ t('common.status.disabled') }}</option>
+          </select>
+        </div>
+        <button class="btn btn-sm btn-primary" @click="loadData">{{ t('common.action.search') }}</button>
+        <button class="btn btn-sm" @click="resetQuery">{{ t('common.action.reset') }}</button>
+        <button class="btn btn-sm btn-primary" @click="handleCreate">{{ t('system.role.addRole') }}</button>
+      </div>
     </div>
 
-    <div class="toolbar">
-      <el-button type="primary" :icon="Plus" @click="handleCreate"
-      >{{ t('system.role.addRole') }}</el-button
-      >
+    <!-- Table -->
+    <div class="card bg-base-100 shadow-sm border border-base-300 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr class="bg-base-200 text-xs">
+              <th class="w-16">{{ t('common.field.id') }}</th>
+              <th>{{ t('system.role.roleName') }}</th>
+              <th>{{ t('system.role.roleCode') }}</th>
+              <th class="w-40">{{ t('system.role.dataScope') }}</th>
+              <th class="w-20">{{ t('common.field.status') }}</th>
+              <th class="w-36">{{ t('common.field.createTime') }}</th>
+              <th class="w-72">{{ t('common.field.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading"><td colspan="7" class="text-center py-8"><span class="loading loading-spinner loading-sm text-primary"></span></td></tr>
+            <tr v-else-if="!tableData.length"><td colspan="7" class="text-center text-base-content/40 py-8">No data</td></tr>
+            <tr v-for="row in tableData" :key="row.id" class="hover:bg-base-200/50">
+              <td class="text-xs">{{ row.id }}</td>
+              <td class="text-sm font-medium">{{ row.name }}</td>
+              <td class="text-xs font-mono">{{ row.code }}</td>
+              <td><span class="badge badge-sm badge-ghost">{{ getDataScopeLabel(row.dataScope) }}</span></td>
+              <td><input type="checkbox" class="toggle toggle-sm toggle-success" :checked="row.status === 1" @change="(e) => handleStatusChange(row, (e.target as HTMLInputElement).checked ? 1 : 0)" /></td>
+              <td class="text-xs text-base-content/60">{{ row.createTime }}</td>
+              <td>
+                <div class="flex gap-1 flex-wrap">
+                  <button class="btn btn-xs btn-primary" @click="handleEdit(row)">{{ t('common.action.edit') }}</button>
+                  <button class="btn btn-xs btn-warning" @click="handleAssignPerm(row)">{{ t('common.action.assignPerm') }}</button>
+                  <button class="btn btn-xs btn-error" @click="handleDelete(row)">{{ t('common.action.delete') }}</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between p-4 border-t border-base-300">
+        <span class="text-sm text-base-content/60">共 {{ total }} 条</span>
+        <div class="join">
+          <button class="join-item btn btn-sm" :disabled="queryParams.page <= 1" @click="queryParams.page--; loadData()">«</button>
+          <button class="join-item btn btn-sm btn-active" disabled>{{ queryParams.page }}</button>
+          <button class="join-item btn btn-sm" :disabled="queryParams.page * queryParams.limit >= total" @click="queryParams.page++; loadData()">»</button>
+          <select class="join-item btn btn-sm" v-model="queryParams.limit" @change="loadData">
+            <option :value="10">10/页</option>
+            <option :value="20">20/页</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <el-table :data="tableData" v-loading="loading" row-key="id"
-    >
-      <el-table-column prop="id" :label="t('common.field.id')" width="80" />
-      <el-table-column prop="name" :label="t('system.role.roleName')" />
-      <el-table-column prop="code" :label="t('system.role.roleCode')" />
-      <el-table-column prop="dataScope" :label="t('system.role.dataScope')" width="180"
-      >
-        <template #default="{ row }"
-        >
-          <el-tag>{{ getDataScopeLabel(row.dataScope) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" :label="t('common.field.status')" width="100"
-      >
-        <template #default="{ row }"
-        >
-          <el-switch
-            v-model="row.status"
-            :active-value="1"
-            :inactive-value="0"
-            @change="(status: number) => handleStatusChange(row, status)"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column prop="createTime" :label="t('common.field.createTime')" width="180" />
-      <el-table-column :label="t('common.field.actions')" width="280" fixed="right"
-      >
-        <template #default="{ row }"
-        >
-          <el-button size="small" type="primary" :icon="Edit" @click="handleEdit(row)"
-          >{{ t('common.action.edit') }}</el-button
-          >
-          <el-button size="small" type="warning" :icon="Key" @click="handleAssignPerm(row)"
-          >{{ t('common.action.assignPerm') }}</el-button
-          >
-          <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row)"
-          >{{ t('common.action.delete') }}</el-button
-          >
-        </template>
-      </el-table-column>
-    </el-table>
+    <!-- Edit dialog -->
+    <dialog ref="editDialogRef" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ form.id ? t('system.role.editRole') : t('system.role.addRole') }}</h3>
+        <form @submit.prevent="handleSubmit" class="space-y-3">
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('system.role.roleName') }}</span></div>
+            <input v-model="form.name" class="input input-bordered" required />
+          </label>
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('system.role.roleCode') }}</span></div>
+            <input v-model="form.code" class="input input-bordered" :disabled="!!form.id" required />
+          </label>
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('system.role.dataScope') }}</span></div>
+            <select v-model="form.dataScope" class="select select-bordered">
+              <option :value="1">{{ t('system.role.scopeAll') }}</option>
+              <option :value="2">{{ t('system.role.scopeCustom') }}</option>
+              <option :value="3">{{ t('system.role.scopeDept') }}</option>
+              <option :value="4">{{ t('system.role.scopeDeptChild') }}</option>
+              <option :value="5">{{ t('system.role.scopeSelf') }}</option>
+            </select>
+          </label>
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('common.field.status') }}</span></div>
+            <div class="flex gap-4 pt-2">
+              <label class="label cursor-pointer gap-2"><input type="radio" v-model="form.status" :value="1" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.enabled') }}</span></label>
+              <label class="label cursor-pointer gap-2"><input type="radio" v-model="form.status" :value="0" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.disabled') }}</span></label>
+            </div>
+          </label>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" class="btn" @click="editDialogRef?.close()">{{ t('common.action.cancel') }}</button>
+            <button type="submit" class="btn btn-primary">{{ t('common.action.confirm') }}</button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
-    <el-pagination v-model:current-page="queryParams.page" v-model:page-size="queryParams.limit" :total="total" :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next" @size-change="loadData" @current-change="loadData" style="margin-top: 16px" />
-
-    <el-dialog v-model="dialogVisible" :title="form.id ? t('system.role.editRole') : t('system.role.addRole')" width="600px"
-    >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px"
-      >
-        <el-form-item :label="t('system.role.roleName')" prop="name"
-        >
-          <el-input v-model="form.name" />
-        </el-form-item>
-        <el-form-item :label="t('system.role.roleCode')" prop="code"
-        >
-          <el-input v-model="form.code" :disabled="!!form.id" />
-        </el-form-item>
-        <el-form-item :label="t('system.role.dataScope')"
-        >
-          <el-select v-model="form.dataScope" style="width: 100%"
-          >
-            <el-option :label="t('system.role.scopeAll')" :value="1" />
-            <el-option :label="t('system.role.scopeCustom')" :value="2" />
-            <el-option :label="t('system.role.scopeDept')" :value="3" />
-            <el-option :label="t('system.role.scopeDeptChild')" :value="4" />
-            <el-option :label="t('system.role.scopeSelf')" :value="5" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="t('common.field.status')"
-        >
-          <el-radio-group v-model="form.status"
-          >
-            <el-radio :label="1"
-            >{{ t('common.status.enabled') }}</el-radio
-            >
-            <el-radio :label="0"
-            >{{ t('common.status.disabled') }}</el-radio
-            >
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false"
-        >{{ t('common.action.cancel') }}</el-button
-        >
-        <el-button type="primary" @click="handleSubmit"
-        >{{ t('common.action.confirm') }}</el-button
-        >
-      </template>
-    </el-dialog>
-
-    <!-- Permission Dialog -->
-    <el-dialog v-model="permDialogVisible" :title="t('system.role.assignPermissions')" width="500px"
-    >
-      <el-tree ref="menuTreeRef" :data="menuTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
-      <template v-if="currentDataScope === 2"
-      >
-        <el-divider />
-        <div class="perm-section-title"
-        >{{ t('system.role.dataScope') }}</div>
-        <el-tree ref="deptTreeRef" :data="deptTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
-      </template>
-      <template #footer>
-        <el-button @click="permDialogVisible = false"
-        >{{ t('common.action.cancel') }}</el-button
-        >
-        <el-button type="primary" @click="handlePermSubmit"
-        >{{ t('common.action.confirm') }}</el-button
-        >
-      </template>
-    </el-dialog>
+    <!-- Permission dialog -->
+    <dialog ref="permDialogRef" class="modal">
+      <div class="modal-box max-w-lg">
+        <h3 class="font-bold text-lg mb-4">{{ t('system.role.assignPermissions') }}</h3>
+        <el-tree ref="menuTreeRef" :data="menuTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
+        <template v-if="currentDataScope === 2">
+          <hr class="my-3 border-base-300" />
+          <div class="text-sm font-semibold mb-2">{{ t('system.role.dataScope') }}</div>
+          <el-tree ref="deptTreeRef" :data="deptTree" :props="{ label: 'name', children: 'children' }" show-checkbox node-key="id" default-expand-all />
+        </template>
+        <div class="flex justify-end gap-2 pt-4">
+          <button class="btn" @click="permDialogRef?.close()">{{ t('common.action.cancel') }}</button>
+          <button class="btn btn-primary" @click="handlePermSubmit">{{ t('common.action.confirm') }}</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
   </div>
 </template>
 
@@ -139,8 +137,6 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { roleApi, menuApi, deptApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Edit, Delete, Search, Refresh, Key } from '@element-plus/icons-vue';
-import type { FormInstance } from 'element-plus';
 import type { ElTree } from 'element-plus';
 
 const { t } = useI18n();
@@ -149,9 +145,9 @@ const loading = ref(false);
 const tableData = ref<any[]>([]);
 const total = ref(0);
 const queryParams = reactive({ name: '', status: undefined as number | undefined, page: 1, limit: 10 });
-const dialogVisible = ref(false);
-const permDialogVisible = ref(false);
-const formRef = ref<FormInstance>();
+const editDialogRef = ref<HTMLDialogElement>();
+const permDialogRef = ref<HTMLDialogElement>();
+const formRef = ref<any>();
 const menuTreeRef = ref<InstanceType<typeof ElTree>>();
 const deptTreeRef = ref<InstanceType<typeof ElTree>>();
 
@@ -160,7 +156,6 @@ const currentRoleId = ref<number>();
 const currentDataScope = ref(1);
 const menuTree = ref<any[]>([]);
 const deptTree = ref<any[]>([]);
-const rules = { name: [{ required: true, message: t('system.role.placeholderName'), trigger: 'blur' }], code: [{ required: true, message: 'Please enter role code', trigger: 'blur' }] };
 
 const getDataScopeLabel = (scope: number) =>
   [t('system.role.scopeAll'), t('system.role.scopeCustom'), t('system.role.scopeDept'), t('system.role.scopeDeptChild'), t('system.role.scopeSelf')][scope - 1] || '';
@@ -169,54 +164,35 @@ const loadData = async () => {
   loading.value = true;
   try {
     const res: any = await roleApi.list(queryParams);
-    tableData.value = res.items;
-    total.value = res.total;
-  } catch (e) {
-    ElMessage.error(t('common.message.loadFailed'));
-  } finally {
-    loading.value = false;
-  }
+    tableData.value = res.items || [];
+    total.value = res.total || 0;
+  } catch { ElMessage.error(t('common.message.loadFailed')); }
+  finally { loading.value = false; }
 };
 
-const loadMenuTree = async () => {
-  const res: any = await menuApi.tree();
-  menuTree.value = res;
-};
+onMounted(() => { loadData(); loadMenuTree(); loadDeptTree(); });
 
-const loadDeptTree = async () => {
-  const res: any = await deptApi.tree();
-  deptTree.value = res;
-};
-
-const resetQuery = () => { queryParams.name = ''; queryParams.status = undefined; loadData(); };
+const loadMenuTree = async () => { const res: any = await menuApi.tree(); menuTree.value = res; };
+const loadDeptTree = async () => { const res: any = await deptApi.tree(); deptTree.value = res; };
+const resetQuery = () => { queryParams.name = ''; queryParams.status = undefined; queryParams.page = 1; loadData(); };
 
 const handleCreate = () => {
   Object.assign(form, { id: undefined, name: '', code: '', dataScope: 1, status: 1 });
-  dialogVisible.value = true;
+  editDialogRef.value?.showModal();
 };
 
 const handleEdit = (row: any) => {
   Object.assign(form, { id: row.id, name: row.name, code: row.code, dataScope: row.dataScope, status: row.status });
-  dialogVisible.value = true;
+  editDialogRef.value?.showModal();
 };
 
 const handleSubmit = async () => {
-  if (!formRef.value) return;
-  await formRef.value.validate(async (valid) => {
-    if (!valid) return;
-    try {
-      if (form.id) {
-        await roleApi.update({ id: form.id, name: form.name, dataScope: form.dataScope, status: form.status });
-        ElMessage.success(t('common.message.updateSuccess'));
-      }
-      else {
-        await roleApi.create({ name: form.name, code: form.code, dataScope: form.dataScope });
-        ElMessage.success(t('common.message.addSuccess'));
-      }
-      dialogVisible.value = false;
-      loadData();
-    } catch (e: any) { ElMessage.error(e.message || t('common.message.failed')); }
-  });
+  try {
+    if (form.id) { await roleApi.update({ id: form.id, name: form.name, dataScope: form.dataScope, status: form.status }); ElMessage.success(t('common.message.updateSuccess')); }
+    else { await roleApi.create({ name: form.name, code: form.code, dataScope: form.dataScope }); ElMessage.success(t('common.message.addSuccess')); }
+    editDialogRef.value?.close();
+    loadData();
+  } catch (e: any) { ElMessage.error(e.message || t('common.message.failed')); }
 };
 
 const handleAssignPerm = async (row: any) => {
@@ -224,7 +200,7 @@ const handleAssignPerm = async (row: any) => {
   currentDataScope.value = row.dataScope;
   await Promise.all([loadMenuTree(), loadDeptTree()]);
   const res: any = await roleApi.getRoleMenus(row.id);
-  permDialogVisible.value = true;
+  permDialogRef.value?.showModal();
   setTimeout(() => {
     menuTreeRef.value?.setCheckedKeys((res.menuIds || []).map((id: string) => parseInt(id)), false);
     deptTreeRef.value?.setCheckedKeys((res.deptIds || []).map((id: string) => parseInt(id)), false);
@@ -237,17 +213,12 @@ const handlePermSubmit = async () => {
   const deptKeys = currentDataScope.value === 2 ? deptTreeRef.value?.getCheckedKeys() || [] : [];
   await roleApi.assignPermissions(currentRoleId.value!, [...checkedKeys, ...halfCheckedKeys].map(String), deptKeys.map(String));
   ElMessage.success(t('common.message.updateSuccess'));
-  permDialogVisible.value = false;
+  permDialogRef.value?.close();
 };
 
 const handleStatusChange = async (row: any, status: number) => {
-  try {
-    await roleApi.changeStatus(row.id, status);
-    ElMessage.success(t('common.message.statusUpdateSuccess'));
-  } catch (e: any) {
-    row.status = status === 1 ? 0 : 1;
-    ElMessage.error(e.message || t('common.message.failed'));
-  }
+  try { await roleApi.changeStatus(row.id, status); ElMessage.success(t('common.message.statusUpdateSuccess')); }
+  catch (e: any) { row.status = status === 1 ? 0 : 1; ElMessage.error(e.message || t('common.message.failed')); }
 };
 
 const handleDelete = async (row: any) => {
@@ -256,12 +227,4 @@ const handleDelete = async (row: any) => {
   ElMessage.success(t('common.message.deleteSuccess'));
   loadData();
 };
-
-onMounted(() => { loadData(); loadMenuTree(); loadDeptTree(); });
 </script>
-
-<style scoped>
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.toolbar { margin-bottom: 16px; }
-.perm-section-title { margin-bottom: 12px; font-weight: 600; color: var(--text); }
-</style>

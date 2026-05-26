@@ -1,6 +1,8 @@
-export type ThemeName = 'professional' | 'midnight' | 'compact' | 'sunset' | 'cyber' | 'purple';
+import daisyuiThemes from 'daisyui/theme'; // get all available daisyui theme names
 
-export const themeOptions: ThemeName[] = ['professional', 'midnight', 'compact', 'sunset', 'cyber', 'purple'];
+export type ThemeName = 'emerald' | 'night' | 'wireframe' | 'sunset' | 'cyberpunk' | 'valentine';
+
+export const themeOptions: ThemeName[] = ['emerald', 'night', 'wireframe', 'sunset', 'cyberpunk', 'valentine'];
 
 export interface ThemeMeta {
   name: ThemeName;
@@ -8,12 +10,12 @@ export interface ThemeMeta {
 }
 
 export const themeMetas: ThemeMeta[] = [
-  { name: 'professional', colors: ['#4f46e5', '#e0e7ff', '#1e293b'] },
-  { name: 'midnight', colors: ['#818cf8', '#1e1b4b', '#f1f5f9'] },
-  { name: 'compact', colors: ['#0f766e', '#f0f4f8', '#1a202c'] },
+  { name: 'emerald', colors: ['#10b981', '#ecfdf5', '#1e293b'] },
+  { name: 'night', colors: ['#818cf8', '#1e1b4b', '#f1f5f9'] },
+  { name: 'wireframe', colors: ['#64748b', '#f8fafc', '#1e293b'] },
   { name: 'sunset', colors: ['#f97316', '#fff7ed', '#431407'] },
-  { name: 'cyber', colors: ['#06b6d4', '#0f172a', '#ecfeff'] },
-  { name: 'purple', colors: ['#722ed1', '#f9f0ff', '#120338'] },
+  { name: 'cyberpunk', colors: ['#ff00ff', '#0f172a', '#ecfeff'] },
+  { name: 'valentine', colors: ['#e11d48', '#fdf2f8', '#4c0519'] },
 ];
 
 export const applyTheme = (theme: ThemeName) => {

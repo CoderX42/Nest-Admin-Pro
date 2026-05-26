@@ -1,37 +1,68 @@
 <template>
-  <div class="page-container">
-    <div class="search-bar">
-      <el-input v-model="queryParams.username" :placeholder="t('monitor.loginLog.placeholderUsername')" style="width: 200px" clearable @clear="loadData" />
-      <el-select v-model="queryParams.status" :placeholder="t('common.field.status')" style="width: 120px" clearable>
-        <el-option :label="t('common.status.success')" :value="1" />
-        <el-option :label="t('common.status.failed')" :value="0" />
-      </el-select>
-      <el-button type="primary" :icon="Search" @click="loadData"
-      >{{ t('common.action.search') }}</el-button>
-      <el-button :icon="Refresh" @click="resetQuery"
-      >{{ t('common.action.reset') }}</el-button>
-      <el-button type="danger" :icon="Delete" @click="handleClean"
-      >{{ t('common.action.clean') }}</el-button>
+  <div class="space-y-4">
+    <div class="card bg-base-100 shadow-sm border border-base-300 p-4">
+      <div class="flex flex-wrap gap-3 items-end">
+        <div class="form-control flex-1 min-w-48">
+          <label class="label py-0"><span class="label-text text-xs">{{ t('monitor.loginLog.username') }}</span></label>
+          <input v-model="queryParams.username" :placeholder="t('monitor.loginLog.placeholderUsername')" class="input input-bordered input-sm w-full" @keyup.enter="loadData" />
+        </div>
+        <div class="form-control min-w-32">
+          <label class="label py-0"><span class="label-text text-xs">{{ t('monitor.loginLog.status') }}</span></label>
+          <select v-model="queryParams.status" class="select select-bordered select-sm w-full">
+            <option :value="undefined">—</option>
+            <option :value="1">{{ t('common.status.success') }}</option>
+            <option :value="0">{{ t('common.status.failed') }}</option>
+          </select>
+        </div>
+        <button class="btn btn-sm btn-primary" @click="loadData">{{ t('common.action.search') }}</button>
+        <button class="btn btn-sm" @click="resetQuery">{{ t('common.action.reset') }}</button>
+        <button class="btn btn-sm btn-error" @click="handleClean">{{ t('common.action.clean') }}</button>
+      </div>
     </div>
 
-    <el-table :data="tableData" v-loading="loading" row-key="id">
-      <el-table-column prop="id" :label="t('common.field.id')" width="80" />
-      <el-table-column prop="username" :label="t('monitor.loginLog.username')" width="120" />
-      <el-table-column prop="ip" :label="t('monitor.loginLog.ip')" width="140" />
-      <el-table-column prop="location" :label="t('monitor.loginLog.location')" width="150" />
-      <el-table-column prop="os" :label="t('monitor.loginLog.os')" width="120" />
-      <el-table-column prop="browser" :label="t('monitor.loginLog.browser')" width="150" />
-      <el-table-column prop="status" :label="t('monitor.loginLog.status')" width="100">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'"
-          >{{ row.status === 1 ? t('common.status.success') : t('common.status.failed') }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="msg" :label="t('monitor.loginLog.message')" show-overflow-tooltip />
-      <el-table-column prop="createTime" :label="t('monitor.loginLog.time')" width="180" />
-    </el-table>
-
-    <el-pagination v-model:current-page="queryParams.page" v-model:page-size="queryParams.limit" :total="total" layout="total, sizes, prev, pager, next" @size-change="loadData" @current-change="loadData" style="margin-top: 16px" />
+    <div class="card bg-base-100 shadow-sm border border-base-300 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-sm">
+          <thead>
+            <tr class="bg-base-200 text-xs">
+              <th class="w-16">{{ t('common.field.id') }}</th>
+              <th class="w-28">{{ t('monitor.loginLog.username') }}</th>
+              <th class="w-32">{{ t('monitor.loginLog.ip') }}</th>
+              <th class="w-36">{{ t('monitor.loginLog.location') }}</th>
+              <th class="w-24">{{ t('monitor.loginLog.os') }}</th>
+              <th class="w-36">{{ t('monitor.loginLog.browser') }}</th>
+              <th class="w-20">{{ t('monitor.loginLog.status') }}</th>
+              <th>{{ t('monitor.loginLog.message') }}</th>
+              <th class="w-40">{{ t('monitor.loginLog.time') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading"><td colspan="9" class="text-center py-8"><span class="loading loading-spinner loading-sm text-primary"></span></td></tr>
+            <tr v-else-if="!tableData.length"><td colspan="9" class="text-center text-base-content/40 py-8">No data</td></tr>
+            <tr v-for="row in tableData" :key="row.id" class="hover:bg-base-200/50">
+              <td class="text-xs">{{ row.id }}</td>
+              <td class="text-sm">{{ row.username }}</td>
+              <td class="text-xs font-mono">{{ row.ip }}</td>
+              <td class="text-xs">{{ row.location }}</td>
+              <td class="text-xs">{{ row.os }}</td>
+              <td class="text-xs">{{ row.browser }}</td>
+              <td><span class="badge badge-sm" :class="row.status === 1 ? 'badge-success' : 'badge-error'">{{ row.status === 1 ? t('common.status.success') : t('common.status.failed') }}</span></td>
+              <td class="text-xs truncate max-w-xs" :title="row.msg">{{ row.msg }}</td>
+              <td class="text-xs text-base-content/60">{{ row.createTime }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between p-4 border-t border-base-300">
+        <span class="text-sm text-base-content/60">共 {{ total }} 条</span>
+        <div class="join">
+          <button class="join-item btn btn-sm" :disabled="queryParams.page <= 1" @click="queryParams.page--; loadData()">«</button>
+          <button class="join-item btn btn-sm btn-active" disabled>{{ queryParams.page }}</button>
+          <button class="join-item btn btn-sm" :disabled="queryParams.page * queryParams.limit >= total" @click="queryParams.page++; loadData()">»</button>
+          <select class="join-item btn btn-sm" v-model="queryParams.limit" @change="loadData"><option :value="10">10/页</option><option :value="20">20/页</option></select>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -40,10 +71,8 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { loginLogApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Refresh, Delete } from '@element-plus/icons-vue';
 
 const { t } = useI18n();
-
 const loading = ref(false);
 const tableData = ref<any[]>([]);
 const total = ref(0);
@@ -51,23 +80,17 @@ const queryParams = reactive({ username: '', status: undefined as number | undef
 
 const loadData = async () => {
   loading.value = true;
-  try { const res: any = await loginLogApi.list(queryParams); tableData.value = res.items; total.value = res.total; }
+  try { const res: any = await loginLogApi.list(queryParams); tableData.value = res.items || []; total.value = res.total || 0; }
   catch { ElMessage.error(t('common.message.loadFailed')); }
   finally { loading.value = false; }
 };
 
-const resetQuery = () => { queryParams.username = ''; queryParams.status = undefined; loadData(); };
+const resetQuery = () => { queryParams.username = ''; queryParams.status = undefined; queryParams.page = 1; loadData(); };
 
 const handleClean = async () => {
   await ElMessageBox.confirm(t('common.message.confirmClean'), t('common.action.confirm'), { type: 'warning' });
-  await loginLogApi.clean();
-  ElMessage.success(t('common.message.cleanSuccess'));
-  loadData();
+  await loginLogApi.clean(); ElMessage.success(t('common.message.cleanSuccess')); loadData();
 };
 
 onMounted(() => loadData());
 </script>
-
-<style scoped>
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-</style>

@@ -1,101 +1,81 @@
 <template>
-  <div class="login-container">
-    <div class="login-preferences">
-      <el-select v-model="currentTheme" size="small" style="width: 112px" :aria-label="t('common.theme')" @change="handleThemeChange">
-        <el-option v-for="theme in themeOptions" :key="theme" :label="t(`theme.${theme}`)" :value="theme" />
-      </el-select>
-      <el-select v-model="currentLocale" size="small" style="width: 104px" :aria-label="t('common.language')" @change="handleLocaleChange">
-        <el-option label="中文" value="zh-CN" />
-        <el-option label="English" value="en-US" />
-      </el-select>
+  <div class="min-h-screen bg-base-200 flex items-center justify-center px-4">
+    <!-- Preferences -->
+    <div class="fixed top-4 right-4 flex gap-2 z-10">
+      <select class="select select-sm select-bordered w-28" v-model="currentTheme" @change="handleThemeChange">
+        <option v-for="theme in themeOptions" :key="theme" :value="theme">{{ t(`theme.${theme}`) }}</option>
+      </select>
+      <select class="select select-sm select-bordered w-24" v-model="currentLocale" @change="handleLocaleChange">
+        <option value="zh-CN">中文</option>
+        <option value="en-US">EN</option>
+      </select>
     </div>
 
-    <div class="login-box">
-      <div class="login-header">
-        <h1>{{ t('login.title') }}</h1>
-        <p>{{ t('login.subtitle') }}</p>
-      </div>
+    <!-- Login card -->
+    <div class="card w-full max-w-md bg-base-100 shadow-xl">
+      <div class="card-body">
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-bold text-primary">{{ t('login.title') }}</h1>
+          <p class="text-sm text-base-content/60 mt-1">{{ t('login.subtitle') }}</p>
+        </div>
 
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        class="login-form"
-        @keyup.enter="handleLogin"
-      >
-        <el-form-item prop="username">
-          <el-input
-            v-model="form.username"
-            :placeholder="t('login.username')"
-            size="large"
-            :prefix-icon="User"
-          />
-        </el-form-item>
+        <form @submit.prevent="handleLogin" class="space-y-4">
+          <!-- Username -->
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('login.username') }}</span></div>
+            <input v-model="form.username" type="text" :placeholder="t('login.username')" class="input input-bordered w-full" autocomplete="username" />
+          </label>
 
-        <el-form-item prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            :placeholder="t('login.password')"
-            size="large"
-            :prefix-icon="Lock"
-            show-password
-          />
-        </el-form-item>
+          <!-- Password -->
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('login.password') }}</span></div>
+            <input v-model="form.password" type="password" :placeholder="t('login.password')" class="input input-bordered w-full" autocomplete="current-password" />
+          </label>
 
-        <el-form-item prop="captcha">
-          <el-input
-            v-model="form.captcha"
-            :placeholder="t('login.captcha')"
-            size="large"
-            :prefix-icon="CircleCheck"
-            style="width: 60%"
-          />
-          <div class="captcha-img" @click="refreshCaptcha">
-            <img v-if="captchaData.img" :src="captchaData.img" alt="captcha" />
-            <span v-else>{{ t('login.loadCaptcha') }}</span>
-          </div>
-        </el-form-item>
+          <!-- Captcha -->
+          <label class="form-control">
+            <div class="label"><span class="label-text">{{ t('login.captcha') }}</span></div>
+            <div class="flex gap-3">
+              <input v-model="form.captcha" type="text" :placeholder="t('login.captcha')" class="input input-bordered flex-1" autocomplete="off" />
+              <div class="captcha-btn self-center" @click="refreshCaptcha" role="button" tabindex="0">
+                <img v-if="captchaData.img" :src="captchaData.img" alt="captcha" class="h-10 rounded-lg" />
+                <span v-else class="text-xs text-base-content/40">{{ t('login.loadCaptcha') }}</span>
+              </div>
+            </div>
+          </label>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            :loading="loading"
-            style="width: 100%"
-            @click="handleLogin"
-          >
-            {{ t('login.submit') }}
-          </el-button>
-        </el-form-item>
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary w-full" :class="{ loading: loading }">
+            <span v-if="!loading">{{ t('login.submit') }}</span>
+          </button>
+        </form>
 
-        <div class="login-tips">
+        <!-- Default credentials hint -->
+        <div class="mt-4 text-sm text-base-content/50 flex justify-between">
           <span>{{ t('login.defaultUsername') }}</span>
           <span>{{ t('login.defaultPassword') }}</span>
         </div>
-      </el-form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/modules/user';
 import { authApi } from '@/api';
 import { ElMessage } from 'element-plus';
-import { User, Lock, CircleCheck } from '@element-plus/icons-vue';
-import type { FormInstance } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { setLocale, type Locale } from '@/i18n';
-import { applyTheme, initTheme, themeOptions, type ThemeName } from '@/utils/appearance';
+import { themeOptions, type ThemeName } from '@/utils/appearance';
 
 const router = useRouter();
 const userStore = useUserStore();
 const { t, locale } = useI18n();
-const formRef = ref<FormInstance>();
+
 const loading = ref(false);
-const currentTheme = ref<ThemeName>(initTheme());
+const currentTheme = ref<ThemeName>('emerald');
 const currentLocale = ref<Locale>(locale.value as Locale);
 
 const form = reactive({
@@ -110,55 +90,48 @@ const captchaData = reactive({
   img: '',
 });
 
-const rules = computed(() => ({
-  username: [{ required: true, message: t('login.usernameRequired'), trigger: 'blur' }],
-  password: [{ required: true, message: t('login.passwordRequired'), trigger: 'blur' }],
-  captcha: [{ required: true, message: t('login.captchaRequired'), trigger: 'blur' }],
-}));
-
 const refreshCaptcha = async () => {
   try {
     const res: any = await authApi.captcha();
     captchaData.key = res.key;
     captchaData.img = 'data:image/svg+xml;utf-8,' + encodeURIComponent(res.img);
     form.captchaKey = res.key;
-  } catch (e) {
+  } catch {
     ElMessage.error(t('login.captchaFailed'));
   }
 };
 
 const handleLogin = async () => {
-  if (!formRef.value) return;
+  if (!form.username || !form.password) {
+    ElMessage.warning(t('login.usernameRequired'));
+    return;
+  }
 
-  await formRef.value.validate(async (valid) => {
-    if (!valid) return;
-
-    loading.value = true;
-    try {
-      await userStore.login({
-        username: form.username,
-        password: form.password,
-        captchaKey: form.captchaKey,
-        captchaText: form.captcha,
-      });
-      ElMessage.success(t('login.success'));
-      router.push('/');
-    } catch (e: any) {
-      ElMessage.error(e.message || t('login.failed'));
-      refreshCaptcha();
-    } finally {
-      loading.value = false;
-    }
-  });
+  loading.value = true;
+  try {
+    await userStore.login({
+      username: form.username,
+      password: form.password,
+      captchaKey: form.captchaKey,
+      captchaText: form.captcha,
+    });
+    ElMessage.success(t('login.success'));
+    router.push('/');
+  } catch (e: any) {
+    ElMessage.error(e.message || t('login.failed'));
+    refreshCaptcha();
+  } finally {
+    loading.value = false;
+  }
 };
 
-const handleThemeChange = (theme: ThemeName) => {
-  applyTheme(theme);
+const handleThemeChange = () => {
+  document.documentElement.dataset.theme = currentTheme.value;
+  localStorage.setItem('theme', currentTheme.value);
 };
 
-const handleLocaleChange = (value: Locale) => {
-  setLocale(value);
-  currentLocale.value = value;
+const handleLocaleChange = () => {
+  setLocale(currentLocale.value);
 };
 
 onMounted(() => {
@@ -167,89 +140,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--primary), transparent 70%) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, color-mix(in srgb, var(--danger), transparent 75%) 0%, transparent 40%),
-    var(--app-bg);
-  position: relative;
-}
-
-.login-preferences {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  display: flex;
-  gap: 10px;
-  z-index: 10;
-}
-
-.login-box {
-  width: 420px;
-  padding: 48px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-}
-
-html[data-theme='midnight'] .login-box {
-  background: rgba(15, 23, 42, 0.35);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.login-header h1 {
-  font-size: 28px;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.login-header p {
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.login-form {
-  margin-top: 20px;
-}
-
-.captcha-img {
-  width: 35%;
+.captcha-btn {
+  width: 100px;
   height: 40px;
-  margin-left: 10px;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  border-radius: var(--control-radius);
+  border: 1px solid oklch(from var(--color-base-300) l c h / 0.5);
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  color: var(--muted);
+  cursor: pointer;
   overflow: hidden;
+  transition: border-color 0.2s;
 }
 
-.captcha-img img {
+.captcha-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.captcha-btn img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.login-tips {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 10px;
 }
 </style>

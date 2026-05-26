@@ -1,106 +1,192 @@
 <template>
-  <el-container class="layout-container">
-    <el-aside :width="isCollapsed ? '72px' : '248px'" class="layout-aside">
-      <div class="logo-container">
-        <img v-if="!isCollapsed" src="/logo.svg" alt="logo" class="logo" />
-        <span v-if="!isCollapsed" class="logo-text">{{ t('app.name') }}</span>
-        <el-icon v-else :size="24"><Box /></el-icon>
+  <!-- Mobile top navbar -->
+  <div class="lg:hidden drawer lg:drawer-open">
+    <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" v-model="drawerOpen" />
+
+    <div class="drawer-content flex flex-col">
+      <!-- Mobile header -->
+      <div class="navbar bg-base-200 border-b border-base-300 shadow-sm sticky top-0 z-30 px-4 gap-2">
+        <div class="flex-none">
+          <label for="sidebar-drawer" class="btn btn-square btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </label>
+        </div>
+        <div class="flex-1">
+          <span class="text-lg font-bold tracking-tight">{{ t('app.name') }}</span>
+        </div>
+        <!-- User avatar -->
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+            <div class="bg-neutral text-neutral-content w-8 rounded-full">
+              <span class="text-sm font-medium">{{ userInfo?.nickname?.charAt(0) || 'U' }}</span>
+            </div>
+          </div>
+          <ul tabindex="0" class="mt-2 z-[1] p-1 shadow-lg menu menu-sm dropdown-content bg-base-100 rounded-box w-48 border border-base-300">
+            <li><a @click="router.push('/profile')" class="rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              {{ t('common.profile') }}
+            </a></li>
+            <li><a @click="handleLogout" class="rounded-lg text-error">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+              {{ t('common.logout') }}
+            </a></li>
+          </ul>
+        </div>
       </div>
 
-      <el-menu :default-active="activeMenu" :collapse="isCollapsed" :unique-opened="true" class="sidebar-menu" router>
-        <template v-for="item in menus" :key="item.id">
-          <el-sub-menu v-if="item.children?.length" :index="String(item.id)">
-            <template #title>{{ getMenuTitle(item) }}</template>
-            <el-menu-item v-for="child in item.children" :key="child.id" :index="child.path || `/system/${child.name}`">
-              {{ getMenuTitle(child) }}
-            </el-menu-item>
-          </el-sub-menu>
-          <el-menu-item v-else :index="item.path || `/system/${item.name}`">
-            {{ getMenuTitle(item) }}
-          </el-menu-item>
-        </template>
-      </el-menu>
-    </el-aside>
-
-    <el-container>
-      <el-header class="layout-header">
-        <div class="header-left">
-          <el-tooltip :content="isCollapsed ? t('common.expand') : t('common.collapse')" placement="bottom">
-            <el-button text circle class="icon-btn" @click="isCollapsed = !isCollapsed">
-              <el-icon :size="20">
-                <Expand v-if="isCollapsed" />
-                <Fold v-else />
-              </el-icon>
-            </el-button>
-          </el-tooltip>
-
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/' }">{{ t('common.home') }}</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="currentRoute">{{ currentTitle }}</el-breadcrumb-item>
-          </el-breadcrumb>
-        </div>
-
-        <div class="header-right">
-          <div class="preference-group">
-            <el-icon><Brush /></el-icon>
-            <el-select
-              v-model="currentTheme"
-              class="preference-select"
-              size="small"
-              :aria-label="t('common.theme')"
-              @change="handleThemeChange"
-            >
-              <el-option
-                v-for="theme in themeOptions"
-                :key="theme"
-                :label="t(`theme.${theme}`)"
-                :value="theme"
-              >
-                <div class="theme-option">
-                  <span class="theme-dot" :style="{ background: getThemeColor(theme) }" />
-                  <span>{{ t(`theme.${theme}`) }}</span>
-                </div>
-              </el-option>
-            </el-select>
-          </div>
-
-          <div class="preference-group">
-            <el-icon><Switch /></el-icon>
-            <el-select
-              v-model="currentLocale"
-              class="language-select"
-              size="small"
-              :aria-label="t('common.language')"
-              @change="handleLocaleChange"
-            >
-              <el-option label="中文" value="zh-CN" />
-              <el-option label="English" value="en-US" />
-            </el-select>
-          </div>
-
-          <el-dropdown @command="handleCommand">
-            <span class="user-dropdown">
-              <el-avatar :size="32" :src="userInfo?.avatar || ''">
-                {{ userInfo?.nickname?.charAt(0) || 'U' }}
-              </el-avatar>
-              <span class="username">{{ userInfo?.nickname || t('common.userFallback') }}</span>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="profile">{{ t('common.profile') }}</el-dropdown-item>
-                <el-dropdown-item command="password">{{ t('common.changePassword') }}</el-dropdown-item>
-                <el-dropdown-item divided command="logout">{{ t('common.logout') }}</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </el-header>
-
-      <el-main class="layout-main">
+      <!-- Main content -->
+      <main class="flex-1 p-4 overflow-auto bg-base-100/30">
         <router-view />
-      </el-main>
-    </el-container>
-  </el-container>
+      </main>
+    </div>
+
+    <!-- Mobile sidebar drawer -->
+    <div class="drawer-side z-40">
+      <label for="sidebar-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+      <aside class="w-64 min-h-screen bg-base-200 border-r border-base-300 flex flex-col">
+        <div class="p-4 text-lg font-bold text-center border-b border-base-300 tracking-tight">
+          🌼 {{ t('app.name') }}
+        </div>
+        <div class="flex-1 overflow-y-auto py-2">
+          <SidebarMenu :menus="menus" />
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Desktop layout -->
+  <div class="hidden lg:flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      :class="[
+        'flex flex-col bg-base-200 border-r border-base-300 transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0',
+        isCollapsed ? 'w-[72px]' : 'w-64'
+      ]"
+    >
+      <!-- Logo -->
+      <div :class="['flex items-center border-b border-base-300 transition-all duration-300', isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-4']">
+        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm flex-shrink-0">N</div>
+        <span v-if="!isCollapsed" class="text-base font-bold tracking-tight whitespace-nowrap overflow-hidden">{{ t('app.name') }}</span>
+      </div>
+
+      <!-- Menu -->
+      <div class="flex-1 overflow-y-auto overflow-x-hidden py-2">
+        <SidebarMenu :menus="menus" :collapsed="isCollapsed" />
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Header -->
+      <header class="navbar bg-base-100 border-b border-base-300 shadow-sm px-6 gap-4">
+        <!-- Left: collapse + breadcrumb -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <button
+            class="btn btn-ghost btn-sm btn-square text-base-content/60 hover:text-base-content"
+            @click="isCollapsed = !isCollapsed"
+            :title="isCollapsed ? t('common.expand') : t('common.collapse')"
+          >
+            <svg v-if="isCollapsed" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <nav class="breadcrumbs text-sm min-w-0">
+            <ul class="flex items-center gap-1.5">
+              <li>
+                <router-link to="/" class="text-base-content/50 hover:text-primary flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <span class="hidden sm:inline">{{ t('common.home') }}</span>
+                </router-link>
+              </li>
+              <li class="text-base-content/30 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                </svg>
+                <span class="font-medium text-base-content truncate max-w-[200px]">{{ currentTitle || '' }}</span>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <!-- Right: theme + language + user -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Theme -->
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1.5 text-base-content/60 hover:text-base-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              <span class="hidden sm:inline text-xs">{{ t(`theme.${currentTheme}`) }}</span>
+            </div>
+            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow-lg bg-base-100 rounded-box w-44 border border-base-300 mt-1">
+              <li v-for="theme in themeOptions" :key="theme">
+                <a
+                  :class="{ 'active': currentTheme === theme, 'bg-primary/10': currentTheme === theme }"
+                  @click="handleThemeChange(theme)"
+                  class="rounded-lg text-sm"
+                >
+                  <span class="w-3 h-3 rounded-full" :style="{ background: getThemeColor(theme) }"></span>
+                  {{ t(`theme.${theme}`) }}
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Language -->
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1.5 text-base-content/60 hover:text-base-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A8.001 8.001 0 0116.953 9H15m2 4h.01M21 12a9 9 0 00-2.636-6.364M12 12V3" />
+              </svg>
+              <span class="hidden sm:inline text-xs">{{ currentLocale === 'zh-CN' ? '中文' : 'EN' }}</span>
+            </div>
+            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-1 shadow-lg bg-base-100 rounded-box w-28 border border-base-300 mt-1">
+              <li><a :class="{ 'active': currentLocale === 'zh-CN' }" @click="handleLocaleChange('zh-CN')" class="rounded-lg text-sm">中文</a></li>
+              <li><a :class="{ 'active': currentLocale === 'en-US' }" @click="handleLocaleChange('en-US')" class="rounded-lg text-sm">English</a></li>
+            </ul>
+          </div>
+
+          <!-- User -->
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content w-8 rounded-full">
+                  <span class="text-xs font-medium">{{ userInfo?.nickname?.charAt(0) || 'U' }}</span>
+                </div>
+              </div>
+              <span class="font-medium text-sm hidden xl:inline">{{ userInfo?.nickname || t('common.userFallback') }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-1 shadow-lg bg-base-100 rounded-box w-48 border border-base-300 mt-1">
+              <li><a @click="router.push('/profile')" class="rounded-lg text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                {{ t('common.profile') }}
+              </a></li>
+              <li><a @click="handleLogout" class="rounded-lg text-sm text-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                {{ t('common.logout') }}
+              </a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 overflow-auto p-6 bg-base-100/30">
+        <router-view />
+      </main>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -108,11 +194,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../../store/modules/user';
 import { ElMessage } from 'element-plus';
-import { Fold, Expand, Box, Brush, Switch } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { setLocale, type Locale } from '@/i18n';
 import { themeOptions, themeMetas, type ThemeName } from '@/utils/appearance';
 import { useThemeStore } from '@/store/theme';
+import SidebarMenu from './SidebarMenu.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -120,11 +206,12 @@ const userStore = useUserStore();
 const { t, locale } = useI18n();
 
 const isCollapsed = ref(false);
+const drawerOpen = ref(false);
 const themeStore = useThemeStore();
-const currentTheme = computed(() => themeStore.currentTheme);
+const currentTheme = ref<ThemeName>(themeStore.currentTheme as ThemeName);
 const currentLocale = ref<Locale>(locale.value as Locale);
+
 const activeMenu = computed(() => route.path);
-const currentRoute = computed(() => route);
 const currentTitle = computed(() => {
   const key = route.meta?.titleKey as string | undefined;
   return key ? t(key) : route.meta?.title;
@@ -132,226 +219,35 @@ const currentTitle = computed(() => {
 const userInfo = computed(() => userStore.userInfo);
 const menus = computed(() => userStore.menus);
 
-const navKeyByPath: Record<string, string> = {
-  '/dashboard': 'nav.dashboard',
-  '/system/user': 'nav.user',
-  '/system/role': 'nav.role',
-  '/system/dept': 'nav.dept',
-  '/system/post': 'nav.post',
-  '/system/menu': 'nav.menu',
-  '/system/dict': 'nav.dict',
-  '/system/config': 'nav.config',
-  '/system/file-config': 'nav.fileConfig',
-  '/system/file': 'nav.file',
-  '/system/notice': 'nav.notice',
-  '/monitor/login-log': 'nav.loginLog',
-  '/monitor/oper-log': 'nav.operLog',
-  '/monitor/online': 'nav.online',
-  '/monitor/server': 'nav.server',
-  '/monitor/cache': 'nav.cache',
-};
-
-const navKeyByName: Record<string, string> = {
-  Dashboard: 'nav.dashboard',
-  'User Management': 'nav.user',
-  'Role Management': 'nav.role',
-  Department: 'nav.dept',
-  'Post Management': 'nav.post',
-  'Menu Management': 'nav.menu',
-  Dictionary: 'nav.dict',
-  Config: 'nav.config',
-  'File Config': 'nav.fileConfig',
-  'File Management': 'nav.file',
-  文件配置: 'nav.fileConfig',
-  文件管理: 'nav.file',
-  Notice: 'nav.notice',
-  'Login Log': 'nav.loginLog',
-  'Operation Log': 'nav.operLog',
-  'Online Users': 'nav.online',
-  'Server Monitor': 'nav.server',
-  'Cache Monitor': 'nav.cache',
-  系统管理: 'nav.system',
-  系统监控: 'nav.monitor',
-};
-
-const getMenuTitle = (item: any) => {
-  const key = navKeyByPath[item.path] || navKeyByName[item.name];
-  return key ? t(key) : item.name;
-};
-
 onMounted(async () => {
   if (userStore.token && !userStore.userInfo) {
     try {
       await userStore.getUserInfo();
-    } catch (e) {
+    } catch {
       userStore.reset();
       router.push('/login');
     }
   }
 });
 
-const handleCommand = async (command: string) => {
-  if (command === 'profile') {
-    router.push('/profile');
-  } else if (command === 'logout') {
-    await userStore.logout();
-    router.push('/login');
-    ElMessage.success(t('common.loggedOut'));
-  }
+const handleLogout = async () => {
+  await userStore.logout();
+  router.push('/login');
+  ElMessage.success(t('common.loggedOut'));
 };
 
 const getThemeColor = (theme: ThemeName) => {
   const meta = themeMetas.find((m) => m.name === theme);
-  return meta?.colors[0] || '#4f46e5';
+  return meta?.colors[0] || '#6366f1';
 };
 
 const handleThemeChange = (theme: ThemeName) => {
+  currentTheme.value = theme;
   themeStore.setTheme(theme);
 };
 
-const handleLocaleChange = (value: Locale) => {
-  setLocale(value);
-  currentLocale.value = value;
+const handleLocaleChange = (val: Locale) => {
+  currentLocale.value = val;
+  setLocale(val);
 };
 </script>
-
-<style scoped>
-.layout-container {
-  height: 100vh;
-  background: var(--app-bg);
-}
-
-.layout-aside {
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
-  transition: width 0.24s ease, background 0.24s ease;
-  overflow: hidden;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.logo-container {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid var(--sidebar-border);
-  letter-spacing: 0;
-}
-
-.logo {
-  width: 32px;
-  height: 32px;
-}
-
-.sidebar-menu {
-  border-right: none;
-  background: transparent;
-}
-
-.sidebar-menu :deep(.el-menu-item),
-.sidebar-menu :deep(.el-sub-menu__title) {
-  height: var(--nav-item-height);
-  margin: 4px 10px;
-  border-radius: 8px;
-  color: var(--sidebar-text);
-}
-
-.sidebar-menu :deep(.el-menu-item.is-active) {
-  background: var(--sidebar-active-bg);
-  color: var(--sidebar-active-text);
-  font-weight: 700;
-}
-
-.sidebar-menu :deep(.el-menu-item:hover),
-.sidebar-menu :deep(.el-sub-menu__title:hover) {
-  background: var(--sidebar-hover-bg);
-}
-
-.layout-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  padding: 0 20px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.header-left,
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.preference-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted);
-}
-
-.preference-select {
-  width: 112px;
-}
-
-.language-select {
-  width: 104px;
-}
-
-.icon-btn {
-  color: var(--muted);
-}
-
-.icon-btn:hover {
-  color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.username {
-  margin-left: 8px;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.layout-main {
-  background: transparent;
-  padding: var(--page-padding);
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-.user-dropdown {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 8px;
-  transition: background 0.18s ease;
-}
-
-.user-dropdown:hover {
-  background: var(--soft-surface);
-}
-
-.theme-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.theme-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-</style>

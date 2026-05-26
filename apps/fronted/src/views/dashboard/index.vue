@@ -1,93 +1,118 @@
 <template>
-  <div class="dashboard space-y-5">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <div>
-        <div class="stat-card">
-          <div class="stat-icon stat-icon-primary">
-            <el-icon :size="32"><User /></el-icon>
+  <div class="space-y-6">
+    <!-- Stats grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div class="stat bg-base-100 shadow-sm rounded-xl border border-base-300">
+        <div class="stat-figure text-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/60">{{ t('dashboard.totalUsers') }}</div>
+        <div class="stat-value text-primary">{{ stats.totalUsers }}</div>
+        <div class="stat-desc text-base-content/50">users total</div>
+      </div>
+
+      <div class="stat bg-base-100 shadow-sm rounded-xl border border-base-300">
+        <div class="stat-figure text-success">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/60">{{ t('dashboard.totalRoles') }}</div>
+        <div class="stat-value text-success">{{ stats.totalRoles }}</div>
+        <div class="stat-desc text-base-content/50">roles total</div>
+      </div>
+
+      <div class="stat bg-base-100 shadow-sm rounded-xl border border-base-300">
+        <div class="stat-figure text-warning">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/60">{{ t('dashboard.onlineUsers') }}</div>
+        <div class="stat-value text-warning">{{ stats.onlineUsers }}</div>
+        <div class="stat-desc text-base-content/50">currently online</div>
+      </div>
+
+      <div class="stat bg-base-100 shadow-sm rounded-xl border border-base-300">
+        <div class="stat-figure text-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/60">{{ t('dashboard.notices') }}</div>
+        <div class="stat-value text-error">{{ stats.totalNotices }}</div>
+        <div class="stat-desc text-base-content/50">notices published</div>
+      </div>
+    </div>
+
+    <!-- Info cards row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Server info -->
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+          <h2 class="card-title text-base">{{ t('dashboard.serverInfo') }}</h2>
+          <div v-if="serverInfo" class="mt-3 space-y-2 text-sm">
+            <div class="flex justify-between py-2 border-b border-base-300">
+              <span class="text-base-content/60">{{ t('dashboard.os') }}</span>
+              <span class="font-medium">{{ serverInfo.os }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-base-300">
+              <span class="text-base-content/60">{{ t('dashboard.cpu') }}</span>
+              <span class="font-medium">{{ serverInfo.cpuUsage }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-base-300">
+              <span class="text-base-content/60">{{ t('dashboard.memory') }}</span>
+              <span class="font-medium">{{ serverInfo.mem?.usage }}</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-base-content/60">{{ t('dashboard.uptime') }}</span>
+              <span class="font-medium">{{ serverInfo.uptime }}</span>
+            </div>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalUsers }}</div>
-            <div class="stat-label">{{ t('dashboard.totalUsers') }}</div>
+          <div v-else class="mt-3 space-y-2">
+            <div class="h-4 bg-base-300 rounded animate-pulse w-3/4"></div>
+            <div class="h-4 bg-base-300 rounded animate-pulse w-1/2"></div>
+            <div class="h-4 bg-base-300 rounded animate-pulse w-2/3"></div>
           </div>
         </div>
       </div>
-      <div>
-        <div class="stat-card">
-          <div class="stat-icon stat-icon-success">
-            <el-icon :size="32"><Key /></el-icon>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalRoles }}</div>
-            <div class="stat-label">{{ t('dashboard.totalRoles') }}</div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="stat-card">
-          <div class="stat-icon stat-icon-warning">
-            <el-icon :size="32"><Connection /></el-icon>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.onlineUsers }}</div>
-            <div class="stat-label">{{ t('dashboard.onlineUsers') }}</div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="stat-card">
-          <div class="stat-icon stat-icon-danger">
-            <el-icon :size="32"><Bell /></el-icon>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalNotices }}</div>
-            <div class="stat-label">{{ t('dashboard.notices') }}</div>
+
+      <!-- Recent login logs -->
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body">
+          <h2 class="card-title text-base">{{ t('dashboard.recentLoginLogs') }}</h2>
+          <div class="overflow-x-auto mt-3">
+            <table class="table table-sm table-zebra">
+              <thead>
+                <tr>
+                  <th class="text-xs">{{ t('dashboard.user') }}</th>
+                  <th class="text-xs">{{ t('dashboard.ip') }}</th>
+                  <th class="text-xs">{{ t('dashboard.status') }}</th>
+                  <th class="text-xs">{{ t('dashboard.time') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="log in recentLogs" :key="log.id">
+                  <td class="text-xs">{{ log.username }}</td>
+                  <td class="text-xs">{{ log.ip }}</td>
+                  <td>
+                    <span class="badge badge-sm" :class="log.status === 1 ? 'badge-success' : 'badge-error'">
+                      {{ log.status === 1 ? t('dashboard.success') : t('dashboard.failed') }}
+                    </span>
+                  </td>
+                  <td class="text-xs text-base-content/60">{{ log.createTime }}</td>
+                </tr>
+                <tr v-if="!recentLogs.length">
+                  <td colspan="4" class="text-center text-base-content/40 py-4 text-sm">No data</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
-
-    <el-row :gutter="16">
-      <el-col :span="12">
-        <el-card :header="t('dashboard.serverInfo')">
-          <div class="server-info" v-if="serverInfo">
-            <div class="info-item">
-              <span class="label">{{ t('dashboard.os') }}:</span>
-              <span class="value">{{ serverInfo.os }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{ t('dashboard.cpu') }}:</span>
-              <span class="value">{{ serverInfo.cpuUsage }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{ t('dashboard.memory') }}:</span>
-              <span class="value">{{ serverInfo.mem?.usage }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{ t('dashboard.uptime') }}:</span>
-              <span class="value">{{ serverInfo.uptime }}</span>
-            </div>
-          </div>
-          <el-skeleton v-else :rows="4" />
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card :header="t('dashboard.recentLoginLogs')">
-          <el-table :data="recentLogs" style="width: 100%">
-            <el-table-column prop="username" :label="t('dashboard.user')" width="120" />
-            <el-table-column prop="ip" :label="t('dashboard.ip')" width="140" />
-            <el-table-column prop="status" :label="t('dashboard.status')" width="100">
-              <template #default="{ row }">
-                <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? t('dashboard.success') : t('dashboard.failed') }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="createTime" :label="t('dashboard.time')" />
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
@@ -95,15 +120,10 @@
 import { ref, onMounted } from 'vue';
 import { userApi, roleApi, onlineApi, noticeApi, serverApi, loginLogApi } from '@/api';
 import { useI18n } from 'vue-i18n';
+
 const { t } = useI18n();
 
-const stats = ref({
-  totalUsers: 0,
-  totalRoles: 0,
-  onlineUsers: 0,
-  totalNotices: 0,
-});
-
+const stats = ref({ totalUsers: 0, totalRoles: 0, onlineUsers: 0, totalNotices: 0 });
 const serverInfo = ref<any>(null);
 const recentLogs = ref<any[]>([]);
 
@@ -117,7 +137,6 @@ onMounted(async () => {
       serverApi.info(),
       loginLogApi.list({ page: 1, limit: 5 }),
     ]);
-
     stats.value = {
       totalUsers: userRes.total || 0,
       totalRoles: roleRes.total || 0,
@@ -131,83 +150,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style scoped>
-.dashboard {
-  padding: 0;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  padding: 20px;
-  border-radius: var(--glass-radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  margin-right: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.stat-icon-primary {
-  background: linear-gradient(135deg, var(--primary), #6366f1);
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
-}
-.stat-icon-success {
-  background: linear-gradient(135deg, var(--success), #34d399);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
-}
-.stat-icon-warning {
-  background: linear-gradient(135deg, var(--warning), #fbbf24);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
-}
-.stat-icon-danger {
-  background: linear-gradient(135deg, var(--danger), #f87171);
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: var(--text);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.server-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.info-item {
-  display: flex;
-  gap: 12px;
-}
-
-.info-item .label {
-  color: var(--muted);
-  width: 80px;
-}
-
-.info-item .value {
-  color: var(--text);
-  font-weight: 500;
-}
-</style>

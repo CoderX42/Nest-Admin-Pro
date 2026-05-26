@@ -1,99 +1,98 @@
 <template>
-  <div class="page-container">
-    <el-row :gutter="16">
-      <!-- Dict Type Panel -->
-      <el-col :span="8">
-        <el-card :header="t('system.dict.dictName')">
-          <template #header>
-            <div style="display: flex; justify-content: space-between; align-items: center">
-              <span>{{ t('system.dict.dictName') }}</span>
-              <el-button type="primary" :icon="Plus" size="small" @click="handleCreateType">{{ t('common.action.add') }}</el-button>
-            </div>
-          </template>
-          <el-table :data="typeList" size="small" highlight-current-row @row-click="loadDataItems" row-key="id" :show-overflow-tooltip="true" style="width: 100%">
-            <el-table-column prop="name" :label="t('system.dict.dictName')" />
-            <el-table-column prop="code" :label="t('system.dict.dictCode')" width="150" />
-            <el-table-column prop="status" :label="t('common.field.status')" width="80">
-              <template #default="{ row }">
-                <el-tag size="small" :type="row.status === 1 ? 'success' : 'danger'"
-                >{{ row.status === 1 ? t('common.status.enabled') : t('common.status.disabled') }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="t('common.field.actions')" width="120">
-              <template #default="{ row }">
-                <el-button size="small" type="primary" :icon="Edit" @click.stop="handleEditType(row)" text />
-                <el-button size="small" type="danger" :icon="Delete" @click.stop="handleDeleteType(row)" text />
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
+  <div class="space-y-4">
+    <!-- Dict type + data side-by-side -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Type panel -->
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm">{{ t('system.dict.dictName') }}</h3>
+            <button class="btn btn-xs btn-primary" @click="handleCreateType">{{ t('common.action.add') }}</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="table table-xs">
+              <thead><tr class="bg-base-200 text-xs"><th>{{ t('system.dict.dictName') }}</th><th>{{ t('system.dict.dictCode') }}</th><th>{{ t('common.field.status') }}</th><th>{{ t('common.field.actions') }}</th></tr></thead>
+              <tbody>
+                <tr v-for="row in typeList" :key="row.id" class="cursor-pointer hover:bg-base-200" :class="{ 'bg-primary/10': currentTypeId === row.id }" @click="loadDataItems(row)">
+                  <td class="text-xs">{{ row.name }}</td>
+                  <td class="text-xs font-mono">{{ row.code }}</td>
+                  <td><span class="badge badge-xs" :class="row.status === 1 ? 'badge-success' : 'badge-error'">{{ row.status === 1 ? t('common.status.enabled') : t('common.status.disabled') }}</span></td>
+                  <td>
+                    <div class="flex gap-1">
+                      <button class="btn btn-xs btn-ghost" @click.stop="handleEditType(row)">✏️</button>
+                      <button class="btn btn-xs btn-ghost" @click.stop="handleDeleteType(row)">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-      <!-- Dict Data Panel -->
-      <el-col :span="16">
-        <el-card :header="t('system.dict.dictData')">
-          <template #header>
-            <div style="display: flex; justify-content: space-between; align-items: center">
-              <span>{{ t('system.dict.dictData') }} {{ currentTypeId ? `(${currentTypeName})` : '' }}</span>
-              <el-button type="primary" :icon="Plus" size="small" :disabled="!currentTypeId" @click="handleCreateData">{{ t('common.action.add') }}</el-button>
-            </div>
-          </template>
-          <el-table :data="dataList" size="small" v-loading="loading" style="width: 100%">
-            <el-table-column prop="label" :label="t('system.dict.label')" />
-            <el-table-column prop="value" :label="t('system.dict.value')" width="150" />
-            <el-table-column prop="sort" :label="t('common.field.sort')" width="80" />
-            <el-table-column prop="status" :label="t('common.field.status')" width="80">
-              <template #default="{ row }">
-                <el-tag size="small" :type="row.status === 1 ? 'success' : 'danger'"
-                >{{ row.status === 1 ? t('common.status.enabled') : t('common.status.disabled') }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="t('common.field.actions')" width="120">
-              <template #default="{ row }">
-                <el-button size="small" type="primary" :icon="Edit" @click="handleEditData(row)" text />
-                <el-button size="small" type="danger" :icon="Delete" @click="handleDeleteData(row)" text />
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-    </el-row>
+      <!-- Data panel -->
+      <div class="lg:col-span-2 card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm">{{ t('system.dict.dictData') }} {{ currentTypeName ? `(${currentTypeName})` : '' }}</h3>
+            <button class="btn btn-xs btn-primary" :disabled="!currentTypeId" @click="handleCreateData">{{ t('common.action.add') }}</button>
+          </div>
+          <div v-if="!currentTypeId" class="text-center text-base-content/40 py-8 text-sm">← 请先选择一个字典类型</div>
+          <div v-else class="overflow-x-auto">
+            <table class="table table-xs">
+              <thead><tr class="bg-base-200 text-xs"><th>{{ t('system.dict.label') }}</th><th>{{ t('system.dict.value') }}</th><th>{{ t('common.field.sort') }}</th><th>{{ t('common.field.status') }}</th><th>{{ t('common.field.actions') }}</th></tr></thead>
+              <tbody>
+                <tr v-if="loading"><td colspan="5" class="text-center py-4"><span class="loading loading-spinner loading-sm text-primary"></span></td></tr>
+                <tr v-else-if="!dataList.length"><td colspan="5" class="text-center text-base-content/40 py-4 text-sm">No data</td></tr>
+                <tr v-else v-for="row in dataList" :key="row.id" class="hover:bg-base-200/50">
+                  <td class="text-xs">{{ row.label }}</td>
+                  <td class="text-xs font-mono">{{ row.value }}</td>
+                  <td class="text-xs">{{ row.sort }}</td>
+                  <td><span class="badge badge-xs" :class="row.status === 1 ? 'badge-success' : 'badge-error'">{{ row.status === 1 ? t('common.status.enabled') : t('common.status.disabled') }}</span></td>
+                  <td>
+                    <div class="flex gap-1">
+                      <button class="btn btn-xs btn-ghost" @click="handleEditData(row)">✏️</button>
+                      <button class="btn btn-xs btn-ghost" @click="handleDeleteData(row)">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Type Dialog -->
-    <el-dialog v-model="typeDialogVisible" :title="typeForm.id ? t('system.dict.editDict') : t('system.dict.addDict')" width="500px">
-      <el-form ref="typeFormRef" :model="typeForm" :rules="typeRules" label-width="100px">
-        <el-form-item :label="t('system.dict.dictName')" prop="name"><el-input v-model="typeForm.name" /></el-form-item>
-        <el-form-item :label="t('system.dict.dictCode')" prop="code"><el-input v-model="typeForm.code" :disabled="!!typeForm.id" /></el-form-item>
-        <el-form-item :label="t('common.field.status')">
-          <el-radio-group v-model="typeForm.status">
-            <el-radio :label="1">{{ t('common.status.enabled') }}</el-radio>
-            <el-radio :label="0">{{ t('common.status.disabled') }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item :label="t('common.field.remark')"><el-input v-model="typeForm.remark" type="textarea" /></el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="typeDialogVisible = false">{{ t('common.action.cancel') }}</el-button>
-        <el-button type="primary" @click="handleTypeSubmit">{{ t('common.action.confirm') }}</el-button>
-      </template>
-    </el-dialog>
+    <!-- Type dialog -->
+    <dialog ref="typeDialogRef" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ typeForm.id ? t('system.dict.editDict') : t('system.dict.addDict') }}</h3>
+        <form @submit.prevent="handleTypeSubmit" class="space-y-3">
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('system.dict.dictName') }} *</span></div><input v-model="typeForm.name" class="input input-bordered" required /></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('system.dict.dictCode') }} *</span></div><input v-model="typeForm.code" class="input input-bordered" :disabled="!!typeForm.id" required /></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('common.field.status') }}</span></div><div class="flex gap-4 pt-2"><label class="label cursor-pointer gap-2"><input type="radio" v-model="typeForm.status" :value="1" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.enabled') }}</span></label><label class="label cursor-pointer gap-2"><input type="radio" v-model="typeForm.status" :value="0" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.disabled') }}</span></label></div></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('common.field.remark') }}</span></div><textarea v-model="typeForm.remark" class="textarea textarea-bordered" rows="2"></textarea></label>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn" @click="typeDialogRef?.close()">{{ t('common.action.cancel') }}</button><button type="submit" class="btn btn-primary">{{ t('common.action.confirm') }}</button></div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
-    <!-- Data Dialog -->
-    <el-dialog v-model="dataDialogVisible" :title="dataForm.id ? t('system.dict.editData') : t('system.dict.addData')" width="500px">
-      <el-form ref="dataFormRef" :model="dataForm" :rules="dataRules" label-width="100px">
-        <el-form-item :label="t('system.dict.label')" prop="label"><el-input v-model="dataForm.label" /></el-form-item>
-        <el-form-item :label="t('system.dict.value')" prop="value"><el-input v-model="dataForm.value" /></el-form-item>
-        <el-form-item :label="t('common.field.sort')"><el-input-number v-model="dataForm.sort" :min="0" /></el-form-item>
-        <el-form-item :label="t('common.field.status')">
-          <el-radio-group v-model="dataForm.status"><el-radio :label="1">{{ t('common.status.enabled') }}</el-radio><el-radio :label="0">{{ t('common.status.disabled') }}</el-radio></el-radio-group>
-        </el-form-item>
-        <el-form-item :label="t('common.field.remark')"><el-input v-model="dataForm.remark" type="textarea" /></el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dataDialogVisible = false">{{ t('common.action.cancel') }}</el-button>
-        <el-button type="primary" @click="handleDataSubmit">{{ t('common.action.confirm') }}</el-button>
-      </template>
-    </el-dialog>
+    <!-- Data dialog -->
+    <dialog ref="dataDialogRef" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ dataForm.id ? t('system.dict.editData') : t('system.dict.addData') }}</h3>
+        <form @submit.prevent="handleDataSubmit" class="space-y-3">
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('system.dict.label') }} *</span></div><input v-model="dataForm.label" class="input input-bordered" required /></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('system.dict.value') }} *</span></div><input v-model="dataForm.value" class="input input-bordered" required /></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('common.field.sort') }}</span></div><input v-model.number="dataForm.sort" type="number" min="0" class="input input-bordered" /></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('common.field.status') }}</span></div><div class="flex gap-4 pt-2"><label class="label cursor-pointer gap-2"><input type="radio" v-model="dataForm.status" :value="1" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.enabled') }}</span></label><label class="label cursor-pointer gap-2"><input type="radio" v-model="dataForm.status" :value="0" class="radio radio-sm radio-primary" /><span class="label-text">{{ t('common.status.disabled') }}</span></label></div></label>
+          <label class="form-control"><div class="label"><span class="label-text">{{ t('common.field.remark') }}</span></div><textarea v-model="dataForm.remark" class="textarea textarea-bordered" rows="2"></textarea></label>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn" @click="dataDialogRef?.close()">{{ t('common.action.cancel') }}</button><button type="submit" class="btn btn-primary">{{ t('common.action.confirm') }}</button></div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
   </div>
 </template>
 
@@ -102,98 +101,56 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { dictApi } from '@/api';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Edit, Delete } from '@element-plus/icons-vue';
-import type { FormInstance } from 'element-plus';
 
 const { t } = useI18n();
-
 const loading = ref(false);
 const typeList = ref<any[]>([]);
 const dataList = ref<any[]>([]);
 const currentTypeId = ref<number>();
 const currentTypeName = ref('');
-const typeDialogVisible = ref(false);
-const dataDialogVisible = ref(false);
-const typeFormRef = ref<FormInstance>();
-const dataFormRef = ref<FormInstance>();
-
+const typeDialogRef = ref<HTMLDialogElement>();
+const dataDialogRef = ref<HTMLDialogElement>();
 const typeForm = reactive<any>({ id: undefined, name: '', code: '', status: 1, remark: '' });
 const dataForm = reactive<any>({ id: undefined, dictTypeId: 0, label: '', value: '', sort: 0, status: 1, remark: '' });
-const typeRules = { name: [{ required: true }], code: [{ required: true }] };
-const dataRules = { label: [{ required: true }], value: [{ required: true }] };
 
-const loadTypes = async () => {
-  const res: any = await dictApi.typeList({});
-  typeList.value = res;
-};
-
+const loadTypes = async () => { const res: any = await dictApi.typeList({}); typeList.value = res; };
 const loadDataItems = async (row: any) => {
-  currentTypeId.value = row.id;
-  currentTypeName.value = row.name;
-  loading.value = true;
-  try {
-    const res: any = await dictApi.dataList(row.id);
-    dataList.value = res;
-  } catch { ElMessage.error(t('common.message.loadFailed')); }
+  currentTypeId.value = row.id; currentTypeName.value = row.name; loading.value = true;
+  try { const res: any = await dictApi.dataList(row.id); dataList.value = res; }
+  catch { ElMessage.error(t('common.message.loadFailed')); }
   finally { loading.value = false; }
 };
 
-const handleCreateType = () => { Object.assign(typeForm, { id: undefined, name: '', code: '', status: 1, remark: '' }); typeDialogVisible.value = true; };
-const handleEditType = (row: any) => { Object.assign(typeForm, row); typeDialogVisible.value = true; };
-
+const handleCreateType = () => { Object.assign(typeForm, { id: undefined, name: '', code: '', status: 1, remark: '' }); typeDialogRef.value?.showModal(); };
+const handleEditType = (row: any) => { Object.assign(typeForm, row); typeDialogRef.value?.showModal(); };
 const handleTypeSubmit = async () => {
-  if (!typeFormRef.value) return;
-  await typeFormRef.value.validate(async (valid) => {
-    if (!valid) return;
-    try {
-      if (typeForm.id) {
-        await dictApi.typeUpdate({ id: typeForm.id, name: typeForm.name, status: typeForm.status, remark: typeForm.remark });
-        ElMessage.success(t('common.message.updateSuccess'));
-      }
-      else {
-        await dictApi.typeCreate({ name: typeForm.name, code: typeForm.code, status: typeForm.status, remark: typeForm.remark });
-        ElMessage.success(t('common.message.addSuccess'));
-      }
-      typeDialogVisible.value = false;
-      loadTypes();
-    } catch (e: any) { ElMessage.error(e.message); }
-  });
+  try {
+    if (typeForm.id) { await dictApi.typeUpdate({ id: typeForm.id, name: typeForm.name, status: typeForm.status, remark: typeForm.remark }); ElMessage.success(t('common.message.updateSuccess')); }
+    else { await dictApi.typeCreate({ name: typeForm.name, code: typeForm.code, status: typeForm.status, remark: typeForm.remark }); ElMessage.success(t('common.message.addSuccess')); }
+    typeDialogRef.value?.close(); loadTypes();
+  } catch (e: any) { ElMessage.error(e.message); }
 };
-
 const handleDeleteType = async (row: any) => {
   await ElMessageBox.confirm(t('common.message.confirmDelete', { name: row.name }), t('common.action.confirm'), { type: 'warning' });
-  await dictApi.typeDelete(row.id);
-  ElMessage.success(t('common.message.deleteSuccess'));
+  await dictApi.typeDelete(row.id); ElMessage.success(t('common.message.deleteSuccess'));
   if (currentTypeId.value === row.id) { currentTypeId.value = undefined; dataList.value = []; }
   loadTypes();
 };
 
-const handleCreateData = () => { Object.assign(dataForm, { id: undefined, dictTypeId: currentTypeId.value, label: '', value: '', sort: 0, status: 1, remark: '' }); dataDialogVisible.value = true; };
-const handleEditData = (row: any) => { Object.assign(dataForm, { id: row.id, dictTypeId: row.dictTypeId, label: row.label, value: row.value, sort: row.sort, status: row.status, remark: row.remark }); dataDialogVisible.value = true; };
-
+const handleCreateData = () => { Object.assign(dataForm, { id: undefined, dictTypeId: currentTypeId.value, label: '', value: '', sort: 0, status: 1, remark: '' }); dataDialogRef.value?.showModal(); };
+const handleEditData = (row: any) => { Object.assign(dataForm, { id: row.id, dictTypeId: row.dictTypeId, label: row.label, value: row.value, sort: row.sort, status: row.status, remark: row.remark }); dataDialogRef.value?.showModal(); };
 const handleDataSubmit = async () => {
-  if (!dataFormRef.value) return;
-  await dataFormRef.value.validate(async (valid) => {
-    if (!valid) return;
-    try {
-      if (dataForm.id) { await dictApi.dataUpdate(dataForm); ElMessage.success(t('common.message.updateSuccess')); }
-      else { await dictApi.dataCreate(dataForm); ElMessage.success(t('common.message.addSuccess')); }
-      dataDialogVisible.value = false;
-      if (currentTypeId.value) loadDataItems({ id: currentTypeId.value, name: currentTypeName.value });
-    } catch (e: any) { ElMessage.error(e.message); }
-  });
+  try {
+    if (dataForm.id) { await dictApi.dataUpdate(dataForm); ElMessage.success(t('common.message.updateSuccess')); }
+    else { await dictApi.dataCreate(dataForm); ElMessage.success(t('common.message.addSuccess')); }
+    dataDialogRef.value?.close(); if (currentTypeId.value) loadDataItems({ id: currentTypeId.value, name: currentTypeName.value });
+  } catch (e: any) { ElMessage.error(e.message); }
 };
-
 const handleDeleteData = async (row: any) => {
   await ElMessageBox.confirm(t('common.message.confirmDelete', { name: row.label }), t('common.action.confirm'), { type: 'warning' });
-  await dictApi.dataDelete(row.id);
-  ElMessage.success(t('common.message.deleteSuccess'));
+  await dictApi.dataDelete(row.id); ElMessage.success(t('common.message.deleteSuccess'));
   if (currentTypeId.value) loadDataItems({ id: currentTypeId.value, name: currentTypeName.value });
 };
 
 onMounted(() => loadTypes());
 </script>
-
-<style scoped>
-
-</style>
