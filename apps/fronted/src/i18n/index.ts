@@ -71,12 +71,8 @@ const messages = {
       },
     },
     theme: {
-      emerald: '翡翠绿',
-      night: '深夜暗色',
-      wireframe: '简约灰',
-      sunset: '日落暖橙',
-      cyberpunk: '赛博霓虹',
-      valentine: '浪漫粉',
+      light: '浅色',
+      dark: '深色',
     },
     login: {
       title: 'Nest-Admin-Pro',
@@ -414,12 +410,8 @@ const messages = {
       },
     },
     theme: {
-      emerald: 'Emerald',
-      night: 'Night',
-      wireframe: 'Wireframe',
-      sunset: 'Sunset',
-      cyberpunk: 'Cyberpunk',
-      valentine: 'Valentine',
+      light: 'Light',
+      dark: 'Dark',
     },
     login: {
       title: 'Nest-Admin-Pro',

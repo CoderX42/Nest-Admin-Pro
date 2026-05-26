@@ -118,27 +118,19 @@
 
         <!-- Right: theme + language + user -->
         <div class="flex items-center gap-2 flex-shrink-0">
-          <!-- Theme -->
-          <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1.5 text-base-content/60 hover:text-base-content">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-              </svg>
-              <span class="hidden sm:inline text-xs">{{ t(`theme.${currentTheme}`) }}</span>
-            </div>
-            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow-lg bg-base-100 rounded-box w-44 border border-base-300 mt-1">
-              <li v-for="theme in themeOptions" :key="theme">
-                <a
-                  :class="{ 'active': currentTheme === theme, 'bg-primary/10': currentTheme === theme }"
-                  @click="handleThemeChange(theme)"
-                  class="rounded-lg text-sm"
-                >
-                  <span class="w-3 h-3 rounded-full" :style="{ background: getThemeColor(theme) }"></span>
-                  {{ t(`theme.${theme}`) }}
-                </a>
-              </li>
-            </ul>
-          </div>
+          <!-- Theme Toggle -->
+          <button
+            class="btn btn-ghost btn-sm btn-square text-base-content/60 hover:text-base-content"
+            @click="themeStore.toggleTheme()"
+            :title="currentTheme === 'light' ? t('theme.dark') : t('theme.light')"
+          >
+            <svg v-if="currentTheme === 'light'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </button>
 
           <!-- Language -->
           <div class="dropdown dropdown-end">
@@ -196,7 +188,6 @@ import { useUserStore } from '../../store/modules/user';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { setLocale, type Locale } from '@/i18n';
-import { themeOptions, themeMetas, type ThemeName } from '@/utils/appearance';
 import { useThemeStore } from '@/store/theme';
 import SidebarMenu from './SidebarMenu.vue';
 
@@ -208,7 +199,7 @@ const { t, locale } = useI18n();
 const isCollapsed = ref(false);
 const drawerOpen = ref(false);
 const themeStore = useThemeStore();
-const currentTheme = ref<ThemeName>(themeStore.currentTheme as ThemeName);
+const currentTheme = computed(() => themeStore.currentTheme);
 const currentLocale = ref<Locale>(locale.value as Locale);
 
 const activeMenu = computed(() => route.path);
@@ -234,16 +225,6 @@ const handleLogout = async () => {
   await userStore.logout();
   router.push('/login');
   ElMessage.success(t('common.loggedOut'));
-};
-
-const getThemeColor = (theme: ThemeName) => {
-  const meta = themeMetas.find((m) => m.name === theme);
-  return meta?.colors[0] || '#6366f1';
-};
-
-const handleThemeChange = (theme: ThemeName) => {
-  currentTheme.value = theme;
-  themeStore.setTheme(theme);
 };
 
 const handleLocaleChange = (val: Locale) => {

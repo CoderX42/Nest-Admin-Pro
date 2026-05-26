@@ -92,17 +92,27 @@
     <div class="card bg-base-100 shadow-sm border border-base-300">
       <div class="card-body">
         <h3 class="card-title text-base font-semibold mb-4">{{ t('common.theme') }}</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div
-            v-for="theme in themeOptions"
-            :key="theme"
-            class="cursor-pointer rounded-lg border-2 overflow-hidden transition-all"
-            :class="themeStore.currentTheme === theme ? 'border-primary' : 'border-base-300 hover:border-primary/50'"
-            @click="themeStore.setTheme(theme)"
+        <div class="flex items-center gap-3">
+          <button
+            class="btn btn-sm gap-2"
+            :class="themeStore.currentTheme === 'light' ? 'btn-primary' : 'btn-ghost'"
+            @click="themeStore.setTheme('light')"
           >
-            <div class="h-12" :style="{ background: getThemeGradient(theme) }"></div>
-            <div class="p-2 text-center text-xs font-medium">{{ t(`theme.${theme}`) }}</div>
-          </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            {{ t('theme.light') }}
+          </button>
+          <button
+            class="btn btn-sm gap-2"
+            :class="themeStore.currentTheme === 'dark' ? 'btn-primary' : 'btn-ghost'"
+            @click="themeStore.setTheme('dark')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            {{ t('theme.dark') }}
+          </button>
         </div>
       </div>
     </div>
@@ -116,7 +126,6 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useThemeStore } from '@/store/theme';
 import { profileApi, fileApi } from '@/api';
-import { themeOptions, themeMetas, type ThemeName } from '@/utils/appearance';
 import type { UploadRequestOptions } from 'element-plus';
 
 const { t } = useI18n();
@@ -159,9 +168,6 @@ const handleChangePassword = async () => {
     pwdForm.oldPassword = ''; pwdForm.newPassword = ''; pwdForm.confirmPassword = '';
   } catch { /* interceptor handles */ }
 };
-
-const getThemeColors = (theme: ThemeName) => themeMetas.find((m) => m.name === theme)?.colors || ['#6366f1', '#e0e7ff', '#1e293b'];
-const getThemeGradient = (theme: ThemeName) => { const c = getThemeColors(theme); return `linear-gradient(135deg, ${c[1]} 0%, ${c[0]} 100%)`; };
 
 onMounted(() => loadProfile());
 </script>
