@@ -177,6 +177,8 @@
 - **涉及文件**:
   - `apps/backend/src/modules/system/dept/dept.service.ts`
   - `apps/backend/src/modules/system/menu/menu.service.ts`
+  - `apps/backend/src/modules/system/dept/dept.service.spec.ts`(新建)
+  - `apps/backend/src/modules/system/menu/menu.service.spec.ts`(新建)
   - 全代码搜 `throw new Error`,逐个修复
 - **实施要点**:
   - 业务校验失败 → `BadRequestException`
@@ -185,7 +187,7 @@
   - 状态冲突 → `ConflictException`
 - **验收**:
   - [ ] grep `throw new Error` 在 src 下命中 0
-  - [ ] e2e:删除有子部门的部门 → 400 而非 500
+  - [ ] 单测:删除有子部门/子菜单时抛 `BadRequestException` 而非裸 Error
 
 ### T-006 加载 .env 与启动期 env 校验
 

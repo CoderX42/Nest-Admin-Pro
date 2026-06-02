@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma.service';
 import { CreateDeptDto, UpdateDeptDto, QueryDeptDto } from './dto/dept.dto';
 
@@ -65,7 +65,7 @@ export class DeptService {
 
   async remove(id: number) {
     const children = await this.prisma.sysDept.count({ where: { parentId: id } });
-    if (children > 0) throw new Error('Cannot delete department with children');
+    if (children > 0) throw new BadRequestException('Cannot delete department with children');
     await this.prisma.sysDept.delete({ where: { id } });
     return { success: true };
   }

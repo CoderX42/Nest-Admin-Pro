@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma.service';
 import { CreateMenuDto, UpdateMenuDto, QueryMenuDto } from './dto/menu.dto';
 
@@ -87,7 +87,7 @@ export class MenuService {
 
   async remove(id: number) {
     const children = await this.prisma.sysMenu.count({ where: { parentId: id } });
-    if (children > 0) throw new Error('Cannot delete menu with children');
+    if (children > 0) throw new BadRequestException('Cannot delete menu with children');
     await this.prisma.sysMenu.delete({ where: { id } });
     return { success: true };
   }
