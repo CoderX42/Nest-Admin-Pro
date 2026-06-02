@@ -33,6 +33,13 @@
 - **类型**: chore
 - **上下文**: `package.json` name 为 "api"、main/start:prod 路径不一致、缺 lint/test/prisma 脚本
 - **涉及文件**: `apps/backend/package.json`
+- **涉及文件补充**:
+  - `pnpm-lock.yaml`(package 变更生成)
+  - `apps/backend/eslint.config.js`(S0 最小 lint 配置,严格规则留到 T-102)
+  - `apps/backend/src/modules/file/file.controller.ts`(修复 T-001 build 暴露的 Multer 类型编译错误)
+  - `apps/backend/src/modules/file/file.service.ts`(修复 T-001 build 暴露的配置 Map 类型编译错误)
+  - `apps/backend/src/modules/file/storage/*.ts`(修复 T-001 build 暴露的 Multer 类型编译错误)
+  - `apps/backend/tsconfig.json`(修复 build 产物路径为 `dist/main.js`)
 - **实施要点**:
   1. `name` 改为 `@nest-admin-pro/backend`
   2. `main` 改为 `dist/main.js`,`start:prod` 改为 `node dist/main.js`

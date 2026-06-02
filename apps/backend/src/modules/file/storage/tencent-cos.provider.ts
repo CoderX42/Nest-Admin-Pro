@@ -1,4 +1,3 @@
-import type { Multer } from 'multer';
 import type { FileStorageConfig, FileUploadResult, StorageProvider } from './storage.types';
 import { assertCloudConfig, buildPublicUrl } from './storage.utils';
 
@@ -11,7 +10,7 @@ export class TencentCosProvider implements StorageProvider {
     assertCloudConfig(config, 'Tencent COS');
   }
 
-  async upload(file: Multer.File, key: string): Promise<FileUploadResult> {
+  async upload(file: Express.Multer.File, key: string): Promise<FileUploadResult> {
     const cos = new COS({
       SecretId: this.config.accessKeyId,
       SecretKey: this.config.accessKeySecret,

@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import type { Multer } from 'multer';
 import type { FileStorageConfig, FileUploadResult, StorageProvider } from './storage.types';
 import { assertCloudConfig, buildPublicUrl } from './storage.utils';
 
@@ -15,7 +14,7 @@ export class HuaweiObsProvider implements StorageProvider {
     }
   }
 
-  async upload(file: Multer.File, key: string): Promise<FileUploadResult> {
+  async upload(file: Express.Multer.File, key: string): Promise<FileUploadResult> {
     const client = new ObsClient({
       access_key_id: this.config.accessKeyId,
       secret_access_key: this.config.accessKeySecret,

@@ -20,7 +20,6 @@ import { memoryStorage } from 'multer';
 import { FileService } from './file.service';
 import { JwtAuthGuard } from '../../auth/jwt.guard';
 import { PermissionGuard, Public, RequirePermission } from '../../auth/guards';
-import type { Multer } from 'multer';
 
 const uploadOptions = {
   storage: memoryStorage(),
@@ -78,7 +77,7 @@ export class FileController {
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   @Post('upload')
   @ApiOperation({ summary: 'Upload file' })
-  async upload(@UploadedFile() file: Multer.File, @Req() req: any) {
+  async upload(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
     return this.fileService.upload(file, req.user);
   }
 
@@ -86,7 +85,7 @@ export class FileController {
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   @Post('upload-image')
   @ApiOperation({ summary: 'Upload image' })
-  async uploadImage(@UploadedFile() file: Multer.File, @Req() req: any) {
+  async uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
     return this.fileService.uploadImage(file, req.user);
   }
 

@@ -1,5 +1,3 @@
-import type { Multer } from 'multer';
-
 export type FileStorageProvider =
   | 'local'
   | 'aliyun-oss'
@@ -32,7 +30,7 @@ export interface FileUploadResult {
 
 export interface StorageProvider {
   readonly type: FileStorageProvider;
-  upload(file: Multer.File, key: string): Promise<FileUploadResult>;
+  upload(file: Express.Multer.File, key: string): Promise<FileUploadResult>;
   delete(key: string): Promise<void>;
   getPublicUrl(key: string): string;
 }

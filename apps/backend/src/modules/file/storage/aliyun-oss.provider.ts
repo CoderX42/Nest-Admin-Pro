@@ -1,5 +1,4 @@
 import OSS = require('ali-oss');
-import type { Multer } from 'multer';
 import type { FileStorageConfig, FileUploadResult, StorageProvider } from './storage.types';
 import { assertCloudConfig, buildPublicUrl } from './storage.utils';
 
@@ -10,7 +9,7 @@ export class AliyunOssProvider implements StorageProvider {
     assertCloudConfig(config, 'Aliyun OSS');
   }
 
-  async upload(file: Multer.File, key: string): Promise<FileUploadResult> {
+  async upload(file: Express.Multer.File, key: string): Promise<FileUploadResult> {
     const result = await new OSS({
       region: this.config.region,
       bucket: this.config.bucket,

@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Multer } from 'multer';
 import type { FileUploadResult, StorageProvider, FileStorageConfig } from './storage.types';
 
 export class LocalStorageProvider implements StorageProvider {
@@ -8,7 +7,7 @@ export class LocalStorageProvider implements StorageProvider {
 
   constructor(private config: FileStorageConfig) {}
 
-  async upload(file: Multer.File, key: string): Promise<FileUploadResult> {
+  async upload(file: Express.Multer.File, key: string): Promise<FileUploadResult> {
     if (!fs.existsSync(this.config.uploadDir)) {
       fs.mkdirSync(this.config.uploadDir, { recursive: true });
     }

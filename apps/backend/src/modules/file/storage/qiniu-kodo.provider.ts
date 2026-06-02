@@ -1,4 +1,3 @@
-import type { Multer } from 'multer';
 import type { FileStorageConfig, FileUploadResult, StorageProvider } from './storage.types';
 import { assertCloudConfig, buildPublicUrl } from './storage.utils';
 
@@ -11,7 +10,7 @@ export class QiniuKodoProvider implements StorageProvider {
     assertCloudConfig(config, 'Qiniu Kodo');
   }
 
-  async upload(file: Multer.File, key: string): Promise<FileUploadResult> {
+  async upload(file: Express.Multer.File, key: string): Promise<FileUploadResult> {
     const mac = new qiniu.auth.digest.Mac(this.config.accessKeyId, this.config.accessKeySecret);
     const putPolicy = new qiniu.rs.PutPolicy({ scope: `${this.config.bucket}:${key}` });
     const uploadToken = putPolicy.uploadToken(mac);

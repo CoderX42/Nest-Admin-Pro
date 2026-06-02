@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Multer } from 'multer';
 import { PrismaService } from '../../common/prisma.service';
 import { StorageProviderFactory } from './storage/storage-provider.factory';
 import { createCloudObjectKey, createStoredName, normalizeOriginalName, normalizeStorageProvider } from './storage/storage.utils';
@@ -147,14 +146,14 @@ export class FileService {
     return { success: true };
   }
 
-  async upload(file: Multer.File, user?: any) {
+  async upload(file: Express.Multer.File, user?: any) {
     const config = await this.resolveConfig();
     if (!file) throw new BadRequestException('No file uploaded');
     if (file.size > config.maxFileSize) throw new BadRequestException(`File size must be less than ${config.maxFileSize / 1024 / 1024}MB`);
     return this.saveFile(file, config, user);
   }
 
-  async uploadImage(file: Multer.File, user?: any) {
+  async uploadImage(file: Express.Multer.File, user?: any) {
     const config = await this.resolveConfig();
     if (!file) throw new BadRequestException('No file uploaded');
     const originalName = normalizeOriginalName(file.originalname);
@@ -184,7 +183,7 @@ export class FileService {
     return res.sendFile(filePath);
   }
 
-  private async saveFile(file: Multer.File, config: FileStorageConfig, user?: any) {
+  private async saveFile(file: Express.Multer.File, config: FileStorageConfig, user?: any) {
     if (!file.buffer) throw new BadRequestException('Invalid upload buffer');
     const originalName = normalizeOriginalName(file.originalname);
     const key = config.storage === 'local'
@@ -238,7 +237,9 @@ export class FileService {
         status: 1,
       },
     });
-    const map = new Map(configs.map((item) => [item.key, item.value]));
+    const map = new Map<string, string>(
+      configs.map((item) => [item.key, String(item.value ?? '')]),
+    );
 
     return {
       storage: normalizeStorageProvider(map.get('file_storage') || process.env.FILE_STORAGE || 'local'),
