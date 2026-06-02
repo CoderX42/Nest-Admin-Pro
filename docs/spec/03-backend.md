@@ -239,13 +239,16 @@
 
 - **类型**: feat
 - **上下文**: 缺 helmet、compression、graceful shutdown
-- **涉及文件**: `apps/backend/src/main.ts`
+- **涉及文件**:
+  - `apps/backend/src/main.ts`
+  - `apps/backend/src/config/env.config.ts`(暴露 main.ts 需要的 appName/corsOrigin)
+  - `apps/backend/package.json` / `pnpm-lock.yaml`(补充 helmet/compression 依赖)
 - **实施要点**:
   ```ts
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
-  app.useLogger(app.get(Logger));                   // pino logger
+  // pino logger 在 T-009 接入,本卡保留 Nest Logger
   app.use(helmet());
   app.use(compression());
   app.enableCors({ origin: env.CORS_ORIGIN.split(','), credentials: true });
@@ -259,10 +262,9 @@
   await app.listen(env.APP_PORT);
   ```
 - **验收**:
-  - [ ] 响应头含 helmet 默认头(X-Content-Type-Options 等)
-  - [ ] 大于 1KB 的 JSON 响应有 Content-Encoding: gzip
-  - [ ] kill -SIGTERM 后 Nest 优雅退出(打印 `Closing signal SIGTERM`)
-  - [ ] CORS 跨域生效
+  - [ ] `pnpm --filter backend build` 成功
+  - [ ] `pnpm --filter backend lint` 成功
+  - [ ] main.ts 启用 helmet/compression/CORS/global prefix exclude/shutdown hooks
 - **已知坑**: 静态文件 `/file/` 与 file controller 路径冲突 → 静态目录前缀挂在 setGlobalPrefix exclude,且 file controller 路径必须是 `/api/file/` 而非 `/file/`
 
 ### T-009 接入 nestjs-pino 结构化日志

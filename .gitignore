@@ -21,3 +21,6 @@ apps/backend/uploads/
 uploads/
 coverage/
 .nyc_output/
+
+# TypeScript incremental build cache
+**/tsconfig.build.tsbuildinfo

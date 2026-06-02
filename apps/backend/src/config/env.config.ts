@@ -1,8 +1,10 @@
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('app', () => ({
+  name: process.env.APP_NAME || 'Nest-Admin-Pro',
   port: parseInt(process.env.APP_PORT || '3000', 10),
   env: process.env.APP_ENV || 'dev',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174',
   jwtSecret: process.env.JWT_SECRET || 'default-secret-change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   uploadDir: process.env.UPLOAD_DIR || './uploads',

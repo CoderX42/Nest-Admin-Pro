@@ -1,25 +1,45 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import compression from 'compression';
+import helmet from 'helmet';
 import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  const logger = new Logger('Bootstrap');
+  const configService = app.get(ConfigService);
+  const appName = configService.get<string>('app.name', 'Nest-Admin-Pro');
+  const appEnv = configService.get<string>('app.env', 'development');
+  const port = configService.get<number>('app.port', 3000);
+  const uploadDir = configService.get<string>('app.uploadDir', './uploads');
+  const corsOrigin = configService.get<string>(
+    'app.corsOrigin',
+    'http://localhost:5173,http://localhost:5174',
+  );
 
-  // Enable CORS
-  app.enableCors();
+  app.use(helmet());
+  app.use(compression());
+  app.enableCors({ origin: corsOrigin.split(','), credentials: true });
 
-  // Global prefix
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [
+      { path: 'health', method: RequestMethod.ALL },
+      { path: 'file/(.*)', method: RequestMethod.ALL },
+    ],
+  });
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
@@ -35,14 +55,14 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   // Static file serving for uploads
-  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
+  app.useStaticAssets(path.resolve(process.cwd(), uploadDir), {
     prefix: '/file/',
   });
+  app.enableShutdownHooks();
 
-  const port = process.env.APP_PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 Server running on http://localhost:${port}`);
-  console.log(`📚 API Docs: http://localhost:${port}/api-docs`);
+  logger.log(`${appName} (${appEnv}) running on http://localhost:${port}`);
+  logger.log(`API Docs: http://localhost:${port}/api-docs`);
 }
 
 bootstrap();
