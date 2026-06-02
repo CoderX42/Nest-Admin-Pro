@@ -305,14 +305,17 @@
 - **涉及文件**:
   - `apps/backend/src/auth/auth.controller.ts`
   - `apps/backend/src/app.module.ts`
+  - `apps/backend/src/common/throttler/redis-throttler.storage.ts`(新建,用现有 ioredis 实现 Redis storage)
 - **实施要点**:
   1. 全局保留 60s/60(default)
   2. 登录接口加 `@Throttle({ default: { limit: 5, ttl: 60_000 } })`
   3. 验证码接口加 `@Throttle({ default: { limit: 10, ttl: 60_000 } })`
-  4. ThrottlerStorage 改用 Redis(`@nest-lab/throttler-storage-redis`),多实例共享计数
+  4. ThrottlerStorage 改用 Redis;为避免新增依赖清单外包,本项目用 `ioredis` 实现本地 `RedisThrottlerStorage`
 - **验收**:
-  - [ ] 1 分钟内 6 次登录失败请求 → 第 6 次 429
-  - [ ] 重启 backend,Redis 中限流计数仍存在
+  - [ ] `pnpm --filter backend build` 成功
+  - [ ] `pnpm --filter backend lint` 成功
+  - [ ] 登录/验证码路由存在 `@Throttle` 配置
+  - [ ] ThrottlerModule 使用 Redis storage
 
 ### T-011 Health 端点
 

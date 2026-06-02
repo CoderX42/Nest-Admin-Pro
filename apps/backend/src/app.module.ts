@@ -19,6 +19,7 @@ import { TransformInterceptor } from './common/transform.interceptor';
 import { OperLogInterceptor } from './common/oper-log.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RequestContextMiddleware } from './common/middleware/request-context.middleware';
+import { RedisThrottlerStorage } from './common/throttler/redis-throttler.storage';
 
 @Module({
   imports: [
@@ -56,12 +57,25 @@ import { RequestContextMiddleware } from './common/middleware/request-context.mi
         ],
       },
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 60,
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        storage: new RedisThrottlerStorage({
+          host: configService.get<string>('redis.host', '127.0.0.1'),
+          port: configService.get<number>('redis.port', 6379),
+          password: configService.get<string>('redis.password'),
+          db: configService.get<number>('redis.db', 0),
+          keyPrefix: configService.get<string>('REDIS_KEY_PREFIX', 'nap:'),
+        }),
+        throttlers: [
+          {
+            name: 'default',
+            ttl: configService.get<number>('THROTTLE_TTL', 60_000),
+            limit: configService.get<number>('THROTTLE_LIMIT', 60),
+          },
+        ],
+      }),
+    }),
     ScheduleModule.forRoot(),
     CommonModule,
     RedisModule,

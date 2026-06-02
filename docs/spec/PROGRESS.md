@@ -37,7 +37,8 @@ T-005 f07f994 2026-06-03 00:43:46 CST dept/menu 删除业务校验改用 HttpExc
 T-006 1bf1785 2026-06-03 00:46:21 CST ConfigModule 加载 env 文件并用 zod 校验关键环境变量
 T-007 16a2ef2 2026-06-03 00:47:54 CST TransformInterceptor 支持文件流/SSE/显式装饰器旁路
 T-008 0247fec 2026-06-03 01:32:11 CST main.ts 接入 helmet/compression/CORS/global prefix exclude 与 shutdown hooks
-T-009 pending 2026-06-03 01:35:07 CST 接入 nestjs-pino 并通过 RequestContextMiddleware 注入 traceId 上下文
+T-009 ff7aeb9 2026-06-03 01:35:07 CST 接入 nestjs-pino 并通过 RequestContextMiddleware 注入 traceId 上下文
+T-010 pending 2026-06-03 01:39:36 CST 登录/验证码接口限流加严并接入 Redis throttler storage
 
 ---
 
