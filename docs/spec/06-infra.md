@@ -6,92 +6,28 @@
 
 ---
 
-## S1 工程化(workspace + Docker + 日志监控)
+## S1 工程化(Docker + 日志监控 + 工具链加固)
 
-### T-100 启用 pnpm workspace
+### T-100 husky/lint-staged/commitlint/changesets 加固
 
 - **类型**: feat
+- **上下文**: workspace 骨架已在 S0 的 T-000 提前落地;S1 不再重复创建根目录 workspace,改为补齐提交前质量门禁与变更记录工具
 - **涉及文件**:
-  - 仓库根 `package.json`(新建)
-  - `pnpm-workspace.yaml`(新建)
-  - `.npmrc`(新建)
-  - `.nvmrc`(新建,内容 `20`)
-  - `tsconfig.base.json`(新建)
-  - `.editorconfig`(新建)
-  - `.gitignore`(更新,加 `node_modules`、`.env.local`、`uploads/`、`dist/`、`.turbo/` 等)
+  - `.husky/pre-commit`(新建)
+  - `.husky/commit-msg`(新建)
+  - `commitlint.config.cjs`(新建)
+  - `lint-staged.config.cjs`(新建)
+  - `.changeset/config.json`(新建)
+  - `package.json`(更新 scripts/devDependencies)
 - **实施要点**:
-  - 仓库根 package.json:
-    ```json
-    {
-      "name": "nest-admin-pro",
-      "version": "0.1.0",
-      "private": true,
-      "engines": { "node": ">=20.10", "pnpm": ">=9" },
-      "packageManager": "pnpm@9.12.0",
-      "scripts": {
-        "dev": "concurrently -n backend,fronted -c blue,magenta \"pnpm --filter backend start:dev\" \"pnpm --filter fronted dev\"",
-        "dev:backend": "pnpm --filter backend start:dev",
-        "dev:fronted": "pnpm --filter fronted dev",
-        "dev:app": "pnpm --filter app dev:h5",
-        "build": "pnpm --filter backend build && pnpm --filter fronted build",
-        "build:backend": "pnpm --filter backend build",
-        "build:fronted": "pnpm --filter fronted build",
-        "build:app": "pnpm --filter app build:h5",
-        "lint": "pnpm -r lint",
-        "lint:fix": "pnpm -r lint:fix",
-        "typecheck": "pnpm -r typecheck",
-        "test": "pnpm -r test",
-        "test:cov": "pnpm -r test:cov",
-        "format": "prettier --write \"**/*.{ts,vue,js,json,md}\" --ignore-path .gitignore",
-        "prisma:generate": "pnpm --filter backend prisma:generate",
-        "prisma:migrate": "pnpm --filter backend prisma:migrate:dev",
-        "prisma:migrate:deploy": "pnpm --filter backend prisma:migrate:deploy",
-        "prisma:seed": "pnpm --filter backend prisma:seed",
-        "prisma:studio": "pnpm --filter backend prisma:studio",
-        "db:reset": "pnpm --filter backend db:reset",
-        "docker:up": "docker compose -f docker/docker-compose.yml up -d",
-        "docker:down": "docker compose -f docker/docker-compose.yml down",
-        "docker:logs": "docker compose -f docker/docker-compose.yml logs -f"
-      },
-      "devDependencies": {
-        "concurrently": "^8.2.2",
-        "prettier": "^3.3.3",
-        "typescript": "^5.4.5"
-      }
-    }
-    ```
-  - `pnpm-workspace.yaml`:
-    ```yaml
-    packages:
-      - "apps/*"
-      - "packages/*"
-    ```
-  - `.npmrc`:
-    ```ini
-    auto-install-peers=true
-    strict-peer-dependencies=false
-    shamefully-hoist=false
-    enable-pre-post-scripts=true
-    save-exact=false
-    ```
-  - `tsconfig.base.json`:见 `01-conventions.md` § 3.1
-  - `.editorconfig`:
-    ```ini
-    root = true
-    [*]
-    charset = utf-8
-    end_of_line = lf
-    insert_final_newline = true
-    indent_style = space
-    indent_size = 2
-    trim_trailing_whitespace = true
-    [*.md]
-    trim_trailing_whitespace = false
-    ```
+  1. 引入 `husky`、`lint-staged`、`@commitlint/cli`、`@commitlint/config-conventional`、`@changesets/cli`
+  2. `pre-commit` 执行 lint-staged,只检查暂存的 ts/vue/json/md 文件
+  3. `commit-msg` 校验 `[T-XXX] <type>(<scope>): <subject>` 格式
+  4. changesets 仅用于后续包版本记录,不发布 npm
 - **验收**:
-  - [ ] 仓库根 `pnpm install` 三应用统一安装
-  - [ ] `pnpm dev` 同时启动 backend + fronted
-  - [ ] `pnpm -r typecheck` 三端通过
+  - [ ] `pnpm install` 后 husky hooks 可用
+  - [ ] 非规范 commit message 被 commitlint 拦截
+  - [ ] 暂存 ts/vue 文件时 lint-staged 仅检查相关文件
 
 ### T-101 创建 packages/shared-types 与 shared-constants
 

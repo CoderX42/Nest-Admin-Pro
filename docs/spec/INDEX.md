@@ -42,6 +42,7 @@
 
 | 区段 | 用途 |
 | --- | --- |
+| T-000 | infra S0(workspace 骨架,解锁根目录 pnpm --filter 验收) |
 | T-001 ~ T-011 | backend S0 |
 | T-050 ~ T-057 | fronted S0 |
 | T-080 ~ T-087 | app S0 |

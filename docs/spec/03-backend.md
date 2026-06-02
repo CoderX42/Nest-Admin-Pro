@@ -8,6 +8,26 @@
 
 ## S0 修血洞(让后端能起来,登录链路打通)
 
+### T-000 chore(infra): bootstrap pnpm workspace skeleton
+
+- **类型**: chore
+- **目标**: 让 `pnpm --filter <pkg>` 在根目录可用,解锁所有 S0 验收
+- **涉及文件**:
+  - `package.json`(新建)
+  - `pnpm-workspace.yaml`(新建)
+  - `.npmrc`(新建)
+  - `docs/spec/03-backend.md`
+  - `docs/spec/INDEX.md`
+  - `docs/spec/PROGRESS.md`
+  - `docs/spec/06-infra.md`
+- **实施要点**:
+  1. 根目录 `package.json` 声明 `pnpm@9.0.0`、Node/pnpm engines 与三端基础脚本
+  2. `pnpm-workspace.yaml` 纳入 `apps/*`
+  3. `.npmrc` 固定 workspace 安装策略
+  4. 将 S1 的 T-100 从 workspace 骨架改为 husky/lint-staged/commitlint/changesets 加固
+- **验收**:
+  - [ ] `pnpm --filter backend list --depth -1` 不报 `ERR_PNPM_NO_PKG_MANIFEST`,输出 backend 包信息
+
 ### T-001 修复 package.json 元数据与脚本
 
 - **类型**: chore

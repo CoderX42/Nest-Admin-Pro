@@ -4,7 +4,7 @@
 
 ## 当前 Stage
 
-**S0 修血洞**(尚未开始)
+**S0 修血洞**(进行中)
 
 ---
 
@@ -28,7 +28,7 @@
 
 > 格式:`T-XXX <commit-sha> <一句话总结>`
 
-(空)
+T-000 pending 2026-06-02 23:57:07 CST workspace 骨架已补齐,`pnpm --filter backend list --depth -1` 验收通过
 
 ---
 
