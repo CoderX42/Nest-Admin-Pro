@@ -14,6 +14,7 @@ import { SystemModule } from './modules/system/system.module';
 import { MonitorModule } from './modules/monitor/monitor.module';
 import { FileModule } from './modules/file/file.module';
 import { GenModule } from './modules/gen/gen.module';
+import { HealthModule } from './health/health.module';
 import { GlobalExceptionFilter } from './common/exception.filter';
 import { TransformInterceptor } from './common/transform.interceptor';
 import { OperLogInterceptor } from './common/oper-log.interceptor';
@@ -84,6 +85,7 @@ import { RedisThrottlerStorage } from './common/throttler/redis-throttler.storag
     MonitorModule,
     FileModule,
     GenModule,
+    HealthModule,
   ],
   providers: [
     {

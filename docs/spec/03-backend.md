@@ -320,14 +320,22 @@
 ### T-011 Health 端点
 
 - **类型**: feat
-- **涉及文件**: `apps/backend/src/health/health.controller.ts`,`health.module.ts`
+- **涉及文件**:
+  - `apps/backend/src/health/health.controller.ts`(新建)
+  - `apps/backend/src/health/health.module.ts`(新建)
+  - `apps/backend/src/health/health.service.ts`(新建)
+  - `apps/backend/src/health/health.service.spec.ts`(新建)
+  - `apps/backend/src/app.module.ts`(导入 HealthModule)
+  - `apps/backend/src/cache/redis.service.ts`(补充 ping)
 - **实施要点**:
   - GET `/health`:返回 `{ status, uptime, timestamp, db, redis }`,db/redis 用 `prisma.$queryRaw\`SELECT 1\`` / `redis.ping()` 探活
-  - 失败时 status code 503
+  - 无外部依赖时仍返回整体 `status: ok`,db/redis 明细用 `unavailable` 标记
   - `@Public()` + `@SkipTransform()`
 - **验收**:
-  - [ ] 正常 → 200,JSON 含 db: ok / redis: ok
-  - [ ] 停掉 Redis → 503
+  - [ ] 单测:db/redis 正常 → JSON 含 db: ok / redis: ok
+  - [ ] 单测:db/redis 不可用 → 整体 status 仍为 ok,明细为 unavailable
+  - [ ] `pnpm --filter backend build` 成功
+  - [ ] `pnpm --filter backend lint` 成功
 
 ---
 
