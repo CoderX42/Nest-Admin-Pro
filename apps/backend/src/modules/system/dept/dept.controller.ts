@@ -5,12 +5,11 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { DeptService } from './dept.service';
 import { CreateDeptDto, UpdateDeptDto, QueryDeptDto } from './dto/dept.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Department')
 @Controller('system/dept')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class DeptController {
   constructor(private readonly deptService: DeptService) {}
 

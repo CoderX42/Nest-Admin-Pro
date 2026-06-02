@@ -1,13 +1,12 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ServerService } from './server.service';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 import * as os from 'os';
 
 @ApiTags('Monitor - Server')
 @Controller('monitor/server')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 

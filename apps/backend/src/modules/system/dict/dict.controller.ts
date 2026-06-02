@@ -2,12 +2,11 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, U
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { DictService } from './dict.service';
 import { CreateDictTypeDto, UpdateDictTypeDto, QueryDictTypeDto, CreateDictDataDto, UpdateDictDataDto } from './dto/dict.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Dictionary')
 @Controller('system/dict')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class DictController {
   constructor(private readonly dictService: DictService) {}
 

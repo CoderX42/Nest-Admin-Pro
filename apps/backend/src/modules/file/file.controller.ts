@@ -18,7 +18,6 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FileService } from './file.service';
-import { JwtAuthGuard } from '../../auth/jwt.guard';
 import { PermissionGuard, Public, RequirePermission } from '../../auth/guards';
 
 const uploadOptions = {
@@ -33,7 +32,7 @@ const uploadOptions = {
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @UseGuards(PermissionGuard)
   @RequirePermission('system:config:list')
   @Get('config')
   @ApiOperation({ summary: 'Get file storage config' })
@@ -41,7 +40,7 @@ export class FileController {
     return this.fileService.getConfig();
   }
 
-  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @UseGuards(PermissionGuard)
   @RequirePermission('system:config:list')
   @Put('config')
   @ApiOperation({ summary: 'Update file storage config' })
@@ -49,7 +48,7 @@ export class FileController {
     return this.fileService.updateConfig(dto);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @UseGuards(PermissionGuard)
   @RequirePermission('system:file:list')
   @Get('list')
   @ApiOperation({ summary: 'Get uploaded file list' })
@@ -57,7 +56,7 @@ export class FileController {
     return this.fileService.list(query);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @UseGuards(PermissionGuard)
   @RequirePermission('system:file:list')
   @Get('detail/:id')
   @ApiOperation({ summary: 'Get uploaded file detail' })
@@ -65,7 +64,7 @@ export class FileController {
     return this.fileService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @UseGuards(PermissionGuard)
   @RequirePermission('system:file:remove')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete uploaded file' })
@@ -73,7 +72,6 @@ export class FileController {
     return this.fileService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   @Post('upload')
   @ApiOperation({ summary: 'Upload file' })
@@ -81,7 +79,6 @@ export class FileController {
     return this.fileService.upload(file, req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', uploadOptions))
   @Post('upload-image')
   @ApiOperation({ summary: 'Upload image' })

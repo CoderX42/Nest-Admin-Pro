@@ -2,12 +2,11 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, U
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ConfigService } from './config.service';
 import { CreateConfigDto, UpdateConfigDto, QueryConfigDto } from './dto/config.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Config')
 @Controller('system/config')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class ConfigController {
   constructor(private readonly configService: ConfigService) {}
 

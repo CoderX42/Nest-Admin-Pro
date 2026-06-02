@@ -5,10 +5,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtAuthGuard } from './jwt.guard';
-
-export const IS_PUBLIC_KEY = 'isPublic';
-export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+export { IS_PUBLIC_KEY, Public } from '../common/decorators/public.decorator';
 
 export const ROLES_KEY = 'roles';
 export const RequireRole = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);

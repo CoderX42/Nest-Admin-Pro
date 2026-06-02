@@ -14,6 +14,7 @@ import { GenModule } from './modules/gen/gen.module';
 import { GlobalExceptionFilter } from './common/exception.filter';
 import { TransformInterceptor } from './common/transform.interceptor';
 import { OperLogInterceptor } from './common/oper-log.interceptor';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -40,6 +41,10 @@ import { OperLogInterceptor } from './common/oper-log.interceptor';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_FILTER,

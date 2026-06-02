@@ -1,12 +1,11 @@
 import { Controller, Get, Post, Query, UseGuards, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CacheService } from './cache.service';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('Monitor - Cache')
 @Controller('monitor/cache')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class CacheController {
   constructor(private readonly cacheService: CacheService) {}
 

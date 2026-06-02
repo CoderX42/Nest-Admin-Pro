@@ -1,11 +1,9 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { GenService } from './gen.service';
-import { JwtAuthGuard } from '../../auth/jwt.guard';
 
 @ApiTags('Code Generator')
 @Controller('gen')
-@UseGuards(JwtAuthGuard)
 export class GenController {
   constructor(private readonly genService: GenService) {}
 

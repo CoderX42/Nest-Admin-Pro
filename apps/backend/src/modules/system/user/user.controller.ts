@@ -15,11 +15,10 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 
 @ApiTags('System - User Management')
 @Controller('system/user')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

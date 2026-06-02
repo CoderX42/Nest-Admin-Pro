@@ -1,12 +1,11 @@
 import { Controller, Get, Query, Param, ParseIntPipe, UseGuards, HttpCode, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { LoginLogService } from './login-log.service';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('Monitor - Login Log')
 @Controller('monitor/login-log')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class LoginLogController {
   constructor(private readonly loginLogService: LoginLogService) {}
 

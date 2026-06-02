@@ -2,12 +2,11 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, U
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { NoticeService } from './notice.service';
 import { CreateNoticeDto, UpdateNoticeDto, QueryNoticeDto } from './dto/notice.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Notice')
 @Controller('system/notice')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class NoticeController {
   constructor(private readonly noticeService: NoticeService) {}
 

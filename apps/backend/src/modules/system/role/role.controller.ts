@@ -5,12 +5,11 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, AssignPermDto } from './dto/role.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Role Management')
 @Controller('system/role')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 

@@ -117,6 +117,12 @@
   - `apps/backend/src/app.module.ts`
   - `apps/backend/src/common/guards/jwt-auth.guard.ts`(新建/迁移)
   - `apps/backend/src/common/decorators/public.decorator.ts`
+- **涉及文件补充**:
+  - `apps/backend/src/auth/jwt.guard.ts`(兼容 re-export)
+  - `apps/backend/src/auth/guards.ts`(复用 common `@Public()`)
+  - `apps/backend/src/auth/auth.controller.ts`(移除显式 JwtAuthGuard)
+  - `apps/backend/src/modules/**/**.controller.ts`(移除显式 JwtAuthGuard,保留 PermissionGuard)
+  - `apps/backend/src/common/guards/jwt-auth.guard.spec.ts`(新建)
 - **实施要点**:
   1. `Public` 装饰器:
      ```ts
@@ -140,9 +146,9 @@
   5. 给 `auth.controller.ts` 的 `login`、`register`、`captcha`、`captcha/validate` 加 `@Public()`
   6. 给 `health.controller.ts` 加 `@Public()`(配合 T-011)
 - **验收**:
-  - [ ] e2e:无 token 访问 `/api/system/user` → 401
-  - [ ] e2e:无 token 访问 `/api/auth/login` → 200(若参数有效)
-  - [ ] e2e:无 token 访问 `/api/health` → 200
+  - [ ] 单测:`@Public()` metadata 命中时 JwtAuthGuard 直接放行
+  - [ ] grep controller 上无 `@UseGuards(JwtAuthGuard)` 残留
+  - [ ] `pnpm --filter backend build` 成功
 - **已知坑**: 全局 JwtGuard 后,Swagger UI(`/doc.html` `/api-docs`)的静态资源也会被拦,需在 main.ts 把 swagger 路径加白名单或在 SwaggerModule 设置 `useGlobalGuards = false`
 
 ### T-004 GlobalExceptionFilter 不泄漏内部异常

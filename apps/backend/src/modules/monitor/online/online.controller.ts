@@ -1,12 +1,11 @@
 import { Controller, Get, Param, ParseIntPipe, UseGuards, HttpCode, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { OnlineService } from './online.service';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('Monitor - Online Users')
 @Controller('monitor/online')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class OnlineController {
   constructor(private readonly onlineService: OnlineService) {}
 

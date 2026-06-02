@@ -5,12 +5,11 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MenuService } from './menu.service';
 import { CreateMenuDto, UpdateMenuDto, QueryMenuDto } from './dto/menu.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Menu Management')
 @Controller('system/menu')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(PermissionGuard)
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
