@@ -155,17 +155,19 @@
 
 - **类型**: fix
 - **上下文**: 当前 `error.message` 直接做响应 message,会暴露 SQL/Prisma 错误细节
-- **涉及文件**: `apps/backend/src/common/filters/global-exception.filter.ts`
+- **涉及文件**:
+  - `apps/backend/src/common/exception.filter.ts`(当前代码结构未使用 `common/filters/` 目录)
+  - `apps/backend/src/common/exception.filter.spec.ts`(新建)
 - **实施要点**:
   1. `HttpException`:照常返回 `getResponse()` 的 message
   2. `Prisma.PrismaClientKnownRequestError`:按错误码映射友好消息(P2002 → "数据已存在",P2025 → "记录不存在")
   3. 其他 Error:生产环境返回 `服务器内部错误`,日志输出原始 stack
   4. 必填字段:`code`、`message`、`timestamp`、`path`、`requestId`(从 ALS 上下文取)
-  5. 用 `pinoLogger.error` 记录完整异常,带 `traceId / userId / tenantId / path / payload`
+  5. 用 Nest Logger 记录完整异常;T-009 接入 pino 后再切换到结构化 `pinoLogger.error`
 - **验收**:
   - [ ] 单测:Prisma P2002 抛出 → 响应 message 为 "数据已存在",code=409
   - [ ] 单测:`new Error('secret leak')` 在生产环境 → message="服务器内部错误"
-  - [ ] e2e:故意触发 500 → 响应不含原始 stack
+  - [ ] 单测:故意触发 500 → 响应不含原始 stack
 - **已知坑**: NestJS 的 HttpException 在 NotFoundException 等子类下 `getResponse()` 返回字符串,需兼容
 
 ### T-005 修复裸 throw new Error 为 HttpException

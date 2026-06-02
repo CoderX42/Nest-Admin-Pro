@@ -31,7 +31,8 @@
 T-000 9506dc0 2026-06-02 23:57:07 CST workspace 骨架已补齐,`pnpm --filter backend list --depth -1` 验收通过
 T-001 78e94f6 2026-06-03 00:33:56 CST backend package 元数据/脚本修复,build/lint 与 `dist/main.js` 路径验收通过
 T-002 056093e 2026-06-03 00:36:48 CST 移除 BigInt 全局污染,新增安全序列化工具并接入响应包装
-T-003 pending 2026-06-03 00:39:55 CST 启用全局 JwtAuthGuard 并让 `@Public()` 元数据生效
+T-003 49633b3 2026-06-03 00:39:55 CST 启用全局 JwtAuthGuard 并让 `@Public()` 元数据生效
+T-004 pending 2026-06-03 00:42:19 CST GlobalExceptionFilter 隐藏内部异常并映射 Prisma 友好错误
 
 ---
 
