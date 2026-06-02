@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
+import { Logger as NestLogger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
+import { Logger as PinoLogger } from 'nestjs-pino';
 import compression from 'compression';
 import helmet from 'helmet';
 import * as path from 'path';
@@ -12,7 +13,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
-  const logger = new Logger('Bootstrap');
+  app.useLogger(app.get(PinoLogger));
+  const logger = new NestLogger('Bootstrap');
   const configService = app.get(ConfigService);
   const appName = configService.get<string>('app.name', 'Nest-Admin-Pro');
   const appEnv = configService.get<string>('app.env', 'development');

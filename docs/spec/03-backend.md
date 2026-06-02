@@ -274,6 +274,9 @@
 - **涉及文件**:
   - `apps/backend/src/app.module.ts`
   - `apps/backend/src/common/middleware/request-context.middleware.ts`(新建)
+  - `apps/backend/src/common/middleware/request-context.middleware.spec.ts`(新建)
+  - `apps/backend/src/main.ts`(接入 pino logger,保留 T-008 bootstrap 加固)
+  - `apps/backend/package.json` / `pnpm-lock.yaml`(补充 nestjs-pino/pino 依赖)
 - **实施要点**:
   1. `LoggerModule.forRoot`:
      ```ts
@@ -290,10 +293,10 @@
      ```
   2. 每个请求把 `traceId` 通过 ALS 注入 `RequestContext`,Prisma 中间件、OperLogInterceptor 共用
 - **验收**:
-  - [ ] 开发环境:控制台彩色 pretty 输出
-  - [ ] 生产环境:JSON 单行输出,含 traceId
-  - [ ] 敏感字段被 redact 为 `[Redacted]`
-  - [ ] 同一请求所有日志的 traceId 一致
+  - [ ] 单测:RequestContextMiddleware 在 ALS 中保存 traceId/ip/userAgent
+  - [ ] `pnpm --filter backend build` 成功
+  - [ ] `pnpm --filter backend lint` 成功
+  - [ ] LoggerModule 配置包含 redact 与 traceId customProps
 
 ### T-010 Throttler 路由级配置(登录/验证码限流加严)
 
