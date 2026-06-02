@@ -12,11 +12,6 @@ import * as svgCaptcha from 'svg-captcha';
 import { ApiResponse } from '../common/api-response';
 import { LoginDto } from './dto/auth.dto';
 
-// Fix BigInt serialization
-(BigInt.prototype as any).toJSON = function () {
-  return Number(this);
-};
-
 @Injectable()
 export class AuthService {
   constructor(

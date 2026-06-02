@@ -29,7 +29,8 @@
 > 格式:`T-XXX <commit-sha> <一句话总结>`
 
 T-000 9506dc0 2026-06-02 23:57:07 CST workspace 骨架已补齐,`pnpm --filter backend list --depth -1` 验收通过
-T-001 pending 2026-06-03 00:33:56 CST backend package 元数据/脚本修复,build/lint 与 `dist/main.js` 路径验收通过
+T-001 78e94f6 2026-06-03 00:33:56 CST backend package 元数据/脚本修复,build/lint 与 `dist/main.js` 路径验收通过
+T-002 pending 2026-06-03 00:36:48 CST 移除 BigInt 全局污染,新增安全序列化工具并接入响应包装
 
 ---
 

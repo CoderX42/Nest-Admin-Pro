@@ -81,7 +81,10 @@
 - **涉及文件**:
   - `apps/backend/src/auth/auth.service.ts`(删除全局污染)
   - `apps/backend/src/common/utils/bigint.util.ts`(新建)
-  - `apps/backend/src/common/interceptors/transform.interceptor.ts`(集成)
+  - `apps/backend/src/common/transform.interceptor.ts`(集成;当前代码结构未使用 `common/interceptors/` 目录)
+  - `apps/backend/src/common/transform.interceptor.spec.ts`(新建,覆盖响应包装前 BigInt 序列化)
+  - `apps/backend/src/common/utils/bigint.util.spec.ts`(新建)
+  - `apps/backend/jest.config.js`(新建,用于 S0 单测执行)
 - **实施要点**:
   1. 新建 `bigint.util.ts`:
      ```ts
@@ -102,7 +105,7 @@
   3. 删除 `auth.service.ts:17` 的副作用注入
 - **验收**:
   - [ ] 单测:`stringifyBigInt({ id: 1n, list: [{ id: 2n }] })` → `{ id: '1', list: [{ id: '2' }] }`
-  - [ ] e2e:`/api/auth/getUserInfo` 返回的 `id` 字段为 string
+  - [ ] 单测:`TransformInterceptor` 包装 `{ id: 1n }` 后 `data.id` 为 string
   - [ ] grep 全代码无 `BigInt.prototype` 字样
 - **已知坑**: 必须在 ApiResponse 包装前转,否则外层 `code/message` 不变化但内层 `data` 仍可能含 BigInt
 

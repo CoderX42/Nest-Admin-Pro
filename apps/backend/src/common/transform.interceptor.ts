@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse } from './api-response';
+import { stringifyBigInt } from './utils/bigint.util';
 
 @Injectable()
 export class TransformInterceptor<T>
@@ -18,11 +19,12 @@ export class TransformInterceptor<T>
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
       map((data) => {
+        const serialized = stringifyBigInt(data);
         // If already ApiResponse, return as-is
-        if (data instanceof ApiResponse) {
-          return data;
+        if (serialized instanceof ApiResponse) {
+          return serialized;
         }
-        return ApiResponse.success(data);
+        return ApiResponse.success(serialized);
       }),
     );
   }
