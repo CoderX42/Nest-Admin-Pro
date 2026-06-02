@@ -222,15 +222,18 @@
 
 - **类型**: fix
 - **上下文**: `Content-Disposition: attachment` / `text/event-stream` 也会被包成 ApiResponse,破坏下载与 SSE
-- **涉及文件**: `apps/backend/src/common/interceptors/transform.interceptor.ts`
+- **涉及文件**:
+  - `apps/backend/src/common/transform.interceptor.ts`(当前代码结构未使用 `common/interceptors/` 目录)
+  - `apps/backend/src/common/decorators/skip-transform.decorator.ts`(新建)
+  - `apps/backend/src/common/transform.interceptor.spec.ts`
 - **实施要点**:
   1. 检查响应对象的 `Content-Type` / `Content-Disposition`,命中则直接 `next.handle()` 不包装
   2. 路径白名单:`/api-docs`、`/doc.html`、`/health`、以 `/file/` 开头的、`/api/*/export`、`/api/*/download`
   3. 用装饰器 `@SkipTransform()` 显式跳过(`SetMetadata('skipTransform', true)`)
   4. Health 接口加 `@SkipTransform()`,仅返回 `{ status: 'ok', uptime: ... }`
 - **验收**:
-  - [ ] e2e:导出 xlsx → 响应头正确,前端能直接下载
-  - [ ] e2e:`/api/health` 不被包装
+  - [ ] 单测:`Content-Disposition` 响应不被包装
+  - [ ] 单测:`@SkipTransform()` metadata 命中时不包装
 
 ### T-008 main.ts 启动加固
 
