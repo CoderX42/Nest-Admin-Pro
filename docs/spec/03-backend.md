@@ -196,7 +196,10 @@
 - **涉及文件**:
   - `apps/backend/src/config/env.config.ts`
   - `apps/backend/src/config/env.validation.ts`(新建,使用 zod)
+  - `apps/backend/src/config/env.validation.spec.ts`(新建)
   - `apps/backend/src/app.module.ts`
+  - `apps/backend/.env.example`(新建)
+  - `apps/backend/package.json` / `pnpm-lock.yaml`(补充 zod 依赖)
 - **实施要点**:
   1. ConfigModule 配置:
      ```ts
@@ -209,7 +212,7 @@
   2. `env.validation.ts` 用 zod schema(见 `01-conventions.md` § 14.2)
   3. 生产环境 `JWT_SECRET === 'change-me-please'` 直接抛错退出
   4. 创建 `apps/backend/.env.example`,列出所有变量(无敏感值)
-  5. 启动 banner:Logger 打印 APP_NAME / APP_ENV / APP_PORT / DATABASE_URL(脱敏后)
+  5. 启动 banner 延后到 T-008 main.ts 加固中实现
 - **验收**:
   - [ ] 缺失 DATABASE_URL → 启动失败,日志清晰指出
   - [ ] 生产环境 + 默认 JWT_SECRET → 启动失败

@@ -4,6 +4,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import appConfig from './config/env.config';
+import { envValidate } from './config/env.validation';
 import { CommonModule } from './common/common.module';
 import { RedisModule } from './cache/redis.module';
 import { AuthModule } from './auth/auth.module';
@@ -20,6 +21,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env.local', '.env'],
+      validate: envValidate,
       load: [appConfig],
     }),
     ThrottlerModule.forRoot([
