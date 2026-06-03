@@ -56,6 +56,7 @@ T-085 e511d1d 2026-06-03 16:23:58 CST app vite alias 与 tsconfig paths 补齐,e
 T-082 aba94b1 2026-06-03 16:26:45 CST app 页面 import 统一改为 @ 别名,登出改 reLaunch 并清除 H5 build 阻塞
 T-086 4acb0ef 2026-06-03 16:41:03 CST app request.ts 统一错误/401/token/query/upload 处理并通过 typecheck/build:h5
 T-087 f63a2ec 2026-06-03 16:47:57 CST app onLaunch 接入全局路由守卫,未登录访问受保护页面重定向登录
+T-100 待回填 2026-06-03 18:40:00 CST husky/lint-staged/commitlint/changesets 提交质量门禁已接入,install/commitlint/lint-staged 验收通过
 
 ---
 

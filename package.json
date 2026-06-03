@@ -8,11 +8,21 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
+    "prepare": "husky",
+    "lint-staged": "lint-staged",
+    "commitlint": "commitlint",
     "backend:dev": "pnpm --filter backend dev",
     "backend:build": "pnpm --filter backend build",
     "fronted:dev": "pnpm --filter fronted dev",
     "fronted:build": "pnpm --filter fronted build",
     "app:dev:h5": "pnpm --filter app dev:h5",
     "app:build:h5": "pnpm --filter app build:h5"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
   }
 }
