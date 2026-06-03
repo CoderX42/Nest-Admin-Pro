@@ -79,6 +79,8 @@
 - **涉及文件**:
   - `apps/app/src/pages/login/index.vue`
   - `apps/app/src/api/auth.ts`
+  - `apps/app/src/api/index.ts`(re-export authApi,兼容旧调用)
+  - `apps/app/src/stores/user.ts`(动态导入改用新 authApi)
 - **实施要点**:
   - **决策**:移动端登录暂不强制图形验证码(移动端用户体验差异)
   - 默认 `sys.captcha.enabled=true` 时 H5 启用,小程序禁用(条件编译)
@@ -93,8 +95,10 @@
   // #endif
   ```
 - **验收**:
-  - [ ] H5 登录页显示验证码并能登录成功
-  - [ ] 微信小程序登录页不显示验证码,直接账号密码
+  - [ ] 静态检查:`authApi.captcha()` / `authApi.validateCaptcha()` 已定义
+  - [ ] H5 登录页包含验证码字段与 captchaKey/captchaText 提交
+  - [ ] 微信小程序登录页通过 `showCaptcha=false` 不显示验证码,直接账号密码
+  - [ ] H5 build 留到 T-082/T-085 修完 import/alias 后统一验证
 
 ### T-084 baseURL 抽到 env + 平台条件编译
 

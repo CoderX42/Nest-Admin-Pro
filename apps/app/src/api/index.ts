@@ -1,14 +1,7 @@
-import { get, post, put, del } from '../utils/request';
+import { get, put } from '../utils/request';
+export { authApi } from './auth';
 
 const BASE_URL = 'http://localhost:3000/api';
-
-export const authApi = {
-  login: (data: { username: string; password: string }) => post('/auth/login', data),
-  wxLogin: (code: string) => post('/auth/wx/login', { code }),
-  wxPhone: (data: { code: string }) => post('/auth/wx/phone', data),
-  getUserInfo: () => get('/auth/user/info'),
-  logout: () => post('/auth/logout'),
-};
 
 export const userApi = {
   getProfile: () => get('/auth/profile'),

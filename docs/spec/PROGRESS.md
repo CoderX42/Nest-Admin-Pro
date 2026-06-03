@@ -49,7 +49,8 @@ T-055 4d2fc78 2026-06-03 12:03:57 CST 拆分 fronted api 目录并替换页面/s
 T-056 6e77072 2026-06-03 12:04:53 CST 重构 user store 并新增 app/permission/tags-view/dict store 与核心单测
 T-057 239b9d4 2026-06-03 12:08:37 CST 登录页接入 captcha/rememberMe/redirect/i18n 与验证码错误刷新逻辑
 T-080 35da5af 2026-06-03 16:02:44 CST app package 依赖基线修复并补齐 pinia/@vueuse/core/dayjs/sass
-T-081 pending 2026-06-03 16:06:06 CST app main.ts 注册 Pinia,H5 dev server ready 且本地响应 200
+T-081 0f51588 2026-06-03 16:06:06 CST app main.ts 注册 Pinia,H5 dev server ready 且本地响应 200
+T-083 pending 2026-06-03 16:12:17 CST app 登录页补 H5 captcha 展示/提交,新增 authApi captcha/validateCaptcha
 
 ---
 
