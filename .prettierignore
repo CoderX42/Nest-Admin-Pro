@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.output
+.vite
+apps/**/dist
+apps/**/coverage
+apps/fronted/src/auto-imports.d.ts
+apps/fronted/src/components.d.ts
+apps/app/dist
+apps/app/unpackage
+pnpm-lock.yaml

@@ -4,29 +4,28 @@ const quote = (value) => `"${value.replaceAll('"', '\\"')}"`;
 
 const normalize = (file) => path.relative(process.cwd(), file).split(path.sep).join('/');
 
-const byPrefix = (files, prefix) =>
-  files.map(normalize).filter((file) => file.startsWith(prefix));
+const eslintFiles = (files) => {
+  const matched = files.map(normalize).filter((file) => !file.endsWith('.d.ts'));
+  if (matched.length === 0) {
+    return [];
+  }
 
-const checkFor = (scope, files, command) => {
+  return [`corepack pnpm exec eslint --max-warnings 0 ${matched.map(quote).join(' ')}`];
+};
+
+const checkMarkdown = (files) => {
   if (files.length === 0) {
     return [];
   }
 
-  return [`corepack pnpm --filter ${scope} ${command}`];
+  return `corepack pnpm exec prettier --check ${files.map(quote).join(' ')}`;
 };
 
 module.exports = {
-  '*.{ts,vue}': (files) => [
-    ...checkFor('backend', byPrefix(files, 'apps/backend/'), 'build'),
-    ...checkFor('fronted', byPrefix(files, 'apps/fronted/'), 'typecheck'),
-    ...checkFor('app', byPrefix(files, 'apps/app/'), 'typecheck'),
-  ],
+  '*.{ts,vue}': eslintFiles,
   '*.json': (files) =>
     `node -e "const fs=require('node:fs'); for (const file of process.argv.slice(1)) JSON.parse(fs.readFileSync(file, 'utf8'));" ${files
       .map(quote)
       .join(' ')}`,
-  '*.md': (files) =>
-    `node -e "const fs=require('node:fs'); for (const file of process.argv.slice(1)) { if (!fs.existsSync(file)) process.exit(1); }" ${files
-      .map(quote)
-      .join(' ')}`,
+  '*.md': checkMarkdown,
 };

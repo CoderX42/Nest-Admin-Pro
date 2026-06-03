@@ -11,6 +11,8 @@
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "commitlint": "commitlint",
+    "lint": "eslint . --max-warnings 0",
+    "format:check": "prettier --check .",
     "backend:dev": "pnpm --filter backend dev",
     "backend:build": "pnpm --filter backend build",
     "fronted:dev": "pnpm --filter fronted dev",
@@ -22,7 +24,18 @@
     "@changesets/cli": "^2.27.9",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@eslint/js": "^9.13.0",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
+    "eslint": "^9.13.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-vue": "^9.30.0",
+    "globals": "^15.11.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.10"
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.11.0",
+    "vue-eslint-parser": "^9.4.3"
   }
 }
