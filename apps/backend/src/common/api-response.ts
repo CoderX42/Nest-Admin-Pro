@@ -1,4 +1,6 @@
-export class ApiResponse<T = any> {
+import type { ApiResponse as ApiResponseContract } from '@nest-admin-pro/shared-types';
+
+export class ApiResponse<T = unknown> implements ApiResponseContract<T | null> {
   code: number;
   data: T | null;
   message: string;

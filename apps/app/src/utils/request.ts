@@ -1,12 +1,8 @@
+import type { ApiResponse } from '@nest-admin-pro/shared-types';
+
 import { BASE_URL } from './env';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
-
-interface ApiResponse<T = unknown> {
-  code: number;
-  data: T;
-  message?: string;
-}
 
 interface RequestOptions {
   url: string;

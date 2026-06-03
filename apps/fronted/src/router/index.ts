@@ -1,5 +1,7 @@
+import { PERMS } from '@nest-admin-pro/shared-constants';
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+
 import { useUserStore } from '../store/modules/user';
 
 const routes: RouteRecordRaw[] = [
@@ -25,92 +27,92 @@ const routes: RouteRecordRaw[] = [
         path: '/system/user',
         name: 'UserManagement',
         component: () => import('../views/system/user/index.vue'),
-        meta: { title: 'User Management', titleKey: 'nav.user', icon: 'User', perm: 'system:user:list' },
+        meta: { title: 'User Management', titleKey: 'nav.user', icon: 'User', perm: PERMS.system.user.list },
       },
       {
         path: '/system/role',
         name: 'RoleManagement',
         component: () => import('../views/system/role/index.vue'),
-        meta: { title: 'Role Management', titleKey: 'nav.role', icon: 'Key', perm: 'system:role:list' },
+        meta: { title: 'Role Management', titleKey: 'nav.role', icon: 'Key', perm: PERMS.system.role.list },
       },
       {
         path: '/system/dept',
         name: 'DeptManagement',
         component: () => import('../views/system/dept/index.vue'),
-        meta: { title: 'Department', titleKey: 'nav.dept', icon: 'OfficeBuilding', perm: 'system:dept:list' },
+        meta: { title: 'Department', titleKey: 'nav.dept', icon: 'OfficeBuilding', perm: PERMS.system.dept.list },
       },
       {
         path: '/system/post',
         name: 'PostManagement',
         component: () => import('../views/system/post/index.vue'),
-        meta: { title: 'Post Management', titleKey: 'nav.post', icon: 'Briefcase', perm: 'system:post:list' },
+        meta: { title: 'Post Management', titleKey: 'nav.post', icon: 'Briefcase', perm: PERMS.system.post.list },
       },
       {
         path: '/system/menu',
         name: 'MenuManagement',
         component: () => import('../views/system/menu/index.vue'),
-        meta: { title: 'Menu Management', titleKey: 'nav.menu', icon: 'Menu', perm: 'system:menu:list' },
+        meta: { title: 'Menu Management', titleKey: 'nav.menu', icon: 'Menu', perm: PERMS.system.menu.list },
       },
       {
         path: '/system/dict',
         name: 'DictManagement',
         component: () => import('../views/system/dict/index.vue'),
-        meta: { title: 'Dictionary', titleKey: 'nav.dict', icon: 'Document', perm: 'system:dict:list' },
+        meta: { title: 'Dictionary', titleKey: 'nav.dict', icon: 'Document', perm: PERMS.system.dict.list },
       },
       {
         path: '/system/config',
         name: 'ConfigManagement',
         component: () => import('../views/system/config/index.vue'),
-        meta: { title: 'Config', titleKey: 'nav.config', icon: 'Setting', perm: 'system:config:list' },
+        meta: { title: 'Config', titleKey: 'nav.config', icon: 'Setting', perm: PERMS.system.config.list },
       },
       {
         path: '/system/file-config',
         name: 'FileConfig',
         component: () => import('../views/system/file-config/index.vue'),
-        meta: { title: 'File Config', titleKey: 'nav.fileConfig', icon: 'FolderOpened', perm: 'system:config:list' },
+        meta: { title: 'File Config', titleKey: 'nav.fileConfig', icon: 'FolderOpened', perm: PERMS.system.config.list },
       },
       {
         path: '/system/file',
         name: 'FileManagement',
         component: () => import('../views/system/file/index.vue'),
-        meta: { title: 'File Management', titleKey: 'nav.file', icon: 'Files', perm: 'system:file:list' },
+        meta: { title: 'File Management', titleKey: 'nav.file', icon: 'Files', perm: PERMS.system.file.list },
       },
       {
         path: '/system/notice',
         name: 'NoticeManagement',
         component: () => import('../views/system/notice/index.vue'),
-        meta: { title: 'Notice', titleKey: 'nav.notice', icon: 'Bell', perm: 'system:notice:list' },
+        meta: { title: 'Notice', titleKey: 'nav.notice', icon: 'Bell', perm: PERMS.system.notice.list },
       },
       // Monitor
       {
         path: '/monitor/login-log',
         name: 'LoginLog',
         component: () => import('../views/monitor/login-log/index.vue'),
-        meta: { title: 'Login Log', titleKey: 'nav.loginLog', icon: 'Reading', perm: 'monitor:login:list' },
+        meta: { title: 'Login Log', titleKey: 'nav.loginLog', icon: 'Reading', perm: PERMS.monitor.login.list },
       },
       {
         path: '/monitor/oper-log',
         name: 'OperLog',
         component: () => import('../views/monitor/oper-log/index.vue'),
-        meta: { title: 'Operation Log', titleKey: 'nav.operLog', icon: 'List', perm: 'monitor:oper:list' },
+        meta: { title: 'Operation Log', titleKey: 'nav.operLog', icon: 'List', perm: PERMS.monitor.oper.list },
       },
       {
         path: '/monitor/online',
         name: 'OnlineUsers',
         component: () => import('../views/monitor/online/index.vue'),
-        meta: { title: 'Online Users', titleKey: 'nav.online', icon: 'Connection', perm: 'monitor:online:list' },
+        meta: { title: 'Online Users', titleKey: 'nav.online', icon: 'Connection', perm: PERMS.monitor.online.list },
       },
       {
         path: '/monitor/server',
         name: 'ServerMonitor',
         component: () => import('../views/monitor/server/index.vue'),
-        meta: { title: 'Server Monitor', titleKey: 'nav.server', icon: 'Monitor', perm: 'monitor:server:list' },
+        meta: { title: 'Server Monitor', titleKey: 'nav.server', icon: 'Monitor', perm: PERMS.monitor.server.list },
       },
       {
         path: '/monitor/cache',
         name: 'CacheMonitor',
         component: () => import('../views/monitor/cache/index.vue'),
-        meta: { title: 'Cache Monitor', titleKey: 'nav.cache', icon: 'Cpu', perm: 'monitor:cache:list' },
+        meta: { title: 'Cache Monitor', titleKey: 'nav.cache', icon: 'Cpu', perm: PERMS.monitor.cache.list },
       },
       {
         path: '/profile',

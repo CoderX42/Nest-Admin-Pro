@@ -74,6 +74,12 @@ importers:
       '@dcloudio/uni-quickapp-webview':
         specifier: 3.0.0-4080420251103001
         version: 3.0.0-4080420251103001(@vueuse/core@11.3.0(vue@3.5.35(typescript@5.9.3)))(postcss@8.5.15)(rollup@4.61.0)(vue@3.5.35(typescript@5.9.3))
+      '@nest-admin-pro/shared-constants':
+        specifier: workspace:*
+        version: link:../../packages/shared-constants
+      '@nest-admin-pro/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@vueuse/core':
         specifier: ^11.1.0
         version: 11.3.0(vue@3.5.35(typescript@5.9.3))
@@ -123,6 +129,12 @@ importers:
 
   apps/backend:
     dependencies:
+      '@nest-admin-pro/shared-constants':
+        specifier: workspace:*
+        version: link:../../packages/shared-constants
+      '@nest-admin-pro/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@nestjs/common':
         specifier: ^11.1.19
         version: 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -277,6 +289,12 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.2(vue@3.5.35(typescript@5.9.3))
+      '@nest-admin-pro/shared-constants':
+        specifier: workspace:*
+        version: link:../../packages/shared-constants
+      '@nest-admin-pro/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@vueuse/core':
         specifier: ^14.3.0
         version: 14.3.0(vue@3.5.35(typescript@5.9.3))
@@ -395,6 +413,10 @@ importers:
       vue-tsc:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.9.3)
+
+  packages/shared-constants: {}
+
+  packages/shared-types: {}
 
 packages:
 

@@ -1,0 +1,26 @@
+{
+  "name": "@nest-admin-pro/shared-constants",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./perms": {
+      "types": "./src/perms.ts",
+      "default": "./src/perms.ts"
+    },
+    "./error-codes": {
+      "types": "./src/error-codes.ts",
+      "default": "./src/error-codes.ts"
+    },
+    "./dict-keys": {
+      "types": "./src/dict-keys.ts",
+      "default": "./src/dict-keys.ts"
+    }
+  }
+}

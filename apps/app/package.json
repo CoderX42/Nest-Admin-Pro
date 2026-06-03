@@ -39,6 +39,8 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@nest-admin-pro/shared-constants": "workspace:*",
+    "@nest-admin-pro/shared-types": "workspace:*",
     "@dcloudio/uni-app": "3.0.0-4080420251103001",
     "@dcloudio/uni-app-harmony": "3.0.0-4080420251103001",
     "@dcloudio/uni-app-plus": "3.0.0-4080420251103001",

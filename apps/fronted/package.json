@@ -14,6 +14,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@nest-admin-pro/shared-constants": "workspace:*",
+    "@nest-admin-pro/shared-types": "workspace:*",
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^14.3.0",
     "axios": "^1.7.7",
