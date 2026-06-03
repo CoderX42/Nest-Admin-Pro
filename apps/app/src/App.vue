@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import { onLaunch } from '@dcloudio/uni-app';
+import { redirectToLoginIfNeeded, setupRouterGuard } from '@/utils/router-guard';
+
 onLaunch(() => {
-  console.log("App Launch");
-});
-onShow(() => {
-  console.log("App Show");
-});
-onHide(() => {
-  console.log("App Hide");
+  setupRouterGuard();
+  redirectToLoginIfNeeded();
 });
 </script>
+
 <style></style>
