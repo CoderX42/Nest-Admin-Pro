@@ -308,6 +308,7 @@
   - `apps/fronted/src/store/modules/permission.ts`(新建,动态路由生成)
   - `apps/fronted/src/store/modules/tags-view.ts`(新建,多标签页)
   - `apps/fronted/src/store/modules/dict.ts`(新建,字典缓存)
+  - `apps/fronted/src/store/modules/*.spec.ts`(各 store 核心 action 单测)
 - **实施要点**:
   ```ts
   // store/modules/user.ts

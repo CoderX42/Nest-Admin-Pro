@@ -1,74 +1,85 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { useStorage } from '@vueuse/core';
 import { authApi } from '@/api/auth';
+import type { AuthUserInfo, LoginForm, LoginResult } from '@/types/auth';
+import type { MenuItem } from '@/types/menu';
+import type { UserInfo } from '@/types/user';
+import { usePermissionStore } from './permission';
+import { useTagsViewStore } from './tags-view';
 
-interface UserInfo {
-  id: number;
-  username: string;
-  nickname: string;
-  avatar: string;
-  email: string;
-  phone: string;
-  remark?: string;
-  deptName?: string;
-  roles: string[];
-}
+export const useUserStore = defineStore('user', () => {
+  const token = useStorage('nap_token', localStorage.getItem('token') || '');
+  const userInfo = ref<UserInfo | null>(null);
+  const roles = ref<string[]>([]);
+  const permissions = ref<string[]>([]);
+  const menus = ref<MenuItem[]>([]);
 
-interface MenuItem {
-  id: number;
-  name: string;
-  type: number;
-  path?: string;
-  component?: string;
-  icon?: string;
-  children?: MenuItem[];
-}
-
-export const useUserStore = defineStore('user', {
-  state: () => ({
-    token: localStorage.getItem('token') || '',
-    userInfo: null as UserInfo | null,
-    menus: [] as MenuItem[],
-    permissions: [] as string[],
-  }),
-
-  actions: {
-    async login(form: { username: string; password: string; captchaKey: string; captchaText: string }) {
-      const res: any = await authApi.login(form);
-      this.token = res.token;
-      this.userInfo = res.userInfo;
-      localStorage.setItem('token', res.token);
-      // Fetch full userInfo with menus and permissions
-      await this.getUserInfo();
-      return res;
-    },
-
-    async getUserInfo() {
-      if (!this.token) return null;
-      const res: any = await authApi.getUserInfo();
-      this.userInfo = res.user;
-      this.menus = res.menus || [];
-      this.permissions = res.permissions || [];
-      return res;
-    },
-
-    async logout() {
-      try {
-        await authApi.logout();
-      } finally {
-        this.token = '';
-        this.userInfo = null;
-        this.menus = [];
-        this.permissions = [];
-        localStorage.removeItem('token');
-      }
-    },
-
-    reset() {
-      this.token = '';
-      this.userInfo = null;
-      this.menus = [];
-      this.permissions = [];
+  function persistToken(value: string) {
+    token.value = value;
+    if (value) {
+      localStorage.setItem('token', value);
+    } else {
       localStorage.removeItem('token');
-    },
-  },
+    }
+  }
+
+  async function login(form: LoginForm): Promise<LoginResult> {
+    const data = await authApi.login(form);
+    persistToken(data.token);
+    userInfo.value = data.userInfo;
+    await fetchInfo();
+    return data;
+  }
+
+  async function fetchInfo(): Promise<AuthUserInfo | null> {
+    if (!token.value) {
+      return null;
+    }
+
+    const data = await authApi.getUserInfo();
+    userInfo.value = data.user;
+    roles.value = data.roles ?? [];
+    permissions.value = data.permissions ?? [];
+    menus.value = data.menus ?? [];
+    await usePermissionStore().generateRoutes(menus.value);
+    return data;
+  }
+
+  async function getUserInfo() {
+    return fetchInfo();
+  }
+
+  async function logout(options: { silent?: boolean } = {}) {
+    try {
+      if (!options.silent) {
+        await authApi.logout();
+      }
+    } finally {
+      reset();
+    }
+  }
+
+  function reset() {
+    persistToken('');
+    userInfo.value = null;
+    roles.value = [];
+    permissions.value = [];
+    menus.value = [];
+    usePermissionStore().reset();
+    useTagsViewStore().reset();
+  }
+
+  return {
+    token,
+    userInfo,
+    roles,
+    permissions,
+    menus,
+    login,
+    fetchInfo,
+    getUserInfo,
+    logout,
+    reset,
+  };
 });
