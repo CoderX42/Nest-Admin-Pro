@@ -351,7 +351,10 @@
 ### T-057 修复登录页(图形验证码 + 表单校验 + i18n 全覆盖)
 
 - **类型**: feat
-- **涉及文件**: `apps/fronted/src/views/login/index.vue`
+- **涉及文件**:
+  - `apps/fronted/src/views/login/index.vue`
+  - `apps/fronted/src/i18n/index.ts`(补充登录页新增文案)
+  - `apps/fronted/src/types/auth.ts`(兼容后端 captcha `img` 字段)
 - **实施要点**:
   - 调用 `authApi.captcha()` 获取 svg + uuid → 显示
   - rememberMe 用 useStorage 存 username
@@ -359,8 +362,10 @@
   - 失败:1003 用户名或密码错误,1001 验证码错误,1002 验证码过期 → 自动刷新验证码
   - 所有文案走 i18n
 - **验收**:
-  - [ ] 默认 admin/admin123 登录成功跳仪表盘
-  - [ ] 验证码错误自动刷新
+  - [ ] `pnpm --filter fronted typecheck` 成功
+  - [ ] `pnpm --filter fronted exec vite build` 成功
+  - [ ] 默认 admin/admin123 登录成功跳仪表盘(需 backend + Redis 运行后烟测)
+  - [ ] 验证码错误自动刷新(静态检查 1001/1002/1003 + captcha message 分支)
   - [ ] 中英文切换文案正确
 
 ---

@@ -17,7 +17,8 @@ export interface LoginResult {
 
 export interface CaptchaResult {
   key: string;
-  svg: string;
+  img?: string;
+  svg?: string;
   expireAt?: number;
 }
 

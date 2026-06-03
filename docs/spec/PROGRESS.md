@@ -46,7 +46,8 @@ T-052 d4e65c7 2026-06-03 11:55:08 CST 删除 HelloWorld 死组件并同步清理
 T-053 0dd043d 2026-06-03 11:56:14 CST 新建 fronted 内部基础类型并让 request.ts 引用统一 ApiResponse 契约
 T-054 87d10ae 2026-06-03 11:59:03 CST request.ts 重写为类型化 axios 封装,统一业务码/401/403/429/blob 处理
 T-055 4d2fc78 2026-06-03 12:03:57 CST 拆分 fronted api 目录并替换页面/store 的旧入口导入
-T-056 pending 2026-06-03 12:04:53 CST 重构 user store 并新增 app/permission/tags-view/dict store 与核心单测
+T-056 6e77072 2026-06-03 12:04:53 CST 重构 user store 并新增 app/permission/tags-view/dict store 与核心单测
+T-057 pending 2026-06-03 12:08:37 CST 登录页接入 captcha/rememberMe/redirect/i18n 与验证码错误刷新逻辑
 
 ---
 

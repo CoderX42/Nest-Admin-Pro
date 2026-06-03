@@ -94,13 +94,19 @@
                 @click="refreshCaptcha"
                 role="button"
                 tabindex="0"
-                title="点击刷新验证码"
+                :title="t('login.refreshCaptcha')"
               >
-                <img v-if="captchaData.img" :src="captchaData.img" alt="captcha" class="w-full h-full" />
+                <img v-if="captchaData.img" :src="captchaData.img" :alt="t('login.captcha')" class="w-full h-full" />
                 <span v-else class="text-xs text-base-content/40">{{ t('login.loadCaptcha') }}</span>
               </div>
             </div>
           </div>
+
+          <!-- Remember me -->
+          <label class="flex items-center gap-2 text-xs text-base-content/60">
+            <input v-model="form.rememberMe" type="checkbox" class="checkbox checkbox-sm" />
+            <span>{{ t('login.rememberMe') }}</span>
+          </label>
 
           <!-- Submit -->
           <button type="submit" class="btn btn-primary w-full h-11 text-sm font-semibold gap-2" :class="{ loading: loading }">
@@ -121,8 +127,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '../../store/modules/user';
+import { useRoute, useRouter } from 'vue-router';
+import { useStorage } from '@vueuse/core';
+import { useUserStore } from '@/store/modules/user';
 import { authApi } from '@/api/auth';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
@@ -130,34 +137,85 @@ import { setLocale, type Locale } from '@/i18n';
 import { initTheme, type ThemeName } from '@/utils/appearance';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const { t, locale } = useI18n();
 
 const loading = ref(false);
 const currentTheme = ref<ThemeName>(initTheme() as ThemeName);
 const currentLocale = ref<Locale>(locale.value as Locale);
+const rememberedUsername = useStorage('nap_login_username', 'admin');
 
-const form = reactive({ username: 'admin', password: 'admin123', captcha: '', captchaKey: '' });
+const form = reactive({
+  username: rememberedUsername.value || 'admin',
+  password: 'admin123',
+  captcha: '',
+  captchaKey: '',
+  rememberMe: Boolean(rememberedUsername.value),
+});
 const captchaData = reactive({ key: '', img: '' });
 
 const refreshCaptcha = async () => {
   try {
-    const res: any = await authApi.captcha();
+    const res = await authApi.captcha();
+    const svg = res.img ?? res.svg ?? '';
     captchaData.key = res.key;
-    captchaData.img = 'data:image/svg+xml;utf-8,' + encodeURIComponent(res.img);
+    captchaData.img = svg.startsWith('data:') ? svg : `data:image/svg+xml;utf-8,${encodeURIComponent(svg)}`;
     form.captchaKey = res.key;
-  } catch { ElMessage.error(t('login.captchaFailed')); }
+    form.captcha = '';
+  } catch {
+    ElMessage.error(t('login.captchaFailed'));
+  }
 };
 
+function getErrorCode(error: unknown) {
+  if (typeof error !== 'object' || error === null) return undefined;
+  const data = 'data' in error ? error.data : 'response' in error ? error.response : undefined;
+  if (typeof data !== 'object' || data === null) return undefined;
+  if ('code' in data && typeof data.code === 'number') return data.code;
+  if ('data' in data && typeof data.data === 'object' && data.data && 'code' in data.data) {
+    const code = data.data.code;
+    return typeof code === 'number' ? code : undefined;
+  }
+  return undefined;
+}
+
+function getErrorMessage(error: unknown) {
+  if (typeof error !== 'object' || error === null) return t('login.failed');
+  if ('message' in error && typeof error.message === 'string') return error.message;
+  const data = 'data' in error ? error.data : undefined;
+  if (typeof data === 'object' && data && 'message' in data && typeof data.message === 'string') {
+    return data.message;
+  }
+  return t('login.failed');
+}
+
+function shouldRefreshCaptcha(error: unknown) {
+  const code = getErrorCode(error);
+  if (code === 1001 || code === 1002 || code === 1003) return true;
+  return getErrorMessage(error).toLowerCase().includes('captcha');
+}
+
 const handleLogin = async () => {
-  if (!form.username || !form.password) { ElMessage.warning(t('login.usernameRequired')); return; }
+  if (!form.username) { ElMessage.warning(t('login.usernameRequired')); return; }
+  if (!form.password) { ElMessage.warning(t('login.passwordRequired')); return; }
+  if (!form.captcha) { ElMessage.warning(t('login.captchaRequired')); return; }
+
   loading.value = true;
   try {
     await userStore.login({ username: form.username, password: form.password, captchaKey: form.captchaKey, captchaText: form.captcha });
+    rememberedUsername.value = form.rememberMe ? form.username : '';
     ElMessage.success(t('login.success'));
-    router.push('/');
-  } catch (e: any) { ElMessage.error(e.message || t('login.failed')); refreshCaptcha(); }
-  finally { loading.value = false; }
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    await router.push(redirect);
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error));
+    if (shouldRefreshCaptcha(error)) {
+      await refreshCaptcha();
+    }
+  } finally {
+    loading.value = false;
+  }
 };
 
 const toggleTheme = () => {
