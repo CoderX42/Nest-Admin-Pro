@@ -41,7 +41,8 @@ T-009 ff7aeb9 2026-06-03 01:35:07 CST 接入 nestjs-pino 并通过 RequestContex
 T-010 400b5bb 2026-06-03 01:39:36 CST 登录/验证码接口限流加严并接入 Redis throttler storage
 T-011 f718b7f 2026-06-03 01:45:11 CST 新增公开 health 端点,提供 DB/Redis 探活明细且无外部依赖时整体保持 ok
 T-050 0836ced 2026-06-03 11:47:45 CST fronted package 依赖版本改为真实可安装基线,install/typecheck 与造假版本清查通过
-T-051 pending 2026-06-03 11:49:49 CST vite 配置重写并接入自动导入/组件解析/svg icons/Tailwind v3 构建链路
+T-051 fd5fb06 2026-06-03 11:49:49 CST vite 配置重写并接入自动导入/组件解析/svg icons/Tailwind v3 构建链路
+T-052 pending 2026-06-03 11:55:08 CST 删除 HelloWorld 死组件并同步清理自动生成组件声明
 
 ---
 

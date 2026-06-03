@@ -120,6 +120,7 @@
 - **类型**: chore
 - **涉及文件**:
   - 删除 `apps/fronted/src/components/HelloWorld.vue`
+  - `apps/fronted/src/components.d.ts`(移除自动生成的 HelloWorld 声明)
   - 准备(不创建)`apps/fronted/src/types/` 目录,具体类型文件由 T-053 负责
 - **验收**: grep `HelloWorld` 在 src 命中 0
 
