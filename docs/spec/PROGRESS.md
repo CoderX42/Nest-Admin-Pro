@@ -48,6 +48,7 @@ T-054 87d10ae 2026-06-03 11:59:03 CST request.ts 重写为类型化 axios 封装
 T-055 4d2fc78 2026-06-03 12:03:57 CST 拆分 fronted api 目录并替换页面/store 的旧入口导入
 T-056 6e77072 2026-06-03 12:04:53 CST 重构 user store 并新增 app/permission/tags-view/dict store 与核心单测
 T-057 239b9d4 2026-06-03 12:08:37 CST 登录页接入 captcha/rememberMe/redirect/i18n 与验证码错误刷新逻辑
+T-080 pending 2026-06-03 16:02:44 CST app package 依赖基线修复并补齐 pinia/@vueuse/core/dayjs/sass
 
 ---
 

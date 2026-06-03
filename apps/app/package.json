@@ -1,5 +1,6 @@
 {
-  "name": "uni-preset-vue",
+  "name": "app",
+  "private": true,
   "version": "0.0.0",
   "scripts": {
     "dev:custom": "uni -p",
@@ -17,7 +18,7 @@
     "dev:mp-xhs": "uni -p mp-xhs",
     "dev:quickapp-webview": "uni -p quickapp-webview",
     "dev:quickapp-webview-huawei": "uni -p quickapp-webview-huawei",
-    "dev:quickapp-webview-union": "uni -p quickapp-webview-union",
+    "dev:quickapp-webview-union": "uni -p quickapp-webview",
     "build:custom": "uni build -p",
     "build:h5": "uni build",
     "build:h5:ssr": "uni build --ssr",
@@ -33,8 +34,9 @@
     "build:mp-xhs": "uni build -p mp-xhs",
     "build:quickapp-webview": "uni build -p quickapp-webview",
     "build:quickapp-webview-huawei": "uni build -p quickapp-webview-huawei",
-    "build:quickapp-webview-union": "uni build -p quickapp-webview-union",
-    "type-check": "vue-tsc --noEmit"
+    "build:quickapp-webview-union": "uni build -p quickapp-webview",
+    "lint": "eslint \"src/**/*.{ts,vue}\" --max-warnings 0",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-4080420251103001",
@@ -53,19 +55,22 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-4080420251103001",
     "@dcloudio/uni-mp-xhs": "3.0.0-4080420251103001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-4080420251103001",
-    "vue": "^3.4.21",
-    "vue-i18n": "^9.1.9"
+    "@vueuse/core": "^11.1.0",
+    "dayjs": "^1.11.13",
+    "pinia": "^2.2.4",
+    "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/types": "^3.4.14",
     "@dcloudio/uni-automator": "3.0.0-4080420251103001",
     "@dcloudio/uni-cli-shared": "3.0.0-4080420251103001",
     "@dcloudio/uni-stacktracey": "3.0.0-4080420251103001",
     "@dcloudio/vite-plugin-uni": "3.0.0-4080420251103001",
-    "@vue/tsconfig": "^0.1.3",
-    "@vue/runtime-core": "^3.4.21",
-    "typescript": "^4.9.4",
-    "vite": "5.2.8",
-    "vue-tsc": "^1.0.24"
+    "@vue/tsconfig": "^0.5.1",
+    "@vue/runtime-core": "^3.5.0",
+    "sass": "^1.80.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.10",
+    "vue-tsc": "^2.1.10"
   }
 }

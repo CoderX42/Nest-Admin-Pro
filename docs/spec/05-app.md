@@ -14,9 +14,12 @@
 
 - **类型**: chore
 - **上下文**: pinia 在源码中使用但 package.json 未声明,@vueuse/core / dayjs / sass 缺失
-- **涉及文件**: `apps/app/package.json`
+- **涉及文件**:
+  - `apps/app/package.json`
+  - `pnpm-lock.yaml`
 - **实施要点**:
   - 完整覆盖式重写,以 `01-conventions.md` § 15.3 为准
+  - package name 改为 `app`,确保根目录 `pnpm --filter app <script>` 可匹配
   - DCloud 全家桶版本号必须**严格一致**(从 `npx degit dcloudio/uni-preset-vue#vite-ts` 同步最新稳定版,或 `npx create-uni-app@latest` 拿当前版本)
   - 删除未使用的 `vue-i18n`(P2 真要 i18n 再加)
   - 新增 pinia / @vueuse/core / dayjs / sass(devDep)
@@ -33,8 +36,8 @@
     ```
 - **验收**:
   - [ ] `pnpm --filter app install` 成功
-  - [ ] `pnpm --filter app dev:h5` 启动到 5174,首页不白屏
-  - [ ] `pnpm --filter app dev:mp-weixin` 编译通过(无微信开发者工具时仅校验编译产物)
+  - [ ] package.json 含 pinia / @vueuse/core / dayjs / sass,且无 vue-i18n
+  - [ ] H5/小程序启动验收延后到 T-081/T-085/T-087,避免在 Pinia/别名/路由守卫未修前误判
 
 ### T-081 main.ts 接入 Pinia
 
