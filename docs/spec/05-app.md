@@ -56,7 +56,9 @@
     return { app };
   }
   ```
-- **验收**: 启动后无 `getActivePinia()` 报错,任意 store 调用正常
+- **验收**:
+  - [ ] `pnpm --filter app dev:h5` 启动后无 `getActivePinia()` 报错,任意 store 调用正常
+  - [ ] H5 dev server ready(当前 UniApp 默认绑定 5173;若 5173 被占用再按 Vite 自动端口为准)
 
 ### T-082 修复 import 路径错误与登出跳转错误
 
