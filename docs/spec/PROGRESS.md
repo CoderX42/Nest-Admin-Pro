@@ -51,7 +51,8 @@ T-057 239b9d4 2026-06-03 12:08:37 CST 登录页接入 captcha/rememberMe/redirec
 T-080 35da5af 2026-06-03 16:02:44 CST app package 依赖基线修复并补齐 pinia/@vueuse/core/dayjs/sass
 T-081 0f51588 2026-06-03 16:06:06 CST app main.ts 注册 Pinia,H5 dev server ready 且本地响应 200
 T-083 87c9712 2026-06-03 16:12:17 CST app 登录页补 H5 captcha 展示/提交,新增 authApi captcha/validateCaptcha
-T-084 pending 2026-06-03 16:20:38 CST app baseURL/FILE_BASE_URL 抽到 env 并为 H5 配置 /api 与 /file 代理
+T-084 829423e 2026-06-03 16:20:38 CST app baseURL/FILE_BASE_URL 抽到 env 并为 H5 配置 /api 与 /file 代理
+T-085 pending 2026-06-03 16:23:58 CST app vite alias 与 tsconfig paths 补齐,env 条件编译声明兼容 vue-tsc
 
 ---
 

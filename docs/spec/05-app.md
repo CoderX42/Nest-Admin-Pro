@@ -135,6 +135,7 @@
 - **涉及文件**:
   - `apps/app/vite.config.ts`
   - `apps/app/tsconfig.json`
+  - `apps/app/src/utils/env.ts`(修正条件编译重复声明,保证 vue-tsc 可读)
 - **实施要点**:
   ```ts
   // vite.config.ts
@@ -150,7 +151,9 @@
   // tsconfig.json
   { "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] } } }
   ```
-- **验收**: 全代码 `from '@/...'` 编译通过
+- **验收**:
+  - [ ] vite.config.ts 与 tsconfig.json 均配置 `@ -> src`
+  - [ ] 全代码 `from '@/...'` 编译通过(完整 typecheck 待 T-082 修掉旧相对路径后复验)
 
 ### T-086 request.ts 重写
 
