@@ -39,7 +39,7 @@ T-007 16a2ef2 2026-06-03 00:47:54 CST TransformInterceptor 支持文件流/SSE/�
 T-008 0247fec 2026-06-03 01:32:11 CST main.ts 接入 helmet/compression/CORS/global prefix exclude 与 shutdown hooks
 T-009 ff7aeb9 2026-06-03 01:35:07 CST 接入 nestjs-pino 并通过 RequestContextMiddleware 注入 traceId 上下文
 T-010 400b5bb 2026-06-03 01:39:36 CST 登录/验证码接口限流加严并接入 Redis throttler storage
-T-011 pending 2026-06-03 01:45:11 CST 新增公开 health 端点,提供 DB/Redis 探活明细且无外部依赖时整体保持 ok
+T-011 f718b7f 2026-06-03 01:45:11 CST 新增公开 health 端点,提供 DB/Redis 探活明细且无外部依赖时整体保持 ok
 
 ---
 
@@ -78,3 +78,10 @@ T-011 pending 2026-06-03 01:45:11 CST 新增公开 health 端点,提供 DB/Redis
 - [ ] winston/pino 输出结构化 JSON(项目使用 pino)
 
 (其余 Stage 门禁随推进逐一启用)
+
+---
+
+## S0 欠账(deferred to later stages)
+
+- T-009 pino 实际启动输出未验证 → S1 docker-compose 起来后,跑 `pnpm --filter backend dev`,人工验证开发模式 pretty 输出 / 设 `NODE_ENV=production` 验证 json 输出。任何字段不符合 spec 立即修。
+- T-011 health 降级策略 → S1 时把策略改为:`NODE_ENV=production` 且 db/redis 探针失败 → 返回 503 而非 ok。S0 留 ok 仅为开发期不阻塞启动。
