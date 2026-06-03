@@ -30,7 +30,7 @@
     </view>
 
     <view class="submit-btn">
-      <button type="primary" @click="handleSubmit">Save</button>
+      <button class="primary-button" @click="handleSubmit">Save</button>
     </view>
   </view>
 </template>
@@ -38,8 +38,8 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
-import { userApi } from '../../api';
-import { useUserStore } from '../../stores/user';
+import { userApi } from '@/api';
+import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
 

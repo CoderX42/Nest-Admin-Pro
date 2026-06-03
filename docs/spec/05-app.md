@@ -67,6 +67,7 @@
 - **涉及文件**:
   - `apps/app/src/pages/index/index.vue:34` `from '../stores/user'` → `'@/stores/user'`(借助 vite 别名,T-085 配置)
   - `apps/app/src/pages/center/index.vue:76` `uni.switchTab` → `uni.reLaunch({ url: '/pages/login/index' })`
+  - `apps/app/src/pages/user/profile.vue` / `password.vue`(同步修复 `button type="primary"` 阻塞 typecheck)
   - 全代码 grep `from '../stores'` 与 `from '../api'` 等错误相对路径,统一改 `@/` 别名
 - **验收**:
   - [ ] H5 启动 → 首页显示用户信息(不抛 import 错)

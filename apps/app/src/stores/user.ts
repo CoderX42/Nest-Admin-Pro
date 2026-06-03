@@ -28,7 +28,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async login(username: string, password: string) {
-      const { authApi } = await import('../api/auth');
+      const { authApi } = await import('@/api/auth');
       const res: any = await authApi.login({ username, password });
       this.setToken(res.token);
       const info: any = await authApi.getUserInfo();
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', {
 
     async getUserInfo() {
       try {
-        const { authApi } = await import('../api/auth');
+        const { authApi } = await import('@/api/auth');
         const info: any = await authApi.getUserInfo();
         this.setUserInfo(info.user);
         return info;
@@ -51,7 +51,7 @@ export const useUserStore = defineStore('user', {
 
     async logout() {
       try {
-        const { authApi } = await import('../api/auth');
+        const { authApi } = await import('@/api/auth');
         await authApi.logout();
       } finally {
         this.token = '';

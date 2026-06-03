@@ -16,14 +16,14 @@
     </view>
 
     <view class="submit-btn">
-      <button type="primary" @click="handleSubmit">Submit</button>
+      <button class="primary-button" @click="handleSubmit">Submit</button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { userApi } from '../../api';
+import { userApi } from '@/api';
 
 const form = reactive({
   oldPassword: '',

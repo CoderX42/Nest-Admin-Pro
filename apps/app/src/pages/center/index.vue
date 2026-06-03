@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
-import { useUserStore } from '../../stores/user';
+import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
 const userInfo = computed(() => userStore.userInfo);
@@ -52,7 +52,7 @@ const chooseAvatar = () => {
     success: async (res) => {
       const tempPath = res.tempFilePaths[0];
       try {
-        const result: any = await (await import('../../api')).userApi.uploadAvatar(tempPath);
+        const result: any = await (await import('@/api')).userApi.uploadAvatar(tempPath);
         uni.showToast({ title: 'Avatar updated', icon: 'success' });
       } catch (e) {
         uni.showToast({ title: 'Upload failed', icon: 'none' });
@@ -73,7 +73,7 @@ const handleLogout = async () => {
   await userStore.logout();
   uni.showToast({ title: 'Logged out', icon: 'success' });
   setTimeout(() => {
-    uni.switchTab({ url: '/pages/center/index' });
+    uni.reLaunch({ url: '/pages/login/index' });
   }, 500);
 };
 </script>

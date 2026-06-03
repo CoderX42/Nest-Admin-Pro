@@ -26,8 +26,8 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { authApi } from '../../api/auth';
-import { useUserStore } from '../../stores/user';
+import { authApi } from '@/api/auth';
+import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
 

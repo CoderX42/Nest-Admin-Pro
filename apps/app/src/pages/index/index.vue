@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
-import { useUserStore } from '../stores/user';
+import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
 const userInfo = computed(() => userStore.userInfo);
@@ -46,7 +46,7 @@ const goToCenter = () => {
   if (userStore.token) {
     uni.switchTab({ url: '/pages/center/index' });
   } else {
-    uni.switchTab({ url: '/pages/login/index' });
+    uni.reLaunch({ url: '/pages/login/index' });
   }
 };
 

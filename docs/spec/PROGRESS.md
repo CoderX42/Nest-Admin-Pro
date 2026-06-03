@@ -53,6 +53,7 @@ T-081 0f51588 2026-06-03 16:06:06 CST app main.ts 注册 Pinia,H5 dev server rea
 T-083 87c9712 2026-06-03 16:12:17 CST app 登录页补 H5 captcha 展示/提交,新增 authApi captcha/validateCaptcha
 T-084 829423e 2026-06-03 16:20:38 CST app baseURL/FILE_BASE_URL 抽到 env 并为 H5 配置 /api 与 /file 代理
 T-085 pending 2026-06-03 16:23:58 CST app vite alias 与 tsconfig paths 补齐,env 条件编译声明兼容 vue-tsc
+T-082 pending 2026-06-03 16:26:45 CST app 页面 import 统一改为 @ 别名,登出改 reLaunch 并清除 H5 build 阻塞
 
 ---
 
