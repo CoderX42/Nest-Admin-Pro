@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { onlineApi } from '@/api';
+import { onlineApi } from '@/api/monitor/online';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { t } = useI18n();

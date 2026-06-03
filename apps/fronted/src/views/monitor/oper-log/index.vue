@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { operLogApi } from '@/api';
+import { operLogApi } from '@/api/monitor/oper-log';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { t } = useI18n();

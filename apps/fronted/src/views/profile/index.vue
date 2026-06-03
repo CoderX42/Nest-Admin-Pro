@@ -125,7 +125,8 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/store/modules/user';
 import { useThemeStore } from '@/store/theme';
-import { profileApi, fileApi } from '@/api';
+import { profileApi } from '@/api/profile';
+import { fileApi } from '@/api/system/file';
 import type { UploadRequestOptions } from 'element-plus';
 
 const { t } = useI18n();

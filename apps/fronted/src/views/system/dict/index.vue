@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { dictApi } from '@/api';
+import { dictApi } from '@/api/system/dict';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { t } = useI18n();

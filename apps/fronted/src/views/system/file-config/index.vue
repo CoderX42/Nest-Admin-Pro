@@ -124,7 +124,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { fileConfigApi } from '@/api';
+import { fileConfigApi } from '@/api/system/file';
 
 const MB = 1024 * 1024;
 const { t } = useI18n();

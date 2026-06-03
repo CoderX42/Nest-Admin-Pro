@@ -123,7 +123,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/modules/user';
-import { authApi } from '@/api';
+import { authApi } from '@/api/auth';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { setLocale, type Locale } from '@/i18n';

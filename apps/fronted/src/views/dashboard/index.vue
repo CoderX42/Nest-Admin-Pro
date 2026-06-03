@@ -155,7 +155,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { userApi, roleApi, onlineApi, noticeApi, serverApi, loginLogApi } from '@/api';
+import { loginLogApi } from '@/api/monitor/login-log';
+import { onlineApi } from '@/api/monitor/online';
+import { serverApi } from '@/api/monitor/server';
+import { noticeApi } from '@/api/system/notice';
+import { roleApi } from '@/api/system/role';
+import { userApi } from '@/api/system/user';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

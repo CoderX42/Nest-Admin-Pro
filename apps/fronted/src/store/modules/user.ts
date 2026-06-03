@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { authApi } from '../../api';
+import { authApi } from '@/api/auth';
 
 interface UserInfo {
   id: number;

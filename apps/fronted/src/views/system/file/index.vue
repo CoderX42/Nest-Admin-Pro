@@ -102,7 +102,7 @@ import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { UploadRequestOptions } from 'element-plus';
-import { fileApi, fileManageApi } from '@/api';
+import { fileApi, fileManageApi } from '@/api/system/file';
 
 const { t } = useI18n();
 const loading = ref(false);

@@ -97,7 +97,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { configApi } from '@/api';
+import { configApi } from '@/api/system/config';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { t } = useI18n();

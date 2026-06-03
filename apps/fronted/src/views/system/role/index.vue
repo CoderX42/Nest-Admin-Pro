@@ -135,7 +135,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { roleApi, menuApi, deptApi } from '@/api';
+import { deptApi } from '@/api/system/dept';
+import { menuApi } from '@/api/system/menu';
+import { roleApi } from '@/api/system/role';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { ElTree } from 'element-plus';
 

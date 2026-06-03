@@ -208,7 +208,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { userApi, deptApi, postApi, roleApi } from '@/api';
+import { deptApi } from '@/api/system/dept';
+import { postApi } from '@/api/system/post';
+import { roleApi } from '@/api/system/role';
+import { userApi } from '@/api/system/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const { t } = useI18n();
