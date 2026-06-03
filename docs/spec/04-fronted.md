@@ -14,9 +14,12 @@
 
 - **类型**: chore
 - **上下文**: 当前 `vue-router ^5.0.6` / `vite ^8.0.12` / `typescript ~6.0.2` / `vue-tsc ^3.2.8` / `@vue/tsconfig ^0.9.1` 在 npm 上**都不存在**,`npm install` 必失败
-- **涉及文件**: `apps/fronted/package.json`
+- **涉及文件**:
+  - `apps/fronted/package.json`
+  - `pnpm-lock.yaml`
 - **实施要点**:
   - 完整覆盖式重写,以 `01-conventions.md` § 15.2 的依赖基线为准
+  - package name 改为 `fronted`,确保根目录 `pnpm --filter fronted <script>` 可匹配
   - **删除** daisyUI(主题系统不再依赖,见 07 文档)
   - **新增** echarts / vue-echarts / @vueuse/core / nprogress / dayjs / lodash-es / qs / file-saver / exceljs / vuedraggable / unplugin-auto-import / unplugin-vue-components / vite-plugin-svg-icons
   - scripts:
@@ -34,8 +37,8 @@
     ```
 - **验收**:
   - [ ] `pnpm --filter fronted install` 0 报错
-  - [ ] `pnpm --filter fronted dev` 启动 5173 不白屏
   - [ ] `pnpm --filter fronted typecheck` 通过(可保留必要的 `// @ts-expect-error`,后续清理)
+  - [ ] grep package.json 无 `vue-router 5` / `vite 8` / `typescript 6` / `daisyui` / `@tailwindcss/vite`
 
 ### T-051 vite.config.ts 重写
 
@@ -100,6 +103,7 @@
   ```
 - **验收**:
   - [ ] dev 启动无 plugin 报错
+  - [ ] `pnpm --filter fronted dev` 启动 5173 不白屏
   - [ ] build 产物分包合理(echarts 单独 chunk)
   - [ ] 自动导入 vue/pinia 等工作,无需手写 import
 
