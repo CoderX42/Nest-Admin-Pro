@@ -1,19 +1,6 @@
-@import "tailwindcss";
-
-/* Import daisyUI components */
-@plugin "daisyui";
-
-/* ================================================
-   BASE — Tailwind v4 theme tokens
-   ================================================ */
-@theme {
-  --radius-selector: 0.5rem;
-  --radius-field: 0.375rem;
-  --radius-box: 0.75rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ================================================
    CSS CUSTOM PROPERTIES — daisyUI theming
@@ -74,8 +61,10 @@ button, input, textarea, select {
     box-shadow var(--transition-fast);
 }
 
-/* Disable transitions for animations */
-@keyframes, .no-transition {
+/* Disable transitions for marked nodes */
+.no-transition,
+.no-transition::before,
+.no-transition::after {
   transition: none !important;
 }
 

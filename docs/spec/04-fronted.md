@@ -43,7 +43,15 @@
 ### T-051 vite.config.ts 重写
 
 - **类型**: feat
-- **涉及文件**: `apps/fronted/vite.config.ts`
+- **涉及文件**:
+  - `apps/fronted/vite.config.ts`
+  - `apps/fronted/postcss.config.cjs`(新建,Tailwind v3 PostCSS 配置)
+  - `apps/fronted/tailwind.config.cjs`(新建,Tailwind v3 content 配置)
+  - `apps/fronted/src/styles/global.css`(Tailwind v4/daisyUI 指令改为 Tailwind v3)
+  - `apps/fronted/tsconfig.app.json`(删除 TypeScript 6 遗留 `ignoreDeprecations`)
+  - `apps/fronted/.eslintrc-auto-import.json`(自动生成)
+  - `apps/fronted/src/auto-imports.d.ts`(自动生成)
+  - `apps/fronted/src/components.d.ts`(自动生成)
 - **实施要点**:
   ```ts
   import { defineConfig, loadEnv } from 'vite';
@@ -104,7 +112,7 @@
 - **验收**:
   - [ ] dev 启动无 plugin 报错
   - [ ] `pnpm --filter fronted dev` 启动 5173 不白屏
-  - [ ] build 产物分包合理(echarts 单独 chunk)
+  - [ ] `pnpm --filter fronted exec vite build` 成功,产物分包合理(echarts 单独 chunk)
   - [ ] 自动导入 vue/pinia 等工作,无需手写 import
 
 ### T-052 删除 HelloWorld.vue 死代码
