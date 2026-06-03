@@ -43,7 +43,8 @@ T-011 f718b7f 2026-06-03 01:45:11 CST 新增公开 health 端点,提供 DB/Redis
 T-050 0836ced 2026-06-03 11:47:45 CST fronted package 依赖版本改为真实可安装基线,install/typecheck 与造假版本清查通过
 T-051 fd5fb06 2026-06-03 11:49:49 CST vite 配置重写并接入自动导入/组件解析/svg icons/Tailwind v3 构建链路
 T-052 d4e65c7 2026-06-03 11:55:08 CST 删除 HelloWorld 死组件并同步清理自动生成组件声明
-T-053 pending 2026-06-03 11:56:14 CST 新建 fronted 内部基础类型并让 request.ts 引用统一 ApiResponse 契约
+T-053 0dd043d 2026-06-03 11:56:14 CST 新建 fronted 内部基础类型并让 request.ts 引用统一 ApiResponse 契约
+T-054 pending 2026-06-03 11:59:03 CST request.ts 重写为类型化 axios 封装,统一业务码/401/403/429/blob 处理
 
 ---
 

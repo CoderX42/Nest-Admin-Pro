@@ -1,51 +1,71 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { ElMessage } from 'element-plus';
+import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { useUserStore } from '@/store/modules/user';
 import type { ApiResponse } from '@/types/api';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-
-const request: AxiosInstance = axios.create({
-  baseURL,
-  timeout: 30000,
+const service: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  timeout: 30_000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor
-request.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: any) => Promise.reject(error),
-);
+service.interceptors.request.use((config) => {
+  const userStore = useUserStore();
+  if (userStore.token) {
+    config.headers.Authorization = `Bearer ${userStore.token}`;
+  }
+  return config;
+});
 
-// Response interceptor
-request.interceptors.response.use(
+let isRefreshing401 = false;
+
+service.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
-    const res = response.data;
-    if (res.code !== 200) {
-      ElMessage.error(res.message || 'Request failed');
-      if (res.code === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-      return Promise.reject(new Error(res.message || 'Error'));
+    if (response.config.responseType === 'blob') {
+      return response;
     }
-    return res.data;
+
+    const { code, data, message } = response.data;
+    if (code === 200) {
+      return data;
+    }
+
+    ElMessage.error(message ?? '请求失败');
+    return Promise.reject(response);
   },
-  (error: any) => {
-    const message = error.response?.data?.message || error.message || 'Network error';
-    ElMessage.error(message);
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+  async (error: AxiosError<ApiResponse>) => {
+    const status = error.response?.status;
+
+    if (status === 401) {
+      if (isRefreshing401) {
+        return Promise.reject(error);
+      }
+      isRefreshing401 = true;
+      try {
+        const userStore = useUserStore();
+        userStore.reset();
+        await ElMessageBox.alert('登录已过期,请重新登录', '提示', { type: 'warning' });
+        window.location.href = '/login';
+      } finally {
+        isRefreshing401 = false;
+      }
+    } else if (status === 403) {
+      ElMessage.error('权限不足');
+    } else if (status === 429) {
+      ElMessage.error('请求过于频繁,稍后再试');
+    } else if (typeof status === 'number' && status >= 500) {
+      ElMessage.error('服务器异常,请稍后再试');
+    } else {
+      ElMessage.error(error.response?.data?.message ?? error.message ?? '请求失败');
     }
+
     return Promise.reject(error);
   },
 );
 
-export default request;
+export function request<T = unknown>(config: AxiosRequestConfig): Promise<T> {
+  return service.request<unknown, T>(config);
+}
+
+export default service;
