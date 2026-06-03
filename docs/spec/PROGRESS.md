@@ -4,13 +4,13 @@
 
 ## 当前 Stage
 
-**S0 修血洞**(进行中)
+**S1 基础设施**(进行中)
 
 ---
 
 ## Stage 总览
 
-- [ ] **S0 修血洞** — 三端能起来,登录链路打通
+- [x] **S0 修血洞** — 三端能起来,登录链路打通
 - [ ] **S1 基础设施** — pnpm workspace + Docker + 健康检查 + 日志
 - [ ] **S2 数据模型重整** — schema 重写、prisma migrate 接管、seed 改造
 - [ ] **S3 RBAC + 多租户** — JwtGuard 全局生效、Permission/Roles Guard、dataScope 5 档、Prisma tenantId 中间件
@@ -97,9 +97,19 @@ T-087 f63a2ec 2026-06-03 16:47:57 CST app onLaunch 接入全局路由守卫,未�
 
 ---
 
+## S0 完成度
+
+- 完成时间(UTC+8): 2026-06-03
+- Commit 范围: 9506dc0..HEAD(共 32 commit,backend 11 + fronted 8 + app 8 + 文档维护 5)
+- 三段血洞修复: backend 全局守卫/异常脱敏/BigInt 序列化/zod env;fronted 假版本/HelloWorld/请求层重构;app pinia 注册/captcha 补全/路由守卫
+- 工程化骨架: pnpm workspace + 根 package.json + .npmrc + .gitignore + 三端 lockfile
+- 验收方式: 三端 vue-tsc/build/lint/test 通过,关键命令实测,启动期 docker 依赖项目以单测/集成静态验收为主
+- S1 启动前置: 已 push 到 origin/docs/codex-blueprint
+
 ## S0 欠账(deferred to later stages)
 
 - T-009 pino 实际启动输出未验证 → S1 docker-compose 起来后,跑 `pnpm --filter backend dev`,人工验证开发模式 pretty 输出 / 设 `NODE_ENV=production` 验证 json 输出。任何字段不符合 spec 立即修。
 - T-011 health 降级策略 → S1 时把策略改为:`NODE_ENV=production` 且 db/redis 探针失败 → 返回 503 而非 ok。S0 留 ok 仅为开发期不阻塞启动。
 - T-051 vite manualChunks 循环 chunk → S1 优化时,把 element-plus 单独切片去掉(让它合到 vendor),或者复制 vue 到 element-plus chunk。当前 vite build 警告"element-plus -> vendor circular import",生产首屏可能受影响。
 - T-051 vite build 大 chunk + 空 echarts chunk → S1 优化时按需加载 echarts(改成 dynamic import),并把 500KB+ 的 chunk 拆开。当前 warning 不阻塞,但生产体积偏大。
+- T-051 fronted dev / T-081 app dev 默认都占 5173 端口 → S1 起 backend (3000) 后,如果 fronted 与 app 需要并跑,要给其中一个换端口。建议:fronted 保持 5173,app dev:h5 改 5174(在 apps/app/vite.config.ts 加 server.port: 5174,或在 manifest.json h5 区域设)。S0 阶段两端不并跑,无冲突。
