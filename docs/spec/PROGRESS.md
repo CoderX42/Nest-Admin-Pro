@@ -93,3 +93,5 @@ T-057 239b9d4 2026-06-03 12:08:37 CST 登录页接入 captcha/rememberMe/redirec
 
 - T-009 pino 实际启动输出未验证 → S1 docker-compose 起来后,跑 `pnpm --filter backend dev`,人工验证开发模式 pretty 输出 / 设 `NODE_ENV=production` 验证 json 输出。任何字段不符合 spec 立即修。
 - T-011 health 降级策略 → S1 时把策略改为:`NODE_ENV=production` 且 db/redis 探针失败 → 返回 503 而非 ok。S0 留 ok 仅为开发期不阻塞启动。
+- T-051 vite manualChunks 循环 chunk → S1 优化时,把 element-plus 单独切片去掉(让它合到 vendor),或者复制 vue 到 element-plus chunk。当前 vite build 警告"element-plus -> vendor circular import",生产首屏可能受影响。
+- T-051 vite build 大 chunk + 空 echarts chunk → S1 优化时按需加载 echarts(改成 dynamic import),并把 500KB+ 的 chunk 拆开。当前 warning 不阻塞,但生产体积偏大。
