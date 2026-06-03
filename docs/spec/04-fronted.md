@@ -130,6 +130,7 @@
 - **涉及文件**:
   - `apps/fronted/src/types/api.ts`(新建,导出共享类型)
   - `apps/fronted/src/types/auth.ts`、`menu.ts`、`user.ts`、`role.ts` 等
+  - `apps/fronted/src/utils/request.ts`(引用 `ApiResponse`)
   - `packages/shared-types/`(S1 引入,本卡先用 fronted 内部 types,S1 任务卡迁移)
 - **实施要点**:
   ```ts

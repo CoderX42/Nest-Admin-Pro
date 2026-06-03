@@ -1,10 +1,11 @@
 import axios from 'axios';
-import type { AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ElMessage } from 'element-plus';
+import type { ApiResponse } from '@/types/api';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
-const request: any = axios.create({
+const request: AxiosInstance = axios.create({
   baseURL,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
@@ -12,7 +13,7 @@ const request: any = axios.create({
 
 // Request interceptor
 request.interceptors.request.use(
-  (config: any) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -24,7 +25,7 @@ request.interceptors.request.use(
 
 // Response interceptor
 request.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response: AxiosResponse<ApiResponse>) => {
     const res = response.data;
     if (res.code !== 200) {
       ElMessage.error(res.message || 'Request failed');
