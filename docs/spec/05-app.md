@@ -159,7 +159,10 @@
 ### T-086 request.ts 重写
 
 - **类型**: refactor
-- **涉及文件**: `apps/app/src/utils/request.ts`
+- **涉及文件**:
+  - `apps/app/src/utils/request.ts`
+  - `apps/app/src/api/index.ts`(uploadAvatar 改用统一 upload)
+  - `apps/app/src/stores/user.ts`(token key 统一为 `nap_token`,兼容清理旧 `token`)
 - **实施要点**:
   ```ts
   import { BASE_URL } from './env';

@@ -13,14 +13,15 @@ interface UserInfo {
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    token: uni.getStorageSync('token') || '',
+    token: uni.getStorageSync('nap_token') || uni.getStorageSync('token') || '',
     userInfo: null as UserInfo | null,
   }),
 
   actions: {
     setToken(token: string) {
       this.token = token;
-      uni.setStorageSync('token', token);
+      uni.setStorageSync('nap_token', token);
+      uni.removeStorageSync('token');
     },
 
     setUserInfo(info: UserInfo) {
@@ -43,9 +44,7 @@ export const useUserStore = defineStore('user', {
         this.setUserInfo(info.user);
         return info;
       } catch {
-        this.token = '';
-        this.userInfo = null;
-        uni.removeStorageSync('token');
+        this.reset();
       }
     },
 
@@ -54,10 +53,15 @@ export const useUserStore = defineStore('user', {
         const { authApi } = await import('@/api/auth');
         await authApi.logout();
       } finally {
-        this.token = '';
-        this.userInfo = null;
-        uni.removeStorageSync('token');
+        this.reset();
       }
+    },
+
+    reset() {
+      this.token = '';
+      this.userInfo = null;
+      uni.removeStorageSync('nap_token');
+      uni.removeStorageSync('token');
     },
   },
 });
