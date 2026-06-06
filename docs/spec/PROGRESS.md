@@ -60,6 +60,7 @@ T-100 待回填 2026-06-03 18:40:00 CST husky/lint-staged/commitlint/changesets 
 T-101 待回填 2026-06-03 18:48:08 CST packages/shared-types 与 shared-constants 已创建,三端 workspace 依赖与类型验收通过
 T-102 待回填 2026-06-03 18:54:35 CST 根 ESLint flat config 与 Prettier 配置已落地,`pnpm lint` 验收通过
 T-103 待回填 2026-06-06 22:22:08 CST backend production Dockerfile 与 .dockerignore 已落地,用户外部 docker build 验收通过
+T-104 待回填 2026-06-06 22:32:04 CST docker compose MySQL/Redis 基础服务已落地,用户外部 compose 验收 healthy 通过
 
 ---
 
