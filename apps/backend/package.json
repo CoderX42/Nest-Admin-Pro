@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/main.js",
   "scripts": {
+    "dev": "node -e \"try{require('node:fs').unlinkSync('tsconfig.build.tsbuildinfo')}catch{}\" && nest start --watch",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",

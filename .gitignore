@@ -6,6 +6,8 @@ build/
 unpackage/
 .turbo/
 .env
+**/.env
+apps/backend/.env
 .env.local
 .env.*.local
 !.env.example

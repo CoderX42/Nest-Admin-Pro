@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { Logger as PinoLogger } from 'nestjs-pino';
-import compression from 'compression';
+import compression = require('compression');
 import helmet from 'helmet';
 import * as path from 'path';
 
