@@ -1,0 +1,13 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+.output
+.vite
+apps/app/unpackage
+**/tsconfig.build.tsbuildinfo
