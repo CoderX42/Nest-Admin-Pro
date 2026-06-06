@@ -119,3 +119,4 @@ T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,�
 - T-051 vite manualChunks 循环 chunk → S1 优化时,把 element-plus 单独切片去掉(让它合到 vendor),或者复制 vue 到 element-plus chunk。当前 vite build 警告"element-plus -> vendor circular import",生产首屏可能受影响。
 - T-051 vite build 大 chunk + 空 echarts chunk → S1 优化时按需加载 echarts(改成 dynamic import),并把 500KB+ 的 chunk 拆开。当前 warning 不阻塞,但生产体积偏大。
 - T-051 fronted dev / T-081 app dev 默认都占 5173 端口 → S1 起 backend (3000) 后,如果 fronted 与 app 需要并跑,要给其中一个换端口。建议:fronted 保持 5173,app dev:h5 改 5174(在 apps/app/vite.config.ts 加 server.port: 5174,或在 manifest.json h5 区域设)。S0 阶段两端不并跑,无冲突。
+- 部署文档:在 README 或 docs/ops/local-dev.md 增加排错小节,提示开发者:若 MySQL 容器健康但 prisma 连不上,首先用 lsof -iTCP:3306 检查是否有 brew 装的本机 mysql 占端口。
