@@ -1,47 +1,37 @@
 <template>
-  <div class="space-y-4">
-    <div class="card bg-base-100 shadow-sm border border-base-300 p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">{{ t('monitor.online.title') || '在线用户' }}</h3>
-        <span class="badge badge-primary">{{ tableData.length }} 在线</span>
+  <div class="page-container">
+    <el-card class="summary-card">
+      <div class="summary-card__content">
+        <div>
+          <div class="summary-card__title">{{ t('monitor.online.title') || '在线用户' }}</div>
+          <div class="summary-card__desc">实时查看当前在线的用户会话</div>
+        </div>
+        <el-tag type="primary" effect="plain">{{ tableData.length }} 在线</el-tag>
       </div>
-    </div>
+    </el-card>
 
-    <div class="card bg-base-100 shadow-sm border border-base-300 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table table-sm">
-          <thead>
-            <tr class="bg-base-200 text-xs">
-              <th class="w-16">{{ t('common.field.id') }}</th>
-              <th>{{ t('monitor.online.username') }}</th>
-              <th>{{ t('monitor.online.nickname') }}</th>
-              <th>{{ t('monitor.online.email') }}</th>
-              <th>{{ t('monitor.online.phone') }}</th>
-              <th class="w-40">{{ t('common.field.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="loading"><td colspan="6" class="text-center py-8"><span class="loading loading-spinner loading-sm text-primary"></span></td></tr>
-            <tr v-else-if="!tableData.length"><td colspan="6" class="text-center text-base-content/40 py-8">No data</td></tr>
-            <tr v-for="row in tableData" :key="row.token" class="hover:bg-base-200/50">
-              <td class="text-xs">{{ row.id }}</td>
-              <td class="text-sm">{{ row.username }}</td>
-              <td class="text-sm">{{ row.nickname }}</td>
-              <td class="text-xs">{{ row.email }}</td>
-              <td class="text-xs">{{ row.phone }}</td>
-              <td>
-                <button class="btn btn-xs btn-error" @click="handleForceLogout(row.token)">{{ t('common.action.forceLogout') }}</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <el-card class="table-wrap">
+      <el-table :data="tableData" v-loading="loading" border row-key="token">
+        <el-table-column prop="id" :label="t('common.field.id')" min-width="90" />
+        <el-table-column prop="username" :label="t('monitor.online.username')" min-width="140" />
+        <el-table-column prop="nickname" :label="t('monitor.online.nickname')" min-width="140" />
+        <el-table-column prop="email" :label="t('monitor.online.email')" min-width="180" />
+        <el-table-column prop="phone" :label="t('monitor.online.phone')" min-width="140" />
+        <el-table-column :label="t('common.field.actions')" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button text type="danger" size="small" :icon="Delete" @click="handleForceLogout(row.token)">
+              {{ t('common.action.forceLogout') }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import { Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { onlineApi } from '@/api/monitor/online';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -52,15 +42,49 @@ const tableData = ref<any[]>([]);
 
 const loadData = async () => {
   loading.value = true;
-  try { tableData.value = await onlineApi.list(); }
-  catch { ElMessage.error(t('common.message.loadFailed')); }
-  finally { loading.value = false; }
+  try {
+    tableData.value = await onlineApi.list();
+  } catch {
+    ElMessage.error(t('common.message.loadFailed'));
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleForceLogout = async (token: string) => {
   await ElMessageBox.confirm(t('common.message.confirmForceLogout'), t('common.action.confirm'), { type: 'warning' });
-  await onlineApi.forceLogout(token); ElMessage.success(t('common.message.success')); loadData();
+  await onlineApi.forceLogout(token);
+  ElMessage.success(t('common.message.success'));
+  loadData();
 };
 
 onMounted(() => loadData());
 </script>
+
+<style scoped>
+.page-container {
+  padding: 16px;
+}
+
+.summary-card,
+.table-wrap {
+  margin-bottom: 16px;
+}
+
+.summary-card__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-card__title {
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.summary-card__desc {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+</style>

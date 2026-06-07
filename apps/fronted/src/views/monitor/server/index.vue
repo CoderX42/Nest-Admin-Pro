@@ -1,93 +1,64 @@
 <template>
-  <div class="space-y-4">
-    <!-- Server info + memory side by side -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm font-semibold mb-4">{{ t('monitor.server.serverInfo') }}</h3>
-          <div v-if="info" class="space-y-3">
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.os') }}</span>
-              <span class="font-medium">{{ info.os }}</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.hostname') }}</span>
-              <span class="font-medium">{{ info.hostname }}</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.cpuCores') }}</span>
-              <span class="font-medium">{{ info.cpuCount }}</span>
-            </div>
-            <div class="flex justify-between py-2 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.uptime') }}</span>
-              <span class="font-medium">{{ info.uptime }}</span>
-            </div>
-          </div>
-          <div v-else class="space-y-3">
-            <div class="h-5 bg-base-300 rounded animate-pulse w-3/4"></div>
-            <div class="h-5 bg-base-300 rounded animate-pulse w-1/2"></div>
-            <div class="h-5 bg-base-300 rounded animate-pulse w-2/3"></div>
-            <div class="h-5 bg-base-300 rounded animate-pulse w-1/2"></div>
-          </div>
-        </div>
-      </div>
+  <div class="page-container">
+    <el-row :gutter="16">
+      <el-col :xs="24" :lg="12">
+        <el-card class="panel-card" v-loading="!info">
+          <template #header>
+            <span>{{ t('monitor.server.serverInfo') }}</span>
+          </template>
 
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm font-semibold mb-4">{{ t('monitor.server.memoryUsage') }}</h3>
-          <div v-if="info?.mem" class="space-y-3">
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.total') }}</span>
-              <span class="font-medium">{{ info.mem.total }}</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.used') }}</span>
-              <span class="font-medium">{{ info.mem.used }}</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-base-300 text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.free') }}</span>
-              <span class="font-medium">{{ info.mem.free }}</span>
-            </div>
-            <div class="flex justify-between py-2 items-center text-sm">
-              <span class="text-base-content/60">{{ t('monitor.server.usage') }}</span>
-              <div class="w-48">
-                <progress class="progress" :class="getMemColorClass(parseFloat(info.mem.usage))" :value="parseFloat(info.mem.usage)" max="100"></progress>
-                <span class="text-xs text-base-content/60">{{ info.mem.usage }}</span>
+          <el-descriptions v-if="info" :column="1" border>
+            <el-descriptions-item :label="t('monitor.server.os')">{{ info.os }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.hostname')">{{ info.hostname }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.cpuCores')">{{ info.cpuCount }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.uptime')">{{ info.uptime }}</el-descriptions-item>
+          </el-descriptions>
+          <el-skeleton v-else :rows="4" animated />
+        </el-card>
+      </el-col>
+
+      <el-col :xs="24" :lg="12">
+        <el-card class="panel-card" v-loading="!info?.mem">
+          <template #header>
+            <span>{{ t('monitor.server.memoryUsage') }}</span>
+          </template>
+
+          <el-descriptions v-if="info?.mem" :column="1" border>
+            <el-descriptions-item :label="t('monitor.server.total')">{{ info.mem.total }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.used')">{{ info.mem.used }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.free')">{{ info.mem.free }}</el-descriptions-item>
+            <el-descriptions-item :label="t('monitor.server.usage')">
+              <div class="usage-cell">
+                <el-progress :percentage="parseFloat(info.mem.usage)" :status="getMemStatus(parseFloat(info.mem.usage))" />
+                <span>{{ info.mem.usage }}</span>
               </div>
-            </div>
-          </div>
-          <div v-else class="space-y-3">
-            <div class="h-5 bg-base-300 rounded animate-pulse w-3/4"></div>
-            <div class="h-5 bg-base-300 rounded animate-pulse w-1/2"></div>
-            <div class="h-5 bg-base-300 rounded animate-pulse w-2/3"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </el-descriptions-item>
+          </el-descriptions>
+          <el-skeleton v-else :rows="4" animated />
+        </el-card>
+      </el-col>
+    </el-row>
 
-    <!-- CPU usage -->
-    <div class="card bg-base-100 shadow-sm border border-base-300">
-      <div class="card-body p-4">
-        <h3 class="card-title text-sm font-semibold mb-4">{{ t('monitor.server.cpuUsage') }}</h3>
-        <div v-if="info" class="flex items-center gap-4">
-          <div class="flex-1">
-            <progress class="progress progress-primary w-full" :value="parseFloat(info.cpuUsage)" max="100"></progress>
-          </div>
-          <span class="font-bold text-lg w-20 text-right">{{ info.cpuUsage }}</span>
+    <el-card class="panel-card" v-loading="!info">
+      <template #header>
+        <div class="server-header">
+          <span>{{ t('monitor.server.cpuUsage') }}</span>
+          <el-button :icon="Refresh" @click="loadData">{{ t('common.action.refresh') }}</el-button>
         </div>
-        <div v-else class="h-5 bg-base-300 rounded animate-pulse w-1/2"></div>
-      </div>
-    </div>
+      </template>
 
-    <button class="btn btn-primary" @click="loadData">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-      {{ t('common.action.refresh') }}
-    </button>
+      <div v-if="info" class="cpu-panel">
+        <el-progress :percentage="parseFloat(info.cpuUsage)" :stroke-width="18" />
+        <div class="cpu-value">{{ info.cpuUsage }}</div>
+      </div>
+      <el-skeleton v-else :rows="1" animated />
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import { Refresh } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { serverApi } from '@/api/monitor/server';
 import { ElMessage } from 'element-plus';
@@ -95,12 +66,50 @@ import { ElMessage } from 'element-plus';
 const { t } = useI18n();
 const info = ref<any>(null);
 
-const getMemColorClass = (p: number) => p > 80 ? 'progress-error' : p > 50 ? 'progress-warning' : 'progress-success';
+const getMemStatus = (percentage: number) => (percentage > 80 ? 'exception' : percentage > 50 ? 'warning' : 'success');
 
 const loadData = async () => {
-  try { info.value = await serverApi.info(); }
-  catch { ElMessage.error(t('common.message.loadFailed')); }
+  try {
+    info.value = await serverApi.info();
+  } catch {
+    ElMessage.error(t('common.message.loadFailed'));
+  }
 };
 
 onMounted(() => loadData());
 </script>
+
+<style scoped>
+.page-container {
+  padding: 16px;
+}
+
+.panel-card {
+  margin-bottom: 16px;
+}
+
+.usage-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.server-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cpu-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cpu-value {
+  min-width: 80px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: right;
+}
+</style>
