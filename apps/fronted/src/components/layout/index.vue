@@ -194,7 +194,7 @@ import SidebarMenu from './SidebarMenu.vue';
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
-const { t, locale } = useI18n();
+const { t, tm, locale } = useI18n();
 
 const isCollapsed = ref(false);
 const drawerOpen = ref(false);
@@ -205,7 +205,14 @@ const currentLocale = ref<Locale>(locale.value as Locale);
 const activeMenu = computed(() => route.path);
 const currentTitle = computed(() => {
   const key = route.meta?.titleKey as string | undefined;
-  return key ? t(key) : route.meta?.title;
+  if (!key) return route.meta?.title;
+
+  const message = tm(key);
+  if (message && typeof message === 'object' && 'index' in message) {
+    return String(message.index);
+  }
+
+  return t(key);
 });
 const userInfo = computed(() => userStore.userInfo);
 const menus = computed(() => userStore.menus);

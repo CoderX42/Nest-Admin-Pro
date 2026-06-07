@@ -28,7 +28,7 @@ const uploadOptions = {
 };
 
 @ApiTags('File Management')
-@Controller('file')
+@Controller('system/file')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 

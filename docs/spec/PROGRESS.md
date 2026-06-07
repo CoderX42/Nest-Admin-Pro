@@ -149,3 +149,6 @@ T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLo
      修复后必须能完成端到端登录:GET captcha → 从 redis 读出 text → POST login → 拿到 token
 - [BUG-002][resolved by T-098] controller `@RequirePermission` 与 seed `sys_menu.perms` 不一致 → 已统一回归 T-132 seed 权限命名,并把同一 controller 内 list/add/edit/remove/query/clean/forceLogout/clear 等拆为细粒度权限点。
 - [BUG-003][resolved by T-097] `/api/system/menu/list` 返回 500 Maximum call stack exceeded → T-132 seed 的 id=0 占位根节点已在菜单树查询和构建入口显式过滤,避免 `buildTree(menus, 0)` 对同一根节点无限递归。
+- [BUG-004][resolved by T-095] file 模块 API 路由前缀错位 → 后端 `@Controller('file')` 与其他 system 模块不一致,前端 `api/system/file.ts` 仍请求 `/file/*`,应统一为 `/system/file/*`。
+- [BUG-005][resolved by T-095] i18n 字典缺 seed 菜单对应的 `menu.*` key 与 `monitor.online.title` → 控制台出现 `[intlify] Not found` 噪音,需按 `sys_menu.i18n_key` 补齐中英文 key。
+- [BUG-006][low priority, deferred] vue-router 首次动态路由后短暂 warn `/system/notice` → 疑似 addRoute 后立即跳转时序问题,不阻塞本卡主链路,后续单独处理。

@@ -58,7 +58,7 @@ import type { MenuItem } from '@/types/menu';
 
 const props = defineProps<{ menus: MenuItem[]; collapsed?: boolean }>();
 const route = useRoute();
-const { t } = useI18n();
+const { t, tm } = useI18n();
 
 // Icon map for menu items
 const iconMap: Record<string, string> = {
@@ -139,7 +139,14 @@ function resolveMenuPath(item: MenuItem, parent?: MenuItem) {
 
 const getMenuTitle = (item: MenuItem) => {
   const key = navKeyByPath[resolveMenuPath(item)] || navKeyByName[item.name];
-  return key ? t(key) : item.name;
+  if (!key) return item.name;
+
+  const message = tm(key);
+  if (message && typeof message === 'object' && 'index' in message) {
+    return String(message.index);
+  }
+
+  return t(key);
 };
 
 const isActive = (path: string) => route.path === path;
