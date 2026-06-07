@@ -10,7 +10,7 @@ export class LoginLogController {
   constructor(private readonly loginLogService: LoginLogService) {}
 
   @Get('list')
-  @RequirePermission('monitor:login:list')
+  @RequirePermission('monitor:loginLog:list')
   @ApiOperation({ summary: 'Get login log list' })
   async list(
     @Query('page') page: number,
@@ -27,14 +27,14 @@ export class LoginLogController {
   }
 
   @Get(':id')
-  @RequirePermission('monitor:login:list')
+  @RequirePermission('monitor:loginLog:query')
   @ApiOperation({ summary: 'Get login log by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.loginLogService.findOne(id);
   }
 
   @Delete('clean')
-  @RequirePermission('monitor:login:list')
+  @RequirePermission('monitor:loginLog:clean')
   @HttpCode(200)
   @ApiOperation({ summary: 'Clean all login logs' })
   async clean() {

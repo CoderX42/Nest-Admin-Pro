@@ -18,42 +18,42 @@ export class ConfigController {
   }
 
   @Get('key/:key')
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:query')
   @ApiOperation({ summary: 'Get config by key' })
   async findByKey(@Param('key') key: string) {
     return this.configService.findByKey(key);
   }
 
   @Get(':id')
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:query')
   @ApiOperation({ summary: 'Get config by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.configService.findOne(id);
   }
 
   @Post()
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:add')
   @ApiOperation({ summary: 'Create config' })
   async create(@Body() dto: CreateConfigDto) {
     return this.configService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:edit')
   @ApiOperation({ summary: 'Update config' })
   async update(@Body() dto: UpdateConfigDto) {
     return this.configService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:remove')
   @ApiOperation({ summary: 'Delete config' })
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.configService.remove(id);
   }
 
   @Put('refresh')
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:config:refresh')
   @ApiOperation({ summary: 'Refresh config cache' })
   async refresh() {
     return this.configService.refresh();

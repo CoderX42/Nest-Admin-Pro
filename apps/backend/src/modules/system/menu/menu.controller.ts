@@ -35,28 +35,28 @@ export class MenuController {
   }
 
   @Get(':id')
-  @RequirePermission('system:menu:list')
+  @RequirePermission('system:menu:query')
   @ApiOperation({ summary: 'Get menu by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.menuService.findOne(id);
   }
 
   @Post()
-  @RequirePermission('system:menu:list')
+  @RequirePermission('system:menu:add')
   @ApiOperation({ summary: 'Create menu' })
   async create(@Body() dto: CreateMenuDto) {
     return this.menuService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:menu:list')
+  @RequirePermission('system:menu:edit')
   @ApiOperation({ summary: 'Update menu' })
   async update(@Body() dto: UpdateMenuDto) {
     return this.menuService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:menu:list')
+  @RequirePermission('system:menu:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete menu' })
   async remove(@Param('id', ParseIntPipe) id: number) {

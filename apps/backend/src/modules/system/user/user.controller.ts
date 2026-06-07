@@ -30,7 +30,7 @@ export class UserController {
   }
 
   @Get(':id')
-  @RequirePermission('system:user:list')
+  @RequirePermission('system:user:query')
   @ApiOperation({ summary: 'Get user by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
@@ -76,7 +76,7 @@ export class UserController {
   }
 
   @Put('assign-roles/:id')
-  @RequirePermission('system:user:edit')
+  @RequirePermission('system:user:assignRole')
   @ApiOperation({ summary: 'Assign roles to user' })
   async assignRoles(
     @Param('id', ParseIntPipe) id: number,

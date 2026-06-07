@@ -10,28 +10,28 @@ export class CacheController {
   constructor(private readonly cacheService: CacheService) {}
 
   @Get('info')
-  @RequirePermission('monitor:cache:list')
+  @RequirePermission('monitor:cache:view')
   @ApiOperation({ summary: 'Get Redis cache info' })
   async info() {
     return this.cacheService.info();
   }
 
   @Get('keys')
-  @RequirePermission('monitor:cache:list')
+  @RequirePermission('monitor:cache:view')
   @ApiOperation({ summary: 'Get cache keys' })
   async keys(@Query('pattern') pattern: string) {
     return this.cacheService.keys(pattern || '*');
   }
 
   @Get('value')
-  @RequirePermission('monitor:cache:list')
+  @RequirePermission('monitor:cache:view')
   @ApiOperation({ summary: 'Get cache value by key' })
   async value(@Query('key') key: string) {
     return this.cacheService.get(key);
   }
 
   @Post('clear')
-  @RequirePermission('monitor:cache:list')
+  @RequirePermission('monitor:cache:clearAll')
   @HttpCode(200)
   @ApiOperation({ summary: 'Clear all cache' })
   async clear() {
@@ -39,7 +39,7 @@ export class CacheController {
   }
 
   @Post('delete')
-  @RequirePermission('monitor:cache:list')
+  @RequirePermission('monitor:cache:clear')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete cache by key' })
   async delete(@Query('key') key: string) {

@@ -33,7 +33,7 @@ export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @UseGuards(PermissionGuard)
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:fileConfig:list')
   @Get('config')
   @ApiOperation({ summary: 'Get file storage config' })
   async getConfig() {
@@ -41,7 +41,7 @@ export class FileController {
   }
 
   @UseGuards(PermissionGuard)
-  @RequirePermission('system:config:list')
+  @RequirePermission('system:fileConfig:edit')
   @Put('config')
   @ApiOperation({ summary: 'Update file storage config' })
   async updateConfig(@Body() dto: any) {
@@ -49,7 +49,7 @@ export class FileController {
   }
 
   @UseGuards(PermissionGuard)
-  @RequirePermission('system:file:list')
+  @RequirePermission('system:file:query')
   @Get('list')
   @ApiOperation({ summary: 'Get uploaded file list' })
   async list(@Query() query: any) {
@@ -73,6 +73,8 @@ export class FileController {
   }
 
   @UseInterceptors(FileInterceptor('file', uploadOptions))
+  @UseGuards(PermissionGuard)
+  @RequirePermission('system:file:upload')
   @Post('upload')
   @ApiOperation({ summary: 'Upload file' })
   async upload(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
@@ -80,6 +82,8 @@ export class FileController {
   }
 
   @UseInterceptors(FileInterceptor('file', uploadOptions))
+  @UseGuards(PermissionGuard)
+  @RequirePermission('system:file:upload')
   @Post('upload-image')
   @ApiOperation({ summary: 'Upload image' })
   async uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: any) {

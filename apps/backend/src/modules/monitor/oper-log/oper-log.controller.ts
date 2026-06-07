@@ -10,21 +10,21 @@ export class OperLogController {
   constructor(private readonly operLogService: OperLogService) {}
 
   @Get('list')
-  @RequirePermission('monitor:oper:list')
+  @RequirePermission('monitor:operLog:list')
   @ApiOperation({ summary: 'Get operation log list' })
   async list(@Query() query: any) {
     return this.operLogService.list(query);
   }
 
   @Get(':id')
-  @RequirePermission('monitor:oper:list')
+  @RequirePermission('monitor:operLog:query')
   @ApiOperation({ summary: 'Get operation log by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.operLogService.findOne(id);
   }
 
   @Delete('clean')
-  @RequirePermission('monitor:oper:list')
+  @RequirePermission('monitor:operLog:clean')
   @HttpCode(200)
   @ApiOperation({ summary: 'Clean all operation logs' })
   async clean() {

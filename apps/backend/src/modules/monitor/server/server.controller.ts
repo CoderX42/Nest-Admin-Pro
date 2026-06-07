@@ -11,7 +11,7 @@ export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @Get('info')
-  @RequirePermission('monitor:server:list')
+  @RequirePermission('monitor:server:view')
   @ApiOperation({ summary: 'Get server info' })
   async info() {
     const cpuCount = os.cpus().length;

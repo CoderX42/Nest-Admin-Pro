@@ -18,28 +18,28 @@ export class PostController {
   }
 
   @Get(':id')
-  @RequirePermission('system:post:list')
+  @RequirePermission('system:post:query')
   @ApiOperation({ summary: 'Get post by ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postService.findOne(id);
   }
 
   @Post()
-  @RequirePermission('system:post:list')
+  @RequirePermission('system:post:add')
   @ApiOperation({ summary: 'Create post' })
   async create(@Body() dto: CreatePostDto) {
     return this.postService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:post:list')
+  @RequirePermission('system:post:edit')
   @ApiOperation({ summary: 'Update post' })
   async update(@Body() dto: UpdatePostDto) {
     return this.postService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:post:list')
+  @RequirePermission('system:post:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete post' })
   async remove(@Param('id', ParseIntPipe) id: number) {
