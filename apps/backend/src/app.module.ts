@@ -11,6 +11,7 @@ import { CommonModule } from './common/common.module';
 import { RedisModule } from './cache/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { SystemModule } from './modules/system/system.module';
+import { TenantModule } from './modules/system/tenant/tenant.module';
 import { MonitorModule } from './modules/monitor/monitor.module';
 import { FileModule } from './modules/file/file.module';
 import { GenModule } from './modules/gen/gen.module';
@@ -82,6 +83,7 @@ import { RedisThrottlerStorage } from './common/throttler/redis-throttler.storag
     RedisModule,
     AuthModule,
     SystemModule,
+    TenantModule,
     MonitorModule,
     FileModule,
     GenModule,

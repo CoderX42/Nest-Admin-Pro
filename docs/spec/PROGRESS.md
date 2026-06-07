@@ -71,6 +71,7 @@ T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
 T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLocalStorage tenant context 已落地,build/lint/test 验收通过
+T-091 2004c1f 2026-06-08 01:05:00 CST S2 业务接口补洞:dept 占位根递归、dict/config 分页 DTO、tenant CRUD 路由已修复
 
 ---
 
@@ -153,3 +154,4 @@ T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLo
 - [BUG-005][resolved by T-095] i18n 字典缺 seed 菜单对应的 `menu.*` key 与 `monitor.online.title` → 控制台出现 `[intlify] Not found` 噪音,需按 `sys_menu.i18n_key` 补齐中英文 key。
 - [BUG-006][low priority, deferred] vue-router 首次动态路由后短暂 warn `/system/notice` → 疑似 addRoute 后立即跳转时序问题,不阻塞本卡主链路,后续单独处理。
 - [BUG-008] daisyUI dropdown 默认 hover 展开对触屏用户不友好 → 后续 S2/S3 优化时考虑改 click-open 或换 ElDropdown。
+- [S2 list shape] 当前业务 list 主线使用 `{ total, items }`,fronted 多数页面读取 `items`;T-091 保持 `items` 形态,并兼容修复 dict/config 页面。如需回归 spec 的 `{ list, total }`,等 T-090 统一迁移。
