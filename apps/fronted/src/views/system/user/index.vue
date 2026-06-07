@@ -165,7 +165,7 @@
           </label>
           <label class="form-control">
             <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.department') }}</span></div>
-            <el-tree-select v-model="form.deptId" :data="deptTree" :props="{ label: 'name', value: 'id', children: 'children' }" check-strictly clearable :placeholder="t('system.user.selectDepartment')" class="w-full" />
+            <el-tree-select v-model="form.deptId" :data="deptTree" :props="{ label: 'name', children: 'children' }" value-key="id" check-strictly clearable :placeholder="t('system.user.selectDepartment')" class="w-full" />
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="form-control">
@@ -213,13 +213,20 @@ import { postApi } from '@/api/system/post';
 import { roleApi } from '@/api/system/role';
 import { userApi } from '@/api/system/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import type { UserStatus } from '@/types/user';
 
 const { t } = useI18n();
 
 const loading = ref(false);
 const tableData = ref<any[]>([]);
 const total = ref(0);
-const queryParams = reactive({ username: '', nickname: '', status: undefined as number | undefined, page: 1, limit: 10 });
+const queryParams = reactive({
+  username: '',
+  nickname: '',
+  status: undefined as UserStatus | undefined,
+  page: 1,
+  limit: 10,
+});
 
 const dialogRef = ref<HTMLDialogElement>();
 const deptTree = ref<any[]>([]);
@@ -278,14 +285,14 @@ const handleSubmit = async () => {
       delete payload.postIds;
       delete payload.roleIds;
       await userApi.update(payload);
-      await userApi.assignRoles(form.id, form.roleIds || []);
+      await userApi.assignRoles(form.id, (form.roleIds || []).map(String));
       ElMessage.success(t('common.message.updateSuccess'));
     } else {
       delete payload.id;
       delete payload.postIds;
       delete payload.roleIds;
       const created: any = await userApi.create(payload);
-      if (form.roleIds?.length && created?.id) await userApi.assignRoles(created.id, form.roleIds);
+      if (form.roleIds?.length && created?.id) await userApi.assignRoles(created.id, form.roleIds.map(String));
       ElMessage.success(t('common.message.addSuccess'));
     }
     dialogRef.value?.close();
@@ -293,7 +300,7 @@ const handleSubmit = async () => {
   } catch (e: any) { ElMessage.error(e.message || t('common.message.failed')); }
 };
 
-const handleStatusChange = async (row: any, status: number) => {
+const handleStatusChange = async (row: any, status: UserStatus) => {
   try { await userApi.changeStatus(row.id, status); ElMessage.success(t('common.message.statusUpdateSuccess')); }
   catch (e: any) { row.status = status === 1 ? 0 : 1; ElMessage.error(e.message || t('common.message.failed')); }
 };

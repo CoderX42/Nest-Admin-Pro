@@ -64,7 +64,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-3">
           <label class="form-control">
             <div class="label"><span class="label-text">{{ t('system.dept.parent') }}</span></div>
-            <el-tree-select v-model="form.parentId" :data="deptTreeData" :props="{ label: 'name', value: 'id', children: 'children' }" check-strictly clearable :placeholder="t('system.dept.rootDept')" class="w-full" />
+            <el-tree-select v-model="form.parentId" :data="deptTreeData" :props="{ label: 'name', children: 'children' }" value-key="id" check-strictly clearable :placeholder="t('system.dept.rootDept')" class="w-full" />
           </label>
           <label class="form-control">
             <div class="label"><span class="label-text">{{ t('system.dept.deptName') }} *</span></div>

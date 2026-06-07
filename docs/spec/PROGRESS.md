@@ -66,6 +66,7 @@ T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略�
 T-099 35b2435 2026-06-07 12:07:02 CST JWT sign payload 已显式转为 JSON-safe 字符串,BigInt 用户登录 token 往返单测通过
 T-098 405b83d 2026-06-07 12:35:23 CST controller `@RequirePermission` 已对齐 seed 权限点,build/lint/test 与权限字符串校验通过
 T-097 待回填 2026-06-07 14:13:34 CST 菜单树构建已排除 id=0 占位根节点,build/lint/test 验收通过
+T-096 待回填 2026-06-07 15:04:25 CST fronted 已接入后端菜单驱动动态路由,build/lint/test 验收通过
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过

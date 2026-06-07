@@ -129,6 +129,7 @@ import { fileConfigApi } from '@/api/system/file';
 const MB = 1024 * 1024;
 const { t } = useI18n();
 const saving = ref(false);
+type StorageType = 'local' | 'aliyun-oss' | 'tencent-cos' | 'qiniu-kodo' | 'huawei-obs';
 
 const form = reactive<any>({
   storage: 'local', uploadDir: './uploads',
@@ -146,8 +147,9 @@ const storageOptions = computed(() => [
 ]);
 const storageLabel = computed(() => storageOptions.value.find((i) => i.value === form.storage)?.label || form.storage);
 const regionLabel = computed(() => form.storage === 'qiniu-kodo' ? t('system.fileConfig.zone') : 'Region');
-const regionPlaceholder = computed(() => ({ 'aliyun-oss': 'oss-cn-hangzhou', 'tencent-cos': 'ap-shanghai', 'qiniu-kodo': 'z0 / z1 / z2', 'huawei-obs': 'cn-east-3' })[form.storage] || '');
-const endpointPlaceholder = computed(() => ({ 'aliyun-oss': 'https://oss-cn-hangzhou.aliyuncs.com', 'huawei-obs': 'https://obs.cn-east-3.myhuaweicloud.com' })[form.storage] || t('system.fileConfig.optional'));
+const currentStorage = computed(() => form.storage as StorageType);
+const regionPlaceholder = computed(() => ({ 'aliyun-oss': 'oss-cn-hangzhou', 'tencent-cos': 'ap-shanghai', 'qiniu-kodo': 'z0 / z1 / z2', 'huawei-obs': 'cn-east-3' } as Partial<Record<StorageType, string>>)[currentStorage.value] || '');
+const endpointPlaceholder = computed(() => ({ 'aliyun-oss': 'https://oss-cn-hangzhou.aliyuncs.com', 'huawei-obs': 'https://obs.cn-east-3.myhuaweicloud.com' } as Partial<Record<StorageType, string>>)[currentStorage.value] || t('system.fileConfig.optional'));
 const accessKeyIdLabel = computed(() => form.storage === 'tencent-cos' ? 'SecretId' : 'AccessKey ID');
 const accessKeySecretLabel = computed(() => form.storage === 'tencent-cos' ? 'SecretKey' : t('system.fileConfig.accessKeySecret'));
 

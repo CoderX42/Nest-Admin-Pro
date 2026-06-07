@@ -140,13 +140,20 @@ import { menuApi } from '@/api/system/menu';
 import { roleApi } from '@/api/system/role';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { ElTree } from 'element-plus';
+import type { Id } from '@/types/api';
+import type { DataScope, RoleStatus } from '@/types/role';
 
 const { t } = useI18n();
 
 const loading = ref(false);
 const tableData = ref<any[]>([]);
 const total = ref(0);
-const queryParams = reactive({ name: '', status: undefined as number | undefined, page: 1, limit: 10 });
+const queryParams = reactive({
+  name: '',
+  status: undefined as RoleStatus | undefined,
+  page: 1,
+  limit: 10,
+});
 const editDialogRef = ref<HTMLDialogElement>();
 const permDialogRef = ref<HTMLDialogElement>();
 const formRef = ref<any>();
@@ -154,8 +161,8 @@ const menuTreeRef = ref<InstanceType<typeof ElTree>>();
 const deptTreeRef = ref<InstanceType<typeof ElTree>>();
 
 const form = reactive<any>({ id: undefined, name: '', code: '', dataScope: 1, status: 1 });
-const currentRoleId = ref<number>();
-const currentDataScope = ref(1);
+const currentRoleId = ref<Id>();
+const currentDataScope = ref<DataScope>(1);
 const menuTree = ref<any[]>([]);
 const deptTree = ref<any[]>([]);
 
@@ -190,8 +197,8 @@ const handleEdit = (row: any) => {
 
 const handleSubmit = async () => {
   try {
-    if (form.id) { await roleApi.update({ id: form.id, name: form.name, dataScope: form.dataScope, status: form.status }); ElMessage.success(t('common.message.updateSuccess')); }
-    else { await roleApi.create({ name: form.name, code: form.code, dataScope: form.dataScope }); ElMessage.success(t('common.message.addSuccess')); }
+    if (form.id) { await roleApi.update({ id: form.id, name: form.name, code: form.code, sort: form.sort ?? 0, dataScope: form.dataScope, status: form.status }); ElMessage.success(t('common.message.updateSuccess')); }
+    else { await roleApi.create({ name: form.name, code: form.code, sort: form.sort ?? 0, status: form.status, dataScope: form.dataScope }); ElMessage.success(t('common.message.addSuccess')); }
     editDialogRef.value?.close();
     loadData();
   } catch (e: any) { ElMessage.error(e.message || t('common.message.failed')); }
@@ -218,7 +225,7 @@ const handlePermSubmit = async () => {
   permDialogRef.value?.close();
 };
 
-const handleStatusChange = async (row: any, status: number) => {
+const handleStatusChange = async (row: any, status: RoleStatus) => {
   try { await roleApi.changeStatus(row.id, status); ElMessage.success(t('common.message.statusUpdateSuccess')); }
   catch (e: any) { row.status = status === 1 ? 0 : 1; ElMessage.error(e.message || t('common.message.failed')); }
 };

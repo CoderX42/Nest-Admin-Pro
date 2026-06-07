@@ -77,7 +77,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-3">
           <label class="form-control">
             <div class="label"><span class="label-text">{{ t('system.menu.parentMenu') }}</span></div>
-            <el-tree-select v-model="form.parentId" :data="menuTree" :props="{ label: 'name', value: 'id', children: 'children' }" check-strictly clearable :placeholder="t('system.dept.rootDept')" class="w-full" />
+            <el-tree-select v-model="form.parentId" :data="menuTree" :props="{ label: 'name', children: 'children' }" value-key="id" check-strictly clearable :placeholder="t('system.dept.rootDept')" class="w-full" />
           </label>
           <label class="form-control">
             <div class="label"><span class="label-text">{{ t('system.menu.type') }} *</span></div>
@@ -143,13 +143,18 @@ import { ref, reactive, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { menuApi } from '@/api/system/menu';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import type { MenuType, VisibleStatus } from '@/types/menu';
 
 const { t } = useI18n();
 const loading = ref(false);
 const tableData = ref<any[]>([]);
 const menuTree = ref<any[]>([]);
 const dialogRef = ref<HTMLDialogElement>();
-const queryParams = reactive({ name: '', type: undefined as number | undefined, status: undefined as number | undefined });
+const queryParams = reactive({
+  name: '',
+  type: undefined as MenuType | undefined,
+  status: undefined as VisibleStatus | undefined,
+});
 const form = reactive<any>({ id: undefined, parentId: 0, type: 1, name: '', path: '', component: '', perms: '', icon: '', sort: 0, status: 1, show: 1, keepAlive: 0 });
 
 const loadData = async () => {

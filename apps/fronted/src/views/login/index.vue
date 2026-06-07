@@ -203,7 +203,15 @@ const handleLogin = async () => {
 
   loading.value = true;
   try {
-    await userStore.login({ username: form.username, password: form.password, captchaKey: form.captchaKey, captchaText: form.captcha });
+    await userStore.login(
+      {
+        username: form.username,
+        password: form.password,
+        captchaKey: form.captchaKey,
+        captchaText: form.captcha,
+      },
+      router,
+    );
     rememberedUsername.value = form.rememberMe ? form.username : '';
     ElMessage.success(t('login.success'));
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';

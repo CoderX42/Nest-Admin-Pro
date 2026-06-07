@@ -15,7 +15,7 @@ describe('useTagsViewStore', () => {
       fullPath: '/dashboard',
       name: 'Dashboard',
       meta: { title: 'Dashboard', keepAlive: true },
-    } as RouteLocationNormalizedLoaded;
+    } as unknown as RouteLocationNormalizedLoaded;
 
     store.addView(route);
     store.reset();

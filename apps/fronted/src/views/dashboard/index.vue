@@ -169,6 +169,11 @@ const stats = ref({ totalUsers: 0, totalRoles: 0, onlineUsers: 0, totalNotices: 
 const serverInfo = ref<any>(null);
 const recentLogs = ref<any[]>([]);
 
+function getPageRows<T>(result: { items?: T[] } | { list?: T[] }) {
+  const page = result as { items?: T[]; list?: T[] };
+  return page.items || page.list || [];
+}
+
 onMounted(async () => {
   try {
     const [userRes, roleRes, onlineRes, noticeRes, serverRes, logRes] = await Promise.all([
@@ -186,7 +191,7 @@ onMounted(async () => {
       totalNotices: noticeRes.total || 0,
     };
     serverInfo.value = serverRes;
-    recentLogs.value = logRes.items || [];
+    recentLogs.value = getPageRows(logRes);
   } catch (e) {
     console.error('Failed to load dashboard data', e);
   }

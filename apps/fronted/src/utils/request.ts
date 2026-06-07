@@ -20,20 +20,22 @@ service.interceptors.request.use((config) => {
 
 let isRefreshing401 = false;
 
+const unwrapResponse = (response: AxiosResponse<ApiResponse>) => {
+  if (response.config.responseType === 'blob') {
+    return response;
+  }
+
+  const { code, data, message } = response.data;
+  if (code === 200) {
+    return data;
+  }
+
+  ElMessage.error(message ?? '请求失败');
+  return Promise.reject(response);
+};
+
 service.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
-    if (response.config.responseType === 'blob') {
-      return response;
-    }
-
-    const { code, data, message } = response.data;
-    if (code === 200) {
-      return data;
-    }
-
-    ElMessage.error(message ?? '请求失败');
-    return Promise.reject(response);
-  },
+  unwrapResponse as never,
   async (error: AxiosError<ApiResponse>) => {
     const status = error.response?.status;
 

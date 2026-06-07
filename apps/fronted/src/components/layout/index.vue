@@ -213,16 +213,16 @@ const menus = computed(() => userStore.menus);
 onMounted(async () => {
   if (userStore.token && !userStore.userInfo) {
     try {
-      await userStore.getUserInfo();
+      await userStore.getUserInfo(router);
     } catch {
-      userStore.reset();
+      userStore.reset(router);
       router.push('/login');
     }
   }
 });
 
 const handleLogout = async () => {
-  await userStore.logout();
+  await userStore.logout({ router });
   router.push('/login');
   ElMessage.success(t('common.loggedOut'));
 };

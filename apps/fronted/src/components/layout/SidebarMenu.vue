@@ -1,8 +1,8 @@
 <template>
   <ul class="menu p-2 gap-1">
-    <li v-for="item in menus" :key="item.id">
+    <li v-for="item in visibleMenus" :key="item.id">
       <!-- Has children: collapse -->
-      <details v-if="item.children?.length" class="group">
+      <details v-if="getVisibleChildren(item).length" class="group">
         <summary
           class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer select-none transition-colors hover:bg-base-300"
           :class="{ 'justify-center': collapsed }"
@@ -19,13 +19,13 @@
           </div>
         </summary>
         <ul v-if="!collapsed" class="pl-3 mt-1 mb-1 gap-1">
-          <li v-for="child in item.children" :key="child.id">
+          <li v-for="child in getVisibleChildren(item)" :key="child.id">
             <router-link
-              :to="child.path || `/system/${child.name}`"
+              :to="resolveMenuPath(child, item)"
               class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-primary/10"
-              :class="{ 'bg-primary/10 text-primary font-semibold': isActive(child.path || `/system/${child.name}`) }"
+              :class="{ 'bg-primary/10 text-primary font-semibold': isActive(resolveMenuPath(child, item)) }"
             >
-              <span class="w-1.5 h-1.5 rounded-full opacity-60 flex-shrink-0" :class="isActive(child.path || `/system/${child.name}`) ? 'bg-primary opacity-100' : ''"></span>
+              <span class="w-1.5 h-1.5 rounded-full opacity-60 flex-shrink-0" :class="isActive(resolveMenuPath(child, item)) ? 'bg-primary opacity-100' : ''"></span>
               <span class="truncate">{{ getMenuTitle(child) }}</span>
             </router-link>
           </li>
@@ -35,10 +35,10 @@
       <!-- No children: link -->
       <router-link
         v-else
-        :to="item.path || `/system/${item.name}`"
+        :to="resolveMenuPath(item)"
         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-base-300"
         :class="[
-          isActive(item.path || `/system/${item.name}`) ? 'bg-primary/10 text-primary font-semibold' : '',
+          isActive(resolveMenuPath(item)) ? 'bg-primary/10 text-primary font-semibold' : '',
           collapsed ? 'justify-center' : ''
         ]"
         :title="collapsed ? getMenuTitle(item) : undefined"
@@ -53,8 +53,10 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { computed } from 'vue';
+import type { MenuItem } from '@/types/menu';
 
-const props = defineProps<{ menus: any[]; collapsed?: boolean }>();
+const props = defineProps<{ menus: MenuItem[]; collapsed?: boolean }>();
 const route = useRoute();
 const { t } = useI18n();
 
@@ -122,8 +124,21 @@ const navKeyByName: Record<string, string> = {
   '系统监控': 'nav.monitor',
 };
 
-const getMenuTitle = (item: any) => {
-  const key = navKeyByPath[item.path] || navKeyByName[item.name];
+const visibleMenus = computed(() => props.menus.filter((item) => item.type !== 3 && item.isVisible !== 0));
+
+function getVisibleChildren(item: MenuItem) {
+  return item.children?.filter((child) => child.type !== 3 && child.isVisible !== 0) ?? [];
+}
+
+function resolveMenuPath(item: MenuItem, parent?: MenuItem) {
+  if (item.path?.startsWith('/')) return item.path;
+  const path = item.path || String(item.id);
+  if (!parent?.path) return `/${path}`;
+  return `${parent.path}/${path}`.replace(/\/+/g, '/');
+}
+
+const getMenuTitle = (item: MenuItem) => {
+  const key = navKeyByPath[resolveMenuPath(item)] || navKeyByName[item.name];
   return key ? t(key) : item.name;
 };
 

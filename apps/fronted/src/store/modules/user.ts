@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useStorage } from '@vueuse/core';
+import type { Router } from 'vue-router';
+
 import { authApi } from '@/api/auth';
 import type { AuthUserInfo, LoginForm, LoginResult } from '@/types/auth';
 import type { MenuItem } from '@/types/menu';
 import type { UserInfo } from '@/types/user';
+
 import { usePermissionStore } from './permission';
 import { useTagsViewStore } from './tags-view';
 
@@ -24,15 +27,15 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function login(form: LoginForm): Promise<LoginResult> {
+  async function login(form: LoginForm, router?: Router): Promise<LoginResult> {
     const data = await authApi.login(form);
     persistToken(data.token);
     userInfo.value = data.userInfo;
-    await fetchInfo();
+    await fetchInfo(router);
     return data;
   }
 
-  async function fetchInfo(): Promise<AuthUserInfo | null> {
+  async function fetchInfo(router?: Router): Promise<AuthUserInfo | null> {
     if (!token.value) {
       return null;
     }
@@ -42,31 +45,31 @@ export const useUserStore = defineStore('user', () => {
     roles.value = data.roles ?? [];
     permissions.value = data.permissions ?? [];
     menus.value = data.menus ?? [];
-    await usePermissionStore().generateRoutes(menus.value);
+    await usePermissionStore().generateRoutes(menus.value, router);
     return data;
   }
 
-  async function getUserInfo() {
-    return fetchInfo();
+  async function getUserInfo(router?: Router) {
+    return fetchInfo(router);
   }
 
-  async function logout(options: { silent?: boolean } = {}) {
+  async function logout(options: { silent?: boolean; router?: Router } = {}) {
     try {
       if (!options.silent) {
         await authApi.logout();
       }
     } finally {
-      reset();
+      reset(options.router);
     }
   }
 
-  function reset() {
+  function reset(router?: Router) {
     persistToken('');
     userInfo.value = null;
     roles.value = [];
     permissions.value = [];
     menus.value = [];
-    usePermissionStore().reset();
+    usePermissionStore().reset(router);
     useTagsViewStore().reset();
   }
 
