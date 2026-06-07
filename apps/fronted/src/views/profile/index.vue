@@ -187,7 +187,8 @@ const handleChangePassword = async () => {
   }
 };
 
-const handleThemeChange = (theme: string | number | boolean) => {
+const handleThemeChange = (theme: string | number | boolean | undefined) => {
+  if (theme === undefined) return;
   themeStore.setTheme(String(theme) as ThemeName);
 };
 

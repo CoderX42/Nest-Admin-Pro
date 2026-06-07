@@ -62,7 +62,7 @@
           <template #default="{ row }">
             <el-switch
               :model-value="row.status === 1"
-              @change="(value: boolean) => handleStatusChange(row, value ? 1 : 0)"
+              @change="(value: string | number | boolean) => handleStatusChange(row, Boolean(value) ? 1 : 0)"
             />
           </template>
         </el-table-column>

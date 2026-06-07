@@ -119,13 +119,13 @@
         <el-form-item v-if="form.type !== 3" :label="t('system.menu.visible')">
           <el-switch
             :model-value="form.show === 1"
-            @change="(value: boolean) => (form.show = value ? 1 : 0)"
+            @change="(value: string | number | boolean) => (form.show = Boolean(value) ? 1 : 0)"
           />
         </el-form-item>
         <el-form-item v-if="form.type === 2" :label="t('system.menu.keepAlive')">
           <el-switch
             :model-value="form.keepAlive === 1"
-            @change="(value: boolean) => (form.keepAlive = value ? 1 : 0)"
+            @change="(value: string | number | boolean) => (form.keepAlive = Boolean(value) ? 1 : 0)"
           />
         </el-form-item>
         <el-form-item :label="t('common.field.sort')">
