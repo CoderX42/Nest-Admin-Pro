@@ -24,14 +24,14 @@
             </div>
           </div>
           <ul tabindex="0" class="mt-2 z-[1] p-1 shadow-lg menu menu-sm dropdown-content bg-base-100 rounded-box w-48 border border-base-300">
-            <li><a @click="router.push('/profile')" class="rounded-lg">
+            <li><button type="button" @click="router.push('/profile')" class="rounded-lg">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               {{ t('common.profile') }}
-            </a></li>
-            <li><a @click="handleLogout" class="rounded-lg text-error">
+            </button></li>
+            <li><button type="button" @click="handleLogout" class="rounded-lg text-error">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
               {{ t('common.logout') }}
-            </a></li>
+            </button></li>
           </ul>
         </div>
       </div>
@@ -141,8 +141,8 @@
               <span class="hidden sm:inline text-xs">{{ currentLocale === 'zh-CN' ? '中文' : 'EN' }}</span>
             </div>
             <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-1 shadow-lg bg-base-100 rounded-box w-28 border border-base-300 mt-1">
-              <li><a :class="{ 'active': currentLocale === 'zh-CN' }" @click="handleLocaleChange('zh-CN')" class="rounded-lg text-sm">中文</a></li>
-              <li><a :class="{ 'active': currentLocale === 'en-US' }" @click="handleLocaleChange('en-US')" class="rounded-lg text-sm">English</a></li>
+              <li><button type="button" :class="{ 'active': currentLocale === 'zh-CN' }" @click="handleLocaleChange('zh-CN')" class="rounded-lg text-sm">中文</button></li>
+              <li><button type="button" :class="{ 'active': currentLocale === 'en-US' }" @click="handleLocaleChange('en-US')" class="rounded-lg text-sm">English</button></li>
             </ul>
           </div>
 
@@ -160,14 +160,14 @@
               </svg>
             </div>
             <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-1 shadow-lg bg-base-100 rounded-box w-48 border border-base-300 mt-1">
-              <li><a @click="router.push('/profile')" class="rounded-lg text-sm">
+              <li><button type="button" @click="router.push('/profile')" class="rounded-lg text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 {{ t('common.profile') }}
-              </a></li>
-              <li><a @click="handleLogout" class="rounded-lg text-sm text-error">
+              </button></li>
+              <li><button type="button" @click="handleLogout" class="rounded-lg text-sm text-error">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 {{ t('common.logout') }}
-              </a></li>
+              </button></li>
             </ul>
           </div>
         </div>

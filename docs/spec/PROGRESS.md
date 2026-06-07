@@ -152,3 +152,4 @@ T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLo
 - [BUG-004][resolved by T-095] file 模块 API 路由前缀错位 → 后端 `@Controller('file')` 与其他 system 模块不一致,前端 `api/system/file.ts` 仍请求 `/file/*`,应统一为 `/system/file/*`。
 - [BUG-005][resolved by T-095] i18n 字典缺 seed 菜单对应的 `menu.*` key 与 `monitor.online.title` → 控制台出现 `[intlify] Not found` 噪音,需按 `sys_menu.i18n_key` 补齐中英文 key。
 - [BUG-006][low priority, deferred] vue-router 首次动态路由后短暂 warn `/system/notice` → 疑似 addRoute 后立即跳转时序问题,不阻塞本卡主链路,后续单独处理。
+- [BUG-008] daisyUI dropdown 默认 hover 展开对触屏用户不友好 → 后续 S2/S3 优化时考虑改 click-open 或换 ElDropdown。
