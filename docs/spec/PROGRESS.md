@@ -63,6 +63,7 @@ T-103 待回填 2026-06-06 22:22:08 CST backend production Dockerfile 与 .docke
 T-104 待回填 2026-06-06 22:32:04 CST docker compose MySQL/Redis 基础服务已落地,用户外部 compose 验收 healthy 通过
 T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,用户外部 nginx -t 纯净验收通过
 T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略策略已落地,backend dev/pino/health 验收通过
+T-099 待回填 2026-06-07 12:07:02 CST JWT sign payload 已显式转为 JSON-safe 字符串,BigInt 用户登录 token 往返单测通过
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
@@ -134,8 +135,9 @@ T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLo
 
 ## S1 欠账(deferred to later stages)
 
-- [BUG-001] captcha 不写 Redis → 在 T-133 完成后开维护卡修复。
-  现象:GET /api/auth/captcha 返回 200,但 redis-cli MONITOR 抓不到任何 SET 操作,redis 全 db scan 空,登录永远过不了 captcha 校验。
+- [BUG-001][resolved] captcha 不写 Redis → brew redis 端口劫持已外部清除,与 mysql 8.4→8.0 同类问题。
+  原现象:GET /api/auth/captcha 返回 200,但 redis-cli MONITOR 抓不到任何 SET 操作,redis 全 db scan 空,登录永远过不了 captcha 校验。
+  结论:非 backend 代码 bug,用户 Mac 上 brew redis 占用 127.0.0.1:6379,导致请求命中本机 redis 而非 docker redis;外部卸载 brew redis 后已验证写入可在容器中读到。
   排查方向:
   1. apps/backend/src/auth/auth.service.ts 的 getCaptcha() 是否真的 await this.redis.set(...)
   2. RedisService 的 set 内部是否有 try/catch 静默吞错误

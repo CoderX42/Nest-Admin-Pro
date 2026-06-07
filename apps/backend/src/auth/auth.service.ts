@@ -10,7 +10,7 @@ import { RedisService } from '../cache/redis.service';
 import * as bcrypt from 'bcryptjs';
 import * as svgCaptcha from 'svg-captcha';
 import { ApiResponse } from '../common/api-response';
-import { LoginDto } from './dto/auth.dto';
+import { JwtPayloadDto, LoginDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -51,7 +51,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    const payload = { sub: user.id, username: user.username };
+    const payload: JwtPayloadDto = {
+      sub: String(user.id),
+      username: user.username,
+      tenantId: user.tenantId === null ? null : String(user.tenantId),
+      isPlatformAdmin: user.isPlatformAdmin === 1,
+    };
     const token = this.jwtService.sign(payload);
     await this.redis.setOnlineUser(token, String(user.id));
 

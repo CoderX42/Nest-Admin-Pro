@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { setTenantContext } from '../common/middleware/request-context.middleware';
+import { JwtPayloadDto } from './dto/auth.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,9 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number; username: string }) {
+  async validate(payload: JwtPayloadDto | { sub: number; username: string }) {
+    const userId = BigInt(payload.sub);
     const user = await this.prisma.sysUser.findFirst({
-      where: { id: payload.sub, deletedAt: null },
+      where: { id: userId, deletedAt: null },
       include: { userRoles: { include: { role: { include: { roleMenus: true } } } }, dept: true },
     });
 
