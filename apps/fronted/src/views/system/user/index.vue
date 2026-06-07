@@ -1,212 +1,156 @@
 <template>
-  <div class="space-y-4">
-    <!-- Search & toolbar card -->
-    <div class="card bg-base-100 shadow-sm border border-base-300">
-      <div class="card-body p-4">
-        <div class="flex flex-wrap gap-3 items-end">
-          <div class="form-control flex-1 min-w-44">
-            <label class="label py-0"><span class="label-text text-xs text-base-content/50">{{ t('system.user.username') }}</span></label>
-            <input v-model="queryParams.username" :placeholder="t('system.user.placeholderUsername')" class="input input-bordered input-sm w-full" @keyup.enter="loadData" />
-          </div>
-          <div class="form-control flex-1 min-w-44">
-            <label class="label py-0"><span class="label-text text-xs text-base-content/50">{{ t('system.user.nickname') }}</span></label>
-            <input v-model="queryParams.nickname" :placeholder="t('system.user.placeholderNickname')" class="input input-bordered input-sm w-full" @keyup.enter="loadData" />
-          </div>
-          <div class="form-control min-w-32">
-            <label class="label py-0"><span class="label-text text-xs text-base-content/50">{{ t('common.field.status') }}</span></label>
-            <select v-model="queryParams.status" class="select select-bordered select-sm w-full">
-              <option :value="undefined">—</option>
-              <option :value="1">{{ t('common.status.enabled') }}</option>
-              <option :value="0">{{ t('common.status.disabled') }}</option>
-            </select>
-          </div>
-          <div class="flex gap-2">
-            <button class="btn btn-sm btn-primary gap-1.5" @click="loadData">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              {{ t('common.action.search') }}
-            </button>
-            <button class="btn btn-sm btn-ghost gap-1.5" @click="resetQuery">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              {{ t('common.action.reset') }}
-            </button>
-          </div>
-          <div class="flex-1"></div>
-          <button class="btn btn-sm btn-primary gap-1.5" @click="handleCreate">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            {{ t('system.user.addUser') }}
-          </button>
-        </div>
-      </div>
-    </div>
+  <div class="page-container">
+    <el-card class="filter-form">
+      <el-form :inline="true" :model="queryParams">
+        <el-form-item :label="t('system.user.username')">
+          <el-input
+            v-model="queryParams.username"
+            :placeholder="t('system.user.placeholderUsername')"
+            clearable
+            @keyup.enter="loadData"
+          />
+        </el-form-item>
+        <el-form-item :label="t('system.user.nickname')">
+          <el-input
+            v-model="queryParams.nickname"
+            :placeholder="t('system.user.placeholderNickname')"
+            clearable
+            @keyup.enter="loadData"
+          />
+        </el-form-item>
+        <el-form-item :label="t('common.field.status')">
+          <el-select v-model="queryParams.status" clearable class="filter-select">
+            <el-option :label="t('common.status.enabled')" :value="1" />
+            <el-option :label="t('common.status.disabled')" :value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :icon="Search" @click="loadData">{{ t('common.action.search') }}</el-button>
+          <el-button :icon="Refresh" @click="resetQuery">{{ t('common.action.reset') }}</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <!-- Table card -->
-    <div class="card bg-base-100 shadow-sm border border-base-300 rounded-xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table table-zebra table-sm">
-          <thead>
-            <tr class="text-xs uppercase tracking-wider font-semibold bg-base-200">
-              <th class="w-14">{{ t('common.field.id') }}</th>
-              <th>{{ t('system.user.username') }}</th>
-              <th>{{ t('system.user.nickname') }}</th>
-              <th>{{ t('system.user.email') }}</th>
-              <th>{{ t('system.user.phone') }}</th>
-              <th class="w-28">{{ t('system.user.department') }}</th>
-              <th class="w-44">{{ t('system.user.roles') }}</th>
-              <th class="w-20">{{ t('common.field.status') }}</th>
-              <th class="w-36">{{ t('common.field.createTime') }}</th>
-              <th class="w-64">{{ t('common.field.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-base-200">
-            <tr v-if="loading">
-              <td colspan="10" class="text-center py-12">
-                <span class="loading loading-spinner loading-sm text-primary"></span>
-              </td>
-            </tr>
-            <tr v-else-if="!tableData.length">
-              <td colspan="10" class="text-center text-base-content/40 py-12">No data</td>
-            </tr>
-            <tr v-else v-for="row in tableData" :key="row.id" class="hover:bg-base-200/40 transition-colors">
-              <td class="text-xs text-base-content/50 font-mono">{{ row.id }}</td>
-              <td class="text-sm font-semibold">{{ row.username }}</td>
-              <td class="text-sm">{{ row.nickname }}</td>
-              <td class="text-xs text-base-content/60">{{ row.email || '-' }}</td>
-              <td class="text-xs text-base-content/60">{{ row.phone || '-' }}</td>
-              <td class="text-xs">
-                <span v-if="row.dept?.name" class="badge badge-ghost badge-sm">{{ row.dept.name }}</span>
-                <span v-else class="text-base-content/30">-</span>
-              </td>
-              <td>
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="role in (row.roles || []).slice(0, 2)" :key="role.id" class="badge badge-primary badge-sm font-medium">{{ role.name }}</span>
-                  <span v-if="(row.roles || []).length > 2" class="badge badge-ghost badge-sm">+{{ row.roles.length - 2 }}</span>
-                  <span v-if="!(row.roles?.length)" class="text-base-content/30 text-xs">-</span>
-                </div>
-              </td>
-              <td>
-                <input type="checkbox" class="toggle toggle-success toggle-sm" :checked="row.status === 1" @change="(e) => handleStatusChange(row, (e.target as HTMLInputElement).checked ? 1 : 0)" />
-              </td>
-              <td class="text-xs text-base-content/50">{{ row.createTime }}</td>
-              <td>
-                <div class="flex gap-1.5">
-                  <button class="btn btn-xs btn-primary gap-1" @click="handleEdit(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                    {{ t('common.action.edit') }}
-                  </button>
-                  <button class="btn btn-xs btn-warning gap-1" @click="handleResetPwd(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                    {{ t('common.action.resetPwd') }}
-                  </button>
-                  <button class="btn btn-xs btn-error gap-1" @click="handleDelete(row)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    {{ t('common.action.delete') }}
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="flex items-center justify-between px-4 py-3 border-t border-base-200 bg-base-100">
-        <span class="text-xs text-base-content/50">共 {{ total }} 条</span>
-        <div class="join">
-          <button class="join-item btn btn-sm" :disabled="queryParams.page <= 1" @click="queryParams.page--; loadData()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button class="join-item btn btn-sm btn-active" disabled>{{ queryParams.page }}</button>
-          <button class="join-item btn btn-sm" :disabled="queryParams.page * queryParams.limit >= total" @click="queryParams.page++; loadData()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-          </button>
-          <select class="join-item btn btn-sm" v-model="queryParams.limit" @change="loadData">
-            <option :value="10">10/页</option>
-            <option :value="20">20/页</option>
-            <option :value="50">50/页</option>
-          </select>
+    <el-card class="table-wrap">
+      <template #header>
+        <div class="action-bar">
+          <el-button type="primary" :icon="Plus" @click="handleCreate">{{ t('system.user.addUser') }}</el-button>
+          <el-button :icon="Refresh" @click="loadData">{{ t('common.action.refresh') }}</el-button>
         </div>
-      </div>
-    </div>
+      </template>
 
-    <!-- Dialog -->
-    <dialog ref="dialogRef" class="modal">
-      <div class="modal-box max-w-lg">
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-          </div>
-          <div>
-            <h3 class="font-bold text-base">{{ form.id ? t('system.user.editUser') : t('system.user.addUser') }}</h3>
-            <p class="text-xs text-base-content/50">{{ form.id ? '编辑用户信息' : '新增一个系统用户' }}</p>
-          </div>
-        </div>
-        <form @submit.prevent="handleSubmit" class="space-y-3">
-          <label v-if="!form.id" class="form-control">
-            <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.username') }} *</span></div>
-            <input v-model="form.username" class="input input-bordered input-sm" required />
-          </label>
-          <label v-if="!form.id" class="form-control">
-            <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.password') }} *</span></div>
-            <input v-model="form.password" type="password" class="input input-bordered input-sm" autocomplete="new-password" required />
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="form-control">
-              <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.nickname') }}</span></div>
-              <input v-model="form.nickname" class="input input-bordered input-sm" />
-            </label>
-            <label class="form-control">
-              <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.email') }}</span></div>
-              <input v-model="form.email" type="email" class="input input-bordered input-sm" />
-            </label>
-          </div>
-          <label class="form-control">
-            <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.phone') }}</span></div>
-            <input v-model="form.phone" class="input input-bordered input-sm" />
-          </label>
-          <label class="form-control">
-            <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.department') }}</span></div>
-            <el-tree-select v-model="form.deptId" :data="deptTree" :props="{ label: 'name', children: 'children' }" value-key="id" check-strictly clearable :placeholder="t('system.user.selectDepartment')" class="w-full" />
-          </label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="form-control">
-              <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.posts') }}</span></div>
-              <select v-model="form.postIds" multiple class="select select-bordered select-sm w-full h-20">
-                <option v-for="post in postOptions" :key="post.id" :value="post.id">{{ post.name }}</option>
-              </select>
-            </label>
-            <label class="form-control">
-              <div class="label"><span class="label-text text-sm font-medium">{{ t('system.user.roles') }}</span></div>
-              <select v-model="form.roleIds" multiple class="select select-bordered select-sm w-full h-20">
-                <option v-for="role in roleOptions" :key="role.id" :value="role.id">{{ role.name }}</option>
-              </select>
-            </label>
-          </div>
-          <label class="form-control">
-            <div class="label"><span class="label-text text-sm font-medium">{{ t('common.field.status') }}</span></div>
-            <div class="flex gap-4 pt-1">
-              <label class="label cursor-pointer gap-2">
-                <input type="radio" v-model="form.status" :value="1" class="radio radio-sm radio-primary" />
-                <span class="label-text text-sm">{{ t('common.status.enabled') }}</span>
-              </label>
-              <label class="label cursor-pointer gap-2">
-                <input type="radio" v-model="form.status" :value="0" class="radio radio-sm radio-primary" />
-                <span class="label-text text-sm">{{ t('common.status.disabled') }}</span>
-              </label>
+      <el-table :data="tableData" v-loading="loading" border row-key="id">
+        <el-table-column prop="id" :label="t('common.field.id')" min-width="90" />
+        <el-table-column prop="username" :label="t('system.user.username')" min-width="140" />
+        <el-table-column prop="nickname" :label="t('system.user.nickname')" min-width="140" />
+        <el-table-column prop="email" :label="t('system.user.email')" min-width="180" />
+        <el-table-column prop="phone" :label="t('system.user.phone')" min-width="140" />
+        <el-table-column :label="t('system.user.department')" min-width="140">
+          <template #default="{ row }">
+            {{ row.dept?.name || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('system.user.roles')" min-width="200">
+          <template #default="{ row }">
+            <div class="tag-list">
+              <el-tag v-for="role in row.roles || []" :key="role.id" effect="plain" size="small">{{ role.name }}</el-tag>
+              <span v-if="!(row.roles?.length)">-</span>
             </div>
-          </label>
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="btn btn-sm" @click="dialogRef?.close()">{{ t('common.action.cancel') }}</button>
-            <button type="submit" class="btn btn-sm btn-primary">{{ t('common.action.confirm') }}</button>
-          </div>
-        </form>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('common.field.status')" width="110">
+          <template #default="{ row }">
+            <el-switch
+              :model-value="row.status === 1"
+              @change="(value: boolean) => handleStatusChange(row, value ? 1 : 0)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" :label="t('common.field.createTime')" min-width="180" />
+        <el-table-column :label="t('common.field.actions')" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button text type="primary" size="small" :icon="Edit" @click="handleEdit(row)">
+              {{ t('common.action.edit') }}
+            </el-button>
+            <el-button text type="warning" size="small" :icon="Lock" @click="handleResetPwd(row)">
+              {{ t('common.action.resetPwd') }}
+            </el-button>
+            <el-button text type="danger" size="small" :icon="Delete" @click="handleDelete(row)">
+              {{ t('common.action.delete') }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="queryParams.page"
+          v-model:page-size="queryParams.limit"
+          :total="total"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="loadData"
+          @current-change="loadData"
+        />
       </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
+    </el-card>
+
+    <el-dialog v-model="dialogVisible" :title="form.id ? t('system.user.editUser') : t('system.user.addUser')" width="720px">
+      <el-form :model="form" label-width="100px" class="dialog-form">
+        <el-form-item v-if="!form.id" :label="t('system.user.username')">
+          <el-input v-model="form.username" />
+        </el-form-item>
+        <el-form-item v-if="!form.id" :label="t('system.user.password')">
+          <el-input v-model="form.password" type="password" show-password autocomplete="new-password" />
+        </el-form-item>
+        <el-form-item :label="t('system.user.nickname')">
+          <el-input v-model="form.nickname" />
+        </el-form-item>
+        <el-form-item :label="t('system.user.email')">
+          <el-input v-model="form.email" />
+        </el-form-item>
+        <el-form-item :label="t('system.user.phone')">
+          <el-input v-model="form.phone" />
+        </el-form-item>
+        <el-form-item :label="t('system.user.department')">
+          <el-tree-select
+            v-model="form.deptId"
+            :data="deptTree"
+            :props="{ label: 'name', children: 'children' }"
+            value-key="id"
+            check-strictly
+            clearable
+            :placeholder="t('system.user.selectDepartment')"
+          />
+        </el-form-item>
+        <el-form-item :label="t('system.user.posts')">
+          <el-select v-model="form.postIds" multiple clearable :placeholder="t('system.user.selectPosts')">
+            <el-option v-for="post in postOptions" :key="post.id" :label="post.name" :value="post.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('system.user.roles')">
+          <el-select v-model="form.roleIds" multiple clearable :placeholder="t('system.user.selectRoles')">
+            <el-option v-for="role in roleOptions" :key="role.id" :label="role.name" :value="role.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('common.field.status')">
+          <el-radio-group v-model="form.status">
+            <el-radio :value="1">{{ t('common.status.enabled') }}</el-radio>
+            <el-radio :value="0">{{ t('common.status.disabled') }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">{{ t('common.action.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.action.confirm') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
+import { Delete, Edit, Lock, Plus, Refresh, Search } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { deptApi } from '@/api/system/dept';
 import { postApi } from '@/api/system/post';
@@ -228,12 +172,22 @@ const queryParams = reactive({
   limit: 10,
 });
 
-const dialogRef = ref<HTMLDialogElement>();
+const dialogVisible = ref(false);
 const deptTree = ref<any[]>([]);
 const postOptions = ref<any[]>([]);
 const roleOptions = ref<any[]>([]);
 
-const form = reactive<any>({ username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, postIds: [], roleIds: [], status: 1 });
+const form = reactive<any>({
+  username: '',
+  password: '',
+  nickname: '',
+  email: '',
+  phone: '',
+  deptId: undefined,
+  postIds: [],
+  roleIds: [],
+  status: 1,
+});
 
 const loadData = async () => {
   loading.value = true;
@@ -241,39 +195,76 @@ const loadData = async () => {
     const res: any = await userApi.list(queryParams);
     tableData.value = res.items || [];
     total.value = res.total || 0;
-  } catch { ElMessage.error(t('common.message.loadFailed')); }
-  finally { loading.value = false; }
+  } catch {
+    ElMessage.error(t('common.message.loadFailed'));
+  } finally {
+    loading.value = false;
+  }
 };
 
-const loadDeptTree = async () => { const res: any = await deptApi.tree(); deptTree.value = res; };
+const loadDeptTree = async () => {
+  const res: any = await deptApi.tree();
+  deptTree.value = res;
+};
 const loadOptions = async () => {
-  const [postRes, roleRes]: any[] = await Promise.all([postApi.list({ page: 1, limit: 1000 }), roleApi.list({ page: 1, limit: 1000 })]);
+  const [postRes, roleRes]: any[] = await Promise.all([
+    postApi.list({ page: 1, limit: 1000 }),
+    roleApi.list({ page: 1, limit: 1000 }),
+  ]);
   postOptions.value = postRes.items || [];
   roleOptions.value = roleRes.items || [];
 };
 
 const parsePostIds = (value: unknown) => {
   if (Array.isArray(value)) return value.map(Number);
-  if (typeof value === 'string' && value) { try { return JSON.parse(value).map(Number); } catch { return []; } }
+  if (typeof value === 'string' && value) {
+    try {
+      return JSON.parse(value).map(Number);
+    } catch {
+      return [];
+    }
+  }
   return [];
 };
 
-const resetQuery = () => { queryParams.username = ''; queryParams.nickname = ''; queryParams.status = undefined; queryParams.page = 1; loadData(); };
+const resetQuery = () => {
+  queryParams.username = '';
+  queryParams.nickname = '';
+  queryParams.status = undefined;
+  queryParams.page = 1;
+  loadData();
+};
 
 const handleCreate = () => {
-  Object.assign(form, { id: undefined, username: '', password: '', nickname: '', email: '', phone: '', deptId: undefined, postIds: [], roleIds: [], status: 1 });
-  dialogRef.value?.showModal();
+  Object.assign(form, {
+    id: undefined,
+    username: '',
+    password: '',
+    nickname: '',
+    email: '',
+    phone: '',
+    deptId: undefined,
+    postIds: [],
+    roleIds: [],
+    status: 1,
+  });
+  dialogVisible.value = true;
 };
 
 const handleEdit = (row: any) => {
   Object.assign(form, {
-    id: row.id, username: row.username, password: '', nickname: row.nickname,
-    email: row.email, phone: row.phone, deptId: row.deptId,
+    id: row.id,
+    username: row.username,
+    password: '',
+    nickname: row.nickname,
+    email: row.email,
+    phone: row.phone,
+    deptId: row.deptId,
     postIds: parsePostIds(row.postIds),
     roleIds: (row.roles || []).map((role: any) => Number(role.id)),
     status: row.status,
   });
-  dialogRef.value?.showModal();
+  dialogVisible.value = true;
 };
 
 const handleSubmit = async () => {
@@ -295,25 +286,84 @@ const handleSubmit = async () => {
       if (form.roleIds?.length && created?.id) await userApi.assignRoles(created.id, form.roleIds.map(String));
       ElMessage.success(t('common.message.addSuccess'));
     }
-    dialogRef.value?.close();
+    dialogVisible.value = false;
     loadData();
-  } catch (e: any) { ElMessage.error(e.message || t('common.message.failed')); }
+  } catch (e: any) {
+    ElMessage.error(e.message || t('common.message.failed'));
+  }
 };
 
 const handleStatusChange = async (row: any, status: UserStatus) => {
-  try { await userApi.changeStatus(row.id, status); ElMessage.success(t('common.message.statusUpdateSuccess')); }
-  catch (e: any) { row.status = status === 1 ? 0 : 1; ElMessage.error(e.message || t('common.message.failed')); }
+  try {
+    await userApi.changeStatus(row.id, status);
+    ElMessage.success(t('common.message.statusUpdateSuccess'));
+  } catch (e: any) {
+    row.status = status === 1 ? 0 : 1;
+    ElMessage.error(e.message || t('common.message.failed'));
+  }
 };
 
 const handleResetPwd = async (row: any) => {
-  await ElMessageBox.confirm(t('common.message.confirmResetPwd', { name: row.username }), t('common.action.confirm'), { type: 'warning' });
-  await userApi.resetPassword(row.id); ElMessage.success(t('common.message.resetPwdSuccess'));
+  await ElMessageBox.confirm(
+    t('common.message.confirmResetPwd', { name: row.username }),
+    t('common.action.confirm'),
+    { type: 'warning' },
+  );
+  await userApi.resetPassword(row.id);
+  ElMessage.success(t('common.message.resetPwdSuccess'));
 };
 
 const handleDelete = async (row: any) => {
-  await ElMessageBox.confirm(t('common.message.confirmDelete', { name: row.username }), t('common.action.confirm'), { type: 'warning' });
-  await userApi.delete(row.id); ElMessage.success(t('common.message.deleteSuccess')); loadData();
+  await ElMessageBox.confirm(
+    t('common.message.confirmDelete', { name: row.username }),
+    t('common.action.confirm'),
+    { type: 'warning' },
+  );
+  await userApi.delete(row.id);
+  ElMessage.success(t('common.message.deleteSuccess'));
+  loadData();
 };
 
-onMounted(() => { loadData(); loadDeptTree(); loadOptions(); });
+onMounted(() => {
+  loadData();
+  loadDeptTree();
+  loadOptions();
+});
 </script>
+
+<style scoped>
+.page-container {
+  padding: 16px;
+}
+
+.filter-form,
+.table-wrap {
+  margin-bottom: 16px;
+}
+
+.filter-select {
+  width: 140px;
+}
+
+.action-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.dialog-form :deep(.el-select),
+.dialog-form :deep(.el-tree-select) {
+  width: 100%;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+</style>
