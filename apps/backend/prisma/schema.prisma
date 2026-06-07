@@ -1,5 +1,11 @@
+// ============================================================
+//  Nest-Admin-Pro Prisma Schema
+//  S2 重写版本,后续变更必须通过 prisma migrate dev 生成新迁移
+// ============================================================
+
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = []
 }
 
 datasource db {
@@ -7,340 +13,554 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ================== 系统核心模块 ==================
+// ============================================================
+//  租户
+// ============================================================
 
-// 用户表
-model SysUser {
-  id        BigInt   @id @default(autoincrement())
-  username  String   @unique @db.VarChar(50)
-  password  String   @db.VarChar(200)
-  nickname  String   @db.VarChar(50)
-  avatar    String   @db.VarChar(255) @default("")
-  email     String?  @db.VarChar(100)
-  phone     String?  @db.VarChar(20)
-  status    Int      @default(1)
-  remark    String?  @db.VarChar(500)
-  deptId    BigInt?
-  postIds   String   @db.VarChar(200) @default("")
-  createTime DateTime @default(now())
-  updateTime DateTime @updatedAt
-  deleteTime DateTime?
-  isDelete  Int      @default(0)
+model SysTenant {
+  id           BigInt    @id @default(autoincrement())
+  name         String    @db.VarChar(100)
+  code         String    @unique @db.VarChar(50)
+  contactUser  String?   @map("contact_user") @db.VarChar(50)
+  contactPhone String?   @map("contact_phone") @db.VarChar(20)
+  status       Int       @default(1) // 1 启用 / 0 停用
+  expireAt     DateTime? @map("expire_at")
+  maxUsers     Int       @default(100) @map("max_users")
+  packageCode  String?   @map("package_code") @db.VarChar(50) // 套餐 code,预留
+  remark       String?   @db.VarChar(500)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    BigInt?   @map("created_by")
+  updatedBy    BigInt?   @map("updated_by")
 
+  users     SysUser[]
   roles     SysRole[]
-  dept      SysDept? @relation(fields: [deptId], references: [id])
-  loginLog  SysLoginLog[]
-  operLog   SysOperLog[]
+  depts     SysDept[]
+  posts     SysPost[]
+  notices   SysNotice[]
   files     SysFile[]
-
-  @@index([username])
-  @@index([deptId])
-}
-
-// 角色表
-model SysRole {
-  id          BigInt    @id @default(autoincrement())
-  name        String    @db.VarChar(50)
-  code        String    @unique @db.VarChar(50)
-  status      Int       @default(1)
-  dataScope   Int       @default(1)
-  deptIds     String?   @db.VarChar(200) @default("")
-  menuIds     String?   @db.VarChar(500) @default("")
-  remark      String?   @db.VarChar(500)
-  createTime  DateTime  @default(now())
-  updateTime  DateTime  @updatedAt
-
-  users       SysUser[]
+  loginLogs SysLoginLog[]
+  operLogs  SysOperLog[]
+  jobs      SysJob[]
+  jobLogs   SysJobLog[]
 
   @@index([code])
+  @@index([status])
+  @@map("sys_tenant")
 }
 
-// 部门表（树形）
+// ============================================================
+//  用户
+// ============================================================
+
+model SysUser {
+  id              BigInt    @id @default(autoincrement())
+  tenantId        BigInt?   @map("tenant_id")
+  username        String    @db.VarChar(50)
+  password        String    @db.VarChar(200)
+  nickname        String    @db.VarChar(50)
+  avatar          String    @default("") @db.VarChar(255)
+  email           String?   @db.VarChar(100)
+  phone           String?   @db.VarChar(20)
+  gender          Int       @default(0) // 0 未知 / 1 男 / 2 女
+  status          Int       @default(1) // 1 启用 / 0 禁用
+  remark          String?   @db.VarChar(500)
+  deptId          BigInt?   @map("dept_id")
+  loginIp         String?   @map("login_ip") @db.VarChar(50)
+  loginAt         DateTime? @map("login_at")
+  pwdResetAt      DateTime? @map("pwd_reset_at")
+  isPlatformAdmin Int       @default(0) @map("is_platform_admin") // 1 平台超管(可跨租户)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  createdBy       BigInt?   @map("created_by")
+  updatedBy       BigInt?   @map("updated_by")
+
+  tenant    SysTenant?    @relation(fields: [tenantId], references: [id])
+  dept      SysDept?      @relation(fields: [deptId], references: [id])
+  userRoles SysUserRole[]
+  userPosts SysUserPost[]
+  files     SysFile[]
+  loginLogs SysLoginLog[]
+  operLogs  SysOperLog[]
+
+  @@unique([tenantId, username, deletedAt], map: "uq_sys_user_tenant_username")
+  @@index([tenantId, deletedAt])
+  @@index([deptId])
+  @@index([username])
+  @@index([phone])
+  @@index([email])
+  @@map("sys_user")
+}
+
+// ============================================================
+//  角色
+// ============================================================
+
+model SysRole {
+  id        BigInt    @id @default(autoincrement())
+  tenantId  BigInt?   @map("tenant_id") // null = 平台级角色(如 platform_admin)
+  name      String    @db.VarChar(50)
+  code      String    @db.VarChar(50)
+  sort      Int       @default(0)
+  status    Int       @default(1)
+  dataScope Int       @default(1) @map("data_scope") // 见 DataScope 枚举
+  remark    String?   @db.VarChar(500)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy BigInt?   @map("created_by")
+  updatedBy BigInt?   @map("updated_by")
+
+  tenant    SysTenant?    @relation(fields: [tenantId], references: [id])
+  userRoles SysUserRole[]
+  roleMenus SysRoleMenu[]
+  roleDepts SysRoleDept[]
+
+  @@unique([tenantId, code, deletedAt], map: "uq_sys_role_tenant_code")
+  @@index([tenantId, deletedAt])
+  @@index([code])
+  @@map("sys_role")
+}
+
+// ============================================================
+//  部门(树)
+// ============================================================
+
 model SysDept {
-  id         BigInt    @id @default(autoincrement())
-  name       String    @db.VarChar(50)
-  parentId   BigInt    @default(0)
-  sort       Int       @default(0)
-  status     Int       @default(1)
-  leaderId   BigInt?
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+  id        BigInt    @id @default(autoincrement())
+  tenantId  BigInt?   @map("tenant_id")
+  parentId  BigInt    @default(0) @map("parent_id")
+  ancestors String    @default("") @db.VarChar(500) // 0,1,5 形式,加速 in 查询
+  name      String    @db.VarChar(50)
+  sort      Int       @default(0)
+  leaderId  BigInt?   @map("leader_id")
+  phone     String?   @db.VarChar(20)
+  email     String?   @db.VarChar(100)
+  status    Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy BigInt?   @map("created_by")
+  updatedBy BigInt?   @map("updated_by")
 
-  children   SysDept[]  @relation("DeptChildren")
-  parent     SysDept?   @relation("DeptChildren", fields: [parentId], references: [id])
-  users      SysUser[]
+  tenant    SysTenant?    @relation(fields: [tenantId], references: [id])
+  parent    SysDept?      @relation("DeptChildren", fields: [parentId], references: [id])
+  children  SysDept[]     @relation("DeptChildren")
+  users     SysUser[]
+  roleDepts SysRoleDept[]
 
+  @@index([tenantId, deletedAt])
   @@index([parentId])
   @@index([sort])
+  @@map("sys_dept")
 }
 
-// 岗位表
+// ============================================================
+//  岗位
+// ============================================================
+
 model SysPost {
-  id         BigInt    @id @default(autoincrement())
-  name       String    @db.VarChar(50)
-  code       String    @unique @db.VarChar(50)
-  sort       Int       @default(0)
-  status     Int       @default(1)
-  remark     String?   @db.VarChar(500)
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+  id        BigInt    @id @default(autoincrement())
+  tenantId  BigInt?   @map("tenant_id")
+  name      String    @db.VarChar(50)
+  code      String    @db.VarChar(50)
+  sort      Int       @default(0)
+  status    Int       @default(1)
+  remark    String?   @db.VarChar(500)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy BigInt?   @map("created_by")
+  updatedBy BigInt?   @map("updated_by")
 
-  @@index([code])
-  @@index([sort])
+  tenant    SysTenant?    @relation(fields: [tenantId], references: [id])
+  userPosts SysUserPost[]
+
+  @@unique([tenantId, code, deletedAt], map: "uq_sys_post_tenant_code")
+  @@index([tenantId, deletedAt])
+  @@map("sys_post")
 }
 
-// 菜单表（树形）
-model SysMenu {
-  id          BigInt    @id @default(autoincrement())
-  name        String    @db.VarChar(50)
-  type        Int       @default(1)
-  parentId    BigInt    @default(0)
-  path        String?   @db.VarChar(255)
-  component   String?   @db.VarChar(255)
-  icon        String?   @db.VarChar(100)
-  sort        Int       @default(0)
-  perms       String?   @db.VarChar(100)
-  status      Int       @default(1)
-  external    Int       @default(0) @map("is_external")
-  keepAlive   Int       @default(0)
-  show        Int       @default(1) @map("is_show")
-  createTime  DateTime  @default(now())
-  updateTime  DateTime  @updatedAt
+// ============================================================
+//  菜单(平台共享,所有租户共用一套)
+// ============================================================
 
-  children    SysMenu[]  @relation("MenuChildren")
-  parent      SysMenu?   @relation("MenuChildren", fields: [parentId], references: [id])
+model SysMenu {
+  id         BigInt    @id @default(autoincrement())
+  parentId   BigInt    @default(0) @map("parent_id")
+  name       String    @db.VarChar(50) // 菜单名(显示用,中文)
+  i18nKey    String?   @map("i18n_key") @db.VarChar(100) // 国际化 key,如 menu.system.user
+  type       Int       @default(1) // 1 目录 / 2 菜单 / 3 按钮
+  path       String?   @db.VarChar(255)
+  component  String?   @db.VarChar(255)
+  query      String?   @db.VarChar(255)
+  icon       String?   @db.VarChar(100)
+  sort       Int       @default(0)
+  perms      String?   @db.VarChar(100) // 权限标识,如 system:user:add
+  status     Int       @default(1) // 1 启用 / 0 停用
+  isExternal Int       @default(0) @map("is_external") // 1 外链
+  isCache    Int       @default(0) @map("is_cache") // 1 keep-alive
+  isVisible  Int       @default(1) @map("is_visible") // 1 显示
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  parent    SysMenu?      @relation("MenuChildren", fields: [parentId], references: [id])
+  children  SysMenu[]     @relation("MenuChildren")
+  roleMenus SysRoleMenu[]
 
   @@index([parentId])
   @@index([sort])
   @@index([perms])
+  @@map("sys_menu")
 }
 
-// 字典类型
-model SysDictType {
-  id         BigInt    @id @default(autoincrement())
-  name       String    @db.VarChar(50)
-  code       String    @unique @db.VarChar(50)
-  status     Int       @default(1)
-  remark     String?   @db.VarChar(500)
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+// ============================================================
+//  字典(平台共享)
+// ============================================================
 
-  items      SysDictData[]
+model SysDictType {
+  id        BigInt    @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  code      String    @unique @db.VarChar(100)
+  status    Int       @default(1)
+  remark    String?   @db.VarChar(500)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  items SysDictData[]
 
   @@index([code])
+  @@map("sys_dict_type")
 }
 
-// 字典数据
 model SysDictData {
-  id         BigInt       @id @default(autoincrement())
-  dictTypeId BigInt
-  label      String       @db.VarChar(100)
-  value      String       @db.VarChar(100)
-  sort       Int          @default(0)
-  status     Int          @default(1)
-  remark     String?      @db.VarChar(500)
-  createTime DateTime     @default(now())
-  updateTime DateTime     @updatedAt
-
-  dictType   SysDictType  @relation(fields: [dictTypeId], references: [id])
-
-  @@index([dictTypeId])
-  @@index([sort])
-  @@index([value])
-}
-
-// 系统配置参数
-model SysConfig {
   id         BigInt    @id @default(autoincrement())
-  name       String    @db.VarChar(100)
-  key        String    @unique @db.VarChar(100)
-  value      String    @db.Text
-  type       String    @db.VarChar(20) @default("string")
+  dictTypeId BigInt    @map("dict_type_id")
+  label      String    @db.VarChar(100)
+  value      String    @db.VarChar(100)
+  cssClass   String?   @map("css_class") @db.VarChar(100) // 标签样式,如 success/warning
+  listClass  String?   @map("list_class") @db.VarChar(100)
+  sort       Int       @default(0)
+  status     Int       @default(1)
+  isDefault  Int       @default(0) @map("is_default")
   remark     String?   @db.VarChar(500)
-  status     Int       @default(1)
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
-  @@index([key])
+  dictType SysDictType @relation(fields: [dictTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([dictTypeId, value], map: "uq_sys_dict_data_type_value")
+  @@index([dictTypeId, sort])
+  @@map("sys_dict_data")
 }
 
-// 通知公告
+// ============================================================
+//  系统配置(平台共享)
+// ============================================================
+
+model SysConfig {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  configKey   String    @unique @map("config_key") @db.VarChar(100)
+  configValue String    @map("config_value") @db.Text
+  valueType   String    @default("string") @map("value_type") @db.VarChar(20) // string/number/boolean/json
+  isBuiltin   Int       @default(0) @map("is_builtin") // 1 内置不可删
+  remark      String?   @db.VarChar(500)
+  status      Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   BigInt?   @map("created_by")
+  updatedBy   BigInt?   @map("updated_by")
+
+  @@index([configKey])
+  @@map("sys_config")
+}
+
+// ============================================================
+//  通知公告
+// ============================================================
+
 model SysNotice {
-  id         BigInt    @id @default(autoincrement())
-  title      String    @db.VarChar(200)
-  content    String    @db.Text
-  type       Int       @default(1)
-  status     Int       @default(1)
-  publishTime DateTime?
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+  id        BigInt    @id @default(autoincrement())
+  tenantId  BigInt?   @map("tenant_id")
+  title     String    @db.VarChar(200)
+  content   String    @db.Text
+  type      Int       @default(1) // 1 通知 / 2 公告
+  status    Int       @default(0) // 0 草稿 / 1 已发布 / 2 已撤回
+  publishAt DateTime? @map("publish_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  createdBy BigInt?   @map("created_by")
+  updatedBy BigInt?   @map("updated_by")
 
-  @@index([type])
-  @@index([status])
+  tenant SysTenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, status, publishAt])
+  @@map("sys_notice")
 }
 
-// 文件表
+// ============================================================
+//  文件
+// ============================================================
+
 model SysFile {
   id           BigInt    @id @default(autoincrement())
-  originalName String   @db.VarChar(255)
-  fileName     String   @db.VarChar(255)
-  objectKey    String   @db.VarChar(500)
-  url          String   @db.VarChar(1000)
-  storage      String   @db.VarChar(50)
-  mimeType     String?  @db.VarChar(100)
-  ext          String?  @db.VarChar(20)
-  size         BigInt   @default(0)
-  uploaderId   BigInt?
-  uploaderName String? @db.VarChar(50)
-  createTime   DateTime @default(now())
-  updateTime   DateTime @updatedAt
-  deleteTime   DateTime?
-  isDelete     Int      @default(0)
+  tenantId     BigInt?   @map("tenant_id")
+  originalName String    @map("original_name") @db.VarChar(255)
+  fileName     String    @map("file_name") @db.VarChar(255)
+  objectKey    String    @map("object_key") @db.VarChar(500)
+  url          String    @db.VarChar(1000)
+  storage      String    @db.VarChar(50) // local / aliyun-oss / ...
+  mimeType     String?   @map("mime_type") @db.VarChar(100)
+  ext          String?   @db.VarChar(20)
+  size         BigInt    @default(0)
+  bizType      String?   @map("biz_type") @db.VarChar(50) // avatar / notice / import / ...
+  uploaderId   BigInt?   @map("uploader_id")
+  uploaderName String?   @map("uploader_name") @db.VarChar(50)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
-  uploader     SysUser? @relation(fields: [uploaderId], references: [id])
+  uploader SysUser?   @relation(fields: [uploaderId], references: [id])
+  tenant   SysTenant? @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId, deletedAt])
   @@index([storage])
   @@index([objectKey])
   @@index([uploaderId])
-  @@index([createTime])
-  @@index([isDelete])
+  @@index([bizType])
+  @@index([createdAt])
+  @@map("sys_file")
 }
 
-// ================== 日志监控模块 ==================
+// ============================================================
+//  日志
+// ============================================================
 
-// 登录日志
 model SysLoginLog {
-  id         BigInt    @id @default(autoincrement())
-  userId     BigInt?
-  username   String    @db.VarChar(50)
-  ip         String    @db.VarChar(50)
-  location   String?   @db.VarChar(255)
-  os         String?   @db.VarChar(100)
-  browser    String?   @db.VarChar(100)
-  status     Int       @default(1)
-  msg        String?   @db.VarChar(255)
-  createTime DateTime  @default(now())
+  id        BigInt   @id @default(autoincrement())
+  tenantId  BigInt?  @map("tenant_id")
+  userId    BigInt?  @map("user_id")
+  username  String   @db.VarChar(50)
+  ip        String   @db.VarChar(50)
+  location  String?  @db.VarChar(255)
+  os        String?  @db.VarChar(100)
+  browser   String?  @db.VarChar(100)
+  device    String?  @db.VarChar(50)
+  loginType Int      @default(1) @map("login_type") // 1 账号密码 / 2 微信小程序 / 3 短信(预留)
+  status    Int      @default(1) // 1 成功 / 0 失败
+  msg       String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
 
-  user       SysUser?  @relation(fields: [userId], references: [id])
+  user   SysUser?   @relation(fields: [userId], references: [id])
+  tenant SysTenant? @relation(fields: [tenantId], references: [id])
 
-  @@index([username])
+  @@index([tenantId, createdAt])
+  @@index([userId])
   @@index([ip])
-  @@index([createTime])
+  @@index([username])
+  @@map("sys_login_log")
 }
 
-// 操作日志
 model SysOperLog {
-  id         BigInt    @id @default(autoincrement())
-  userId     BigInt?
-  username   String    @db.VarChar(50)
-  module     String?   @db.VarChar(100)
-  method     String?   @db.VarChar(100)
-  reqMethod  String?   @db.VarChar(10)
-  reqUrl     String    @db.VarChar(255)
-  reqParam   String?   @db.Text
-  respResult String?   @db.Text
-  status     Int       @default(1)
-  errorMsg   String?   @db.Text
+  id         BigInt   @id @default(autoincrement())
+  tenantId   BigInt?  @map("tenant_id")
+  userId     BigInt?  @map("user_id")
+  username   String   @db.VarChar(50)
+  module     String?  @db.VarChar(100)
+  operation  String?  @db.VarChar(100) // 操作描述
+  reqMethod  String?  @map("req_method") @db.VarChar(10)
+  reqUrl     String   @map("req_url") @db.VarChar(500)
+  reqParams  String?  @map("req_params") @db.Text
+  reqIp      String?  @map("req_ip") @db.VarChar(50)
+  reqUa      String?  @map("req_ua") @db.VarChar(500)
+  reqOs      String?  @map("req_os") @db.VarChar(100)
+  reqBrowser String?  @map("req_browser") @db.VarChar(100)
+  location   String?  @db.VarChar(255)
+  respCode   Int?     @map("resp_code")
+  respResult String?  @map("resp_result") @db.Text
+  status     Int      @default(1) // 1 成功 / 0 异常
+  errorMsg   String?  @map("error_msg") @db.Text
   duration   Int?
-  ip         String?   @db.VarChar(50)
-  location   String?   @db.VarChar(255)
-  createTime DateTime  @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  user       SysUser?  @relation(fields: [userId], references: [id])
+  user   SysUser?   @relation(fields: [userId], references: [id])
+  tenant SysTenant? @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId, createdAt])
   @@index([userId])
   @@index([module])
-  @@index([createTime])
+  @@map("sys_oper_log")
 }
 
-// ================== 定时任务模块 ==================
+// ============================================================
+//  定时任务
+// ============================================================
 
 model SysJob {
-  id         BigInt    @id @default(autoincrement())
-  name       String    @db.VarChar(100)
-  handler    String    @db.VarChar(100)
-  cron       String?   @db.VarChar(100)
-  interval   Int?
-  type       Int       @default(1)
-  status     Int       @default(1)
-  remark     String?   @db.VarChar(500)
-  createTime DateTime  @default(now())
-  updateTime DateTime  @updatedAt
+  id             BigInt    @id @default(autoincrement())
+  tenantId       BigInt?   @map("tenant_id")
+  name           String    @db.VarChar(100)
+  group          String    @default("default") @db.VarChar(50)
+  invokeTarget   String    @map("invoke_target") @db.VarChar(200) // beanName.method 或 beanName.method('arg1', 2)
+  cronExpression String    @map("cron_expression") @db.VarChar(100)
+  misfirePolicy  Int       @default(1) @map("misfire_policy") // 1 立即执行 / 2 执行一次 / 3 放弃
+  concurrent     Int       @default(0) // 1 允许并发 / 0 禁止
+  status         Int       @default(0) // 0 暂停 / 1 启用
+  remark         String?   @db.VarChar(500)
+  nextFireAt     DateTime? @map("next_fire_at")
+  prevFireAt     DateTime? @map("prev_fire_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdBy      BigInt?   @map("created_by")
+  updatedBy      BigInt?   @map("updated_by")
 
-  logs       SysJobLog[]
+  logs   SysJobLog[]
+  tenant SysTenant?  @relation(fields: [tenantId], references: [id])
 
-  @@index([handler])
-  @@index([status])
+  @@index([tenantId, status])
+  @@index([invokeTarget])
+  @@map("sys_job")
 }
 
 model SysJobLog {
-  id         BigInt    @id @default(autoincrement())
-  jobId      BigInt
-  status     Int       @default(1)
-  resp       String?   @db.Text
-  errorMsg   String?   @db.Text
-  duration   Int?
-  createTime DateTime  @default(now())
+  id           BigInt    @id @default(autoincrement())
+  tenantId     BigInt?   @map("tenant_id")
+  jobId        BigInt    @map("job_id")
+  jobName      String    @map("job_name") @db.VarChar(100)
+  invokeTarget String    @map("invoke_target") @db.VarChar(200)
+  message      String?   @db.Text
+  status       Int       @default(1) // 1 成功 / 0 异常
+  errorMsg     String?   @map("error_msg") @db.Text
+  duration     Int?
+  startedAt    DateTime  @default(now()) @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
 
-  job        SysJob    @relation(fields: [jobId], references: [id])
+  job    SysJob     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  tenant SysTenant? @relation(fields: [tenantId], references: [id])
 
-  @@index([jobId])
-  @@index([createTime])
+  @@index([jobId, startedAt])
+  @@index([tenantId, startedAt])
+  @@map("sys_job_log")
 }
 
-// ================== 代码生成模块 ==================
+// ============================================================
+//  代码生成器(平台级工具,不隔离租户)
+// ============================================================
 
 model GenTable {
-  id           BigInt    @id @default(autoincrement())
-  tableName    String    @db.VarChar(100)
-  tableComment String?  @db.VarChar(200)
-  moduleName   String    @db.VarChar(50)
-  businessName String    @db.VarChar(50)
-  entityName   String    @db.VarChar(50)
-  author       String    @db.VarChar(50)
-  tablePrefix  String?  @db.VarChar(50)
-  createTime   DateTime  @default(now())
-  updateTime   DateTime  @updatedAt
+  id           BigInt   @id @default(autoincrement())
+  tableName    String   @map("table_name") @db.VarChar(100)
+  tableComment String?  @map("table_comment") @db.VarChar(200)
+  className    String   @map("class_name") @db.VarChar(100) // PascalCase,如 Order
+  moduleName   String   @map("module_name") @db.VarChar(50) // 业务模块名,如 biz
+  businessName String   @map("business_name") @db.VarChar(50) // 业务名,如 order
+  functionName String   @map("function_name") @db.VarChar(100) // 显示名,如 订单管理
+  packageName  String?  @map("package_name") @db.VarChar(100) // 输出路径,如 modules/biz
+  tplCategory  String   @default("crud") @map("tpl_category") @db.VarChar(50) // crud / tree
+  parentMenuId BigInt?  @map("parent_menu_id")
+  options      String?  @db.Text // JSON 选项
+  author       String   @db.VarChar(50)
+  remark       String?  @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdBy    BigInt?  @map("created_by")
 
-  fields       GenTableField[]
+  fields GenTableField[]
 
-  @@index([tableName])
+  @@unique([tableName])
+  @@index([businessName])
+  @@map("gen_table")
 }
 
 model GenTableField {
-  id            BigInt     @id @default(autoincrement())
-  tableId       BigInt
-  columnName    String     @db.VarChar(100)
-  columnComment String?    @db.VarChar(200)
-  columnType    String     @db.VarChar(50)
-  tsType        String?    @db.VarChar(50)
-  isPk          Int?       @default(0)
-  isRequired    Int?       @default(0)
-  isList        Int?       @default(1)
-  isForm        Int?       @default(1)
-  formType      String?    @db.VarChar(50)
-  queryType     String?    @db.VarChar(50)
-  sort          Int        @default(0)
-  dictType      String?    @db.VarChar(50)
-  createTime    DateTime   @default(now())
-  updateTime    DateTime   @updatedAt
+  id            BigInt   @id @default(autoincrement())
+  tableId       BigInt   @map("table_id")
+  columnName    String   @map("column_name") @db.VarChar(100)
+  columnComment String?  @map("column_comment") @db.VarChar(200)
+  columnType    String   @map("column_type") @db.VarChar(50) // varchar(50)
+  tsType        String?  @map("ts_type") @db.VarChar(50) // string/number/boolean/Date
+  fieldName     String   @map("field_name") @db.VarChar(100) // camelCase
+  isPk          Int      @default(0) @map("is_pk")
+  isIncrement   Int      @default(0) @map("is_increment")
+  isRequired    Int      @default(0) @map("is_required")
+  isInsert      Int      @default(1) @map("is_insert")
+  isEdit        Int      @default(1) @map("is_edit")
+  isList        Int      @default(1) @map("is_list")
+  isQuery       Int      @default(0) @map("is_query")
+  queryType     String?  @map("query_type") @db.VarChar(50) // = / like / between / in
+  htmlType      String?  @map("html_type") @db.VarChar(50) // input / textarea / select / radio / datetime / upload
+  dictType      String?  @map("dict_type") @db.VarChar(50)
+  sort          Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  table         GenTable   @relation(fields: [tableId], references: [id])
+  table GenTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
-  @@index([tableId])
-  @@index([sort])
+  @@index([tableId, sort])
+  @@map("gen_table_field")
 }
 
-// ================== 系统租户模块 ==================
+// ============================================================
+//  关联中间表
+// ============================================================
 
-model SysTenant {
-  id          BigInt    @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  code        String    @unique @db.VarChar(50)
-  status      Int       @default(1)
-  expireTime  DateTime?
-  maxUsers    Int       @default(100)
-  remark      String?   @db.VarChar(500)
-  createTime  DateTime  @default(now())
-  updateTime  DateTime  @updatedAt
+model SysUserRole {
+  userId    BigInt   @map("user_id")
+  roleId    BigInt   @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("sys_user_role")
+}
+
+model SysUserPost {
+  userId    BigInt   @map("user_id")
+  postId    BigInt   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user SysUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post SysPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("sys_user_post")
+}
+
+model SysRoleMenu {
+  roleId    BigInt   @map("role_id")
+  menuId    BigInt   @map("menu_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menu SysMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, menuId])
+  @@index([menuId])
+  @@map("sys_role_menu")
+}
+
+model SysRoleDept {
+  roleId    BigInt   @map("role_id")
+  deptId    BigInt   @map("dept_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  role SysRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  dept SysDept @relation(fields: [deptId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, deptId])
+  @@index([deptId])
+  @@map("sys_role_dept")
 }

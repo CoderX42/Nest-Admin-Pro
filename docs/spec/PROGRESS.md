@@ -63,6 +63,13 @@ T-103 待回填 2026-06-06 22:22:08 CST backend production Dockerfile 与 .docke
 T-104 待回填 2026-06-06 22:32:04 CST docker compose MySQL/Redis 基础服务已落地,用户外部 compose 验收 healthy 通过
 T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,用户外部 nginx -t 纯净验收通过
 T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略策略已落地,backend dev/pino/health 验收通过
+T-130 待回填 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
+
+---
+
+## S1 调整记录
+
+- T-107 推迟到 T-133 之后执行:docker compose 自动 migrate + seed 依赖 schema/migration/seed 先落地,由 T-107 收尾打通一键迁移与初始化数据。
 
 ---
 
