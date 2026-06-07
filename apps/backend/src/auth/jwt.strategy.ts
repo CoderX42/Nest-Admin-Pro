@@ -18,16 +18,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { sub: number; username: string }) {
-    const user = await this.prisma.sysUser.findUnique({
-      where: { id: payload.sub },
-      include: { roles: true, dept: true },
+    const user = await this.prisma.sysUser.findFirst({
+      where: { id: payload.sub, deletedAt: null },
+      include: { userRoles: { include: { role: { include: { roleMenus: true } } } }, dept: true },
     });
 
-    if (!user || user.status !== 1 || user.isDelete === 1) {
+    if (!user || user.status !== 1) {
       throw new UnauthorizedException('User not found or disabled');
     }
 
-    const permissions = await this.extractPermissions(user.roles);
+    const roles = user.userRoles.map((userRole) => userRole.role);
+    const permissions = await this.extractPermissions(user.userRoles, user.isPlatformAdmin === 1);
 
     return {
       id: user.id,
@@ -37,13 +38,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       phone: user.phone,
       deptId: user.deptId,
-      roles: user.roles.map((r) => ({ id: r.id, code: r.code, name: r.name })),
+      roles: roles.map((r) => ({ id: r.id, code: r.code, name: r.name })),
       permissions,
     };
   }
 
-  private async extractPermissions(roles: any[]): Promise<string[]> {
-    if (roles.some((role) => role.code === 'SUPER_ADMIN')) {
+  private async extractPermissions(
+    userRoles: { role: { code: string; roleMenus: { menuId: bigint }[] } }[],
+    isPlatformAdmin: boolean,
+  ): Promise<string[]> {
+    if (isPlatformAdmin || userRoles.some((userRole) => userRole.role.code === 'platform_admin')) {
       const menus = await this.prisma.sysMenu.findMany({
         where: { status: 1, perms: { not: '' } },
         select: { perms: true },
@@ -51,25 +55,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return menus.map((menu) => menu.perms).filter(Boolean) as string[];
     }
 
-    const menuIds = new Set<number>();
-    for (const role of roles) {
-      try {
-        const ids = JSON.parse(role.menuIds || '[]');
-        if (Array.isArray(ids)) {
-          ids.forEach((id) => {
-            const num = Number(id);
-            if (Number.isFinite(num)) menuIds.add(num);
-          });
-        }
-      } catch {
-        // ignore
-      }
-    }
+    const menuIds = new Set<bigint>(
+      userRoles.flatMap((userRole) => userRole.role.roleMenus.map((roleMenu) => roleMenu.menuId)),
+    );
 
     if (!menuIds.size) return [];
 
     const menus = await this.prisma.sysMenu.findMany({
-      where: { id: { in: Array.from(menuIds).map(BigInt) }, status: 1, perms: { not: '' } },
+      where: { id: { in: Array.from(menuIds) }, status: 1, perms: { not: '' } },
       select: { perms: true },
     });
     return [...new Set(menus.map((menu) => menu.perms).filter(Boolean) as string[])];

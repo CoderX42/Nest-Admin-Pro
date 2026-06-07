@@ -9,9 +9,9 @@ export class ConfigService {
 
   async list(query: QueryConfigDto) {
     const { name, key, status } = query;
-    const where: any = {};
+    const where: any = { deletedAt: null };
     if (name) where.name = { contains: name };
-    if (key) where.key = { contains: key };
+    if (key) where.configKey = { contains: key };
     if (status !== undefined) where.status = status;
     return this.prisma.sysConfig.findMany({ where, orderBy: { id: 'asc' } });
   }
@@ -23,33 +23,33 @@ export class ConfigService {
   }
 
   async findByKey(key: string) {
-    const config = await this.prisma.sysConfig.findUnique({ where: { key } });
+    const config = await this.prisma.sysConfig.findUnique({ where: { configKey: key } });
     if (!config) throw new NotFoundException('Config not found');
     return config;
   }
 
   async create(dto: CreateConfigDto) {
     return this.prisma.sysConfig.create({
-      data: { name: dto.name, key: dto.key, value: dto.value, type: dto.type ?? 'string', remark: dto.remark, status: dto.status ?? 1 },
+      data: { name: dto.name, configKey: dto.key, configValue: dto.value, valueType: dto.type ?? 'string', remark: dto.remark, status: dto.status ?? 1 },
     });
   }
 
   async update(dto: UpdateConfigDto) {
     const config = await this.prisma.sysConfig.findUnique({ where: { id: dto.id } });
     if (!config) throw new NotFoundException('Config not found');
-    await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.name, value: dto.value, type: dto.type, status: dto.status, remark: dto.remark } });
-    if (config.key) await this.redis.set(`config:${config.key}`, dto.value);
+    await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.name, configValue: dto.value, valueType: dto.type, status: dto.status, remark: dto.remark } });
+    if (config.configKey) await this.redis.set(`config:${config.configKey}`, dto.value);
   }
 
   async remove(id: number) {
-    await this.prisma.sysConfig.delete({ where: { id } });
+    await this.prisma.sysConfig.update({ where: { id }, data: { deletedAt: new Date() } });
     return { success: true };
   }
 
   async refresh() {
     const configs = await this.prisma.sysConfig.findMany({ where: { status: 1 } });
     for (const c of configs) {
-      await this.redis.set(`config:${c.key}`, c.value);
+      await this.redis.set(`config:${c.configKey}`, c.configValue);
     }
     return { success: true, count: configs.length };
   }

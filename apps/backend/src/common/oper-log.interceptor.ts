@@ -40,10 +40,10 @@ export class OperLogInterceptor implements NestInterceptor {
           userId: user?.id ? BigInt(user.id) : null,
           username: user?.username || 'anonymous',
           module: moduleName,
-          method: `${request.method} ${url}`,
+          operation: `${request.method} ${url}`,
           reqMethod: request.method,
           reqUrl: url,
-          reqParam: this.stringify({
+          reqParams: this.stringify({
             params: request.params,
             query: request.query,
             body: this.redact(request.body),
@@ -52,7 +52,7 @@ export class OperLogInterceptor implements NestInterceptor {
           status: error ? 0 : 1,
           errorMsg: error ? error.message || String(error) : null,
           duration,
-          ip: request.ip || request.socket?.remoteAddress || '',
+          reqIp: request.ip || request.socket?.remoteAddress || '',
         },
       })
       .catch(() => {

@@ -8,7 +8,7 @@ export class MenuService {
 
   async list(query: QueryMenuDto) {
     const { name, type, status } = query;
-    const where: any = {};
+    const where: any = { deletedAt: null };
     if (name) where.name = { contains: name };
     if (type !== undefined) where.type = type;
     if (status !== undefined) where.status = status;
@@ -18,7 +18,7 @@ export class MenuService {
 
   async tree() {
     const menus = await this.prisma.sysMenu.findMany({
-      where: { status: 1 },
+      where: { status: 1, deletedAt: null },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
     return this.buildTree(menus);
@@ -34,20 +34,19 @@ export class MenuService {
   async buildRoute(userId: number) {
     const user = await this.prisma.sysUser.findUnique({
       where: { id: userId },
-      include: { roles: true },
+      include: { userRoles: { include: { role: { include: { roleMenus: true } } } } },
     });
     if (!user) throw new NotFoundException('User not found');
 
     const allMenuIds = new Set<number>();
-    for (const role of user.roles) {
-      try {
-        const ids = JSON.parse(role.menuIds || '[]');
-        ids.forEach((id: number) => allMenuIds.add(id));
-      } catch {}
+    for (const userRole of user.userRoles) {
+      for (const roleMenu of userRole.role.roleMenus) {
+        allMenuIds.add(Number(roleMenu.menuId));
+      }
     }
 
     const menus = await this.prisma.sysMenu.findMany({
-      where: { id: { in: Array.from(allMenuIds) }, status: 1, type: { lte: 2 } },
+      where: { id: { in: Array.from(allMenuIds).map(BigInt) }, status: 1, type: { lte: 2 }, deletedAt: null },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
 
@@ -66,7 +65,7 @@ export class MenuService {
         name: dto.name, type: dto.type ?? 1, parentId: dto.parentId ?? 0,
         path: dto.path, component: dto.component, icon: dto.icon,
         sort: dto.sort ?? 0, perms: dto.perms, status: dto.status ?? 1,
-        external: dto.external ?? 0, keepAlive: dto.keepAlive ?? 0, show: dto.show ?? 1,
+        isExternal: dto.external ?? 0, isCache: dto.keepAlive ?? 0, isVisible: dto.show ?? 1,
       },
     });
   }
@@ -80,7 +79,7 @@ export class MenuService {
         name: dto.name, type: dto.type, parentId: dto.parentId,
         path: dto.path, component: dto.component, icon: dto.icon,
         sort: dto.sort, perms: dto.perms, status: dto.status,
-        external: dto.external, keepAlive: dto.keepAlive, show: dto.show,
+        isExternal: dto.external, isCache: dto.keepAlive, isVisible: dto.show,
       },
     });
   }
@@ -88,7 +87,7 @@ export class MenuService {
   async remove(id: number) {
     const children = await this.prisma.sysMenu.count({ where: { parentId: id } });
     if (children > 0) throw new BadRequestException('Cannot delete menu with children');
-    await this.prisma.sysMenu.delete({ where: { id } });
+    await this.prisma.sysMenu.update({ where: { id }, data: { deletedAt: new Date() } });
     return { success: true };
   }
 }

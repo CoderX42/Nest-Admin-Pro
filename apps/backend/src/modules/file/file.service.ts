@@ -99,7 +99,7 @@ export class FileService {
   async list(query: QueryFileDto) {
     const page = this.toPositiveNumber(query.page, 1);
     const limit = this.toPositiveNumber(query.limit, 10);
-    const where: any = { isDelete: 0 };
+    const where: any = { deletedAt: null };
     if (query.originalName) where.originalName = { contains: query.originalName };
     if (query.storage) where.storage = query.storage;
     if (query.mimeType) where.mimeType = { contains: query.mimeType };
@@ -119,7 +119,7 @@ export class FileService {
 
   async findOne(id: number) {
     const file = await this.prisma.sysFile.findFirst({
-      where: { id, isDelete: 0 },
+      where: { id, deletedAt: null },
     });
     if (!file) throw new BadRequestException('File not found');
     return file;
@@ -141,7 +141,7 @@ export class FileService {
 
     await this.prisma.sysFile.update({
       where: { id },
-      data: { isDelete: 1, deleteTime: new Date() },
+      data: { deletedAt: new Date() },
     });
     return { success: true };
   }
@@ -210,7 +210,7 @@ export class FileService {
   private async resolveConfig(): Promise<FileStorageConfig> {
     const configs = await this.prisma.sysConfig.findMany({
       where: {
-        key: {
+        configKey: {
           in: [
             'file_storage',
             'file_upload_dir',
@@ -238,7 +238,7 @@ export class FileService {
       },
     });
     const map = new Map<string, string>(
-      configs.map((item) => [item.key, String(item.value ?? '')]),
+      configs.map((item) => [item.configKey, String(item.configValue ?? '')]),
     );
 
     return {
@@ -269,13 +269,13 @@ export class FileService {
 
   private async upsertConfig(key: string, value: string, type: string, remark: string) {
     await this.prisma.sysConfig.upsert({
-      where: { key },
-      update: { value, type, remark, status: 1 },
+      where: { configKey: key },
+      update: { configValue: value, valueType: type, remark, status: 1 },
       create: {
         name: this.getConfigName(key),
-        key,
-        value,
-        type,
+        configKey: key,
+        configValue: value,
+        valueType: type,
         remark,
         status: 1,
       },

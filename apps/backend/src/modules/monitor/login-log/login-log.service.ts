@@ -13,7 +13,7 @@ export class LoginLogService {
     const [total, items] = await Promise.all([
       this.prisma.sysLoginLog.count({ where }),
       this.prisma.sysLoginLog.findMany({
-        where, orderBy: { createTime: 'desc' },
+        where, orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit, take: limit,
       }),
     ]);

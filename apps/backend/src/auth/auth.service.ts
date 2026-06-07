@@ -27,12 +27,9 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired captcha');
     }
 
-    const user = await this.prisma.sysUser.findUnique({
-      where: { username: dto.username },
-      include: { roles: true, dept: true },
-    });
+    const user = await this.findActiveUserByUsername(dto.username);
 
-    if (!user || user.isDelete === 1) {
+    if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }
 
@@ -78,14 +75,14 @@ export class AuthService {
         email: user.email,
         phone: user.phone,
         deptName: user.dept?.name,
-        roles: user.roles.map((r) => r.name),
+        roles: this.flattenRoles(user).map((r) => r.name),
       },
     };
   }
 
   async register(data: { username: string; password: string; nickname?: string }) {
-    const existing = await this.prisma.sysUser.findUnique({
-      where: { username: data.username },
+    const existing = await this.prisma.sysUser.findFirst({
+      where: { username: data.username, deletedAt: null },
     });
     if (existing) {
       throw new BadRequestException('Username already exists');
@@ -128,16 +125,17 @@ export class AuthService {
   }
 
   async getUserInfo(userId: number) {
-    const user = await this.prisma.sysUser.findUnique({
-      where: { id: userId },
-      include: { roles: true, dept: true },
+    const user = await this.prisma.sysUser.findFirst({
+      where: { id: userId, deletedAt: null },
+      include: { userRoles: { include: { role: { include: { roleMenus: true } } } }, dept: true },
     });
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const isSuperAdmin = user.roles.some((role) => role.code === 'SUPER_ADMIN');
-    const roleMenuIds = this.extractMenuIds(user.roles);
+    const roles = this.flattenRoles(user);
+    const isSuperAdmin = user.isPlatformAdmin === 1 || roles.some((role) => role.code === 'platform_admin');
+    const roleMenuIds = this.extractMenuIds(user.userRoles);
 
     const grantedMenus = await this.prisma.sysMenu.findMany({
       where: isSuperAdmin
@@ -147,9 +145,10 @@ export class AuthService {
     });
 
     // Build nested tree structure
-    const menuMap = new Map<number, any>();
-    const rootMenus: any[] = [];
-    const routeMenus = grantedMenus.filter((m) => m.type !== 3 && m.show === 1);
+    type RouteMenu = (typeof grantedMenus)[number] & { children: RouteMenu[] };
+    const menuMap = new Map<number, RouteMenu>();
+    const rootMenus: RouteMenu[] = [];
+    const routeMenus = grantedMenus.filter((m) => m.type !== 3 && m.isVisible === 1);
     routeMenus.forEach((m) => {
       menuMap.set(Number(m.id), { ...m, children: [] });
     });
@@ -174,27 +173,23 @@ export class AuthService {
         email: user.email,
         phone: user.phone,
         deptName: user.dept?.name,
-        roles: user.roles.map((r) => r.name),
+        roles: roles.map((r) => r.name),
       },
       permissions: grantedMenus.map((m) => m.perms).filter(Boolean),
       menus: rootMenus,
     };
   }
 
-  private extractMenuIds(roles: { menuIds?: string | null }[]) {
-    const ids = new Set<number>();
-    for (const role of roles) {
-      try {
-        const parsed = JSON.parse(role.menuIds || '[]');
-        if (Array.isArray(parsed)) {
-          parsed.forEach((id) => {
-            const num = Number(id);
-            if (Number.isFinite(num)) ids.add(num);
-          });
-        }
-      } catch {}
-    }
-    return Array.from(ids);
+  private extractMenuIds(
+    userRoles: { role: { roleMenus: { menuId: bigint }[] } }[],
+  ) {
+    return [
+      ...new Set(
+        userRoles.flatMap((userRole) =>
+          userRole.role.roleMenus.map((roleMenu) => Number(roleMenu.menuId)),
+        ),
+      ),
+    ];
   }
 
   async getOnlineUsers() {
@@ -202,25 +197,20 @@ export class AuthService {
   }
 
   async getProfile(userId: number) {
-    const user = await this.prisma.sysUser.findUnique({
-      where: { id: userId, isDelete: 0 },
-      include: { roles: true, dept: true },
+    const user = await this.prisma.sysUser.findFirst({
+      where: { id: userId, deletedAt: null },
+      include: {
+        userRoles: { include: { role: true } },
+        userPosts: { include: { post: true } },
+        dept: true,
+      },
     });
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    let postIds: number[] = [];
-    try {
-      postIds = JSON.parse(user.postIds || '[]');
-    } catch {}
-
-    const posts = postIds.length
-      ? await this.prisma.sysPost.findMany({
-          where: { id: { in: postIds.map(BigInt) } },
-          select: { id: true, name: true },
-        })
-      : [];
+    const roles = this.flattenRoles(user);
+    const posts = user.userPosts.map((userPost) => userPost.post);
 
     return {
       id: user.id,
@@ -232,7 +222,7 @@ export class AuthService {
       remark: user.remark,
       status: user.status,
       deptName: user.dept?.name,
-      roles: user.roles.map((r) => ({ id: r.id, name: r.name, code: r.code })),
+      roles: roles.map((r) => ({ id: r.id, name: r.name, code: r.code })),
       posts: posts.map((p) => ({ id: p.id, name: p.name })),
     };
   }
@@ -248,8 +238,9 @@ export class AuthService {
     const user = await this.prisma.sysUser.update({
       where: { id: userId },
       data,
-      include: { roles: true, dept: true },
+      include: { userRoles: { include: { role: true } }, dept: true },
     });
+    const roles = this.flattenRoles(user);
 
     return {
       id: user.id,
@@ -260,7 +251,7 @@ export class AuthService {
       phone: user.phone,
       remark: user.remark,
       deptName: user.dept?.name,
-      roles: user.roles.map((r) => r.name),
+      roles: roles.map((r) => r.name),
     };
   }
 
@@ -284,5 +275,16 @@ export class AuthService {
     });
 
     return ApiResponse.success(null, 'Password updated successfully');
+  }
+
+  private findActiveUserByUsername(username: string) {
+    return this.prisma.sysUser.findFirst({
+      where: { username, deletedAt: null },
+      include: { userRoles: { include: { role: { include: { roleMenus: true } } } }, dept: true },
+    });
+  }
+
+  private flattenRoles(user: { userRoles: { role: { id: bigint; name: string; code: string } }[] }) {
+    return user.userRoles.map((userRole) => userRole.role);
   }
 }

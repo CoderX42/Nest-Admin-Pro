@@ -15,7 +15,7 @@ export class OperLogService {
     const [total, items] = await Promise.all([
       this.prisma.sysOperLog.count({ where }),
       this.prisma.sysOperLog.findMany({
-        where, orderBy: { createTime: 'desc' },
+        where, orderBy: { createdAt: 'desc' },
         skip: (pageNum - 1) * limitNum, take: limitNum,
       }),
     ]);

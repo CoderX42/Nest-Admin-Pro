@@ -28,8 +28,9 @@ export class GenService {
     return this.prisma.genTable.create({
       data: {
         tableName: dto.tableName, tableComment: dto.tableComment, moduleName: dto.moduleName,
-        businessName: dto.businessName, entityName: dto.entityName, author: dto.author,
-        tablePrefix: dto.tablePrefix,
+        businessName: dto.businessName, className: dto.entityName ?? dto.className,
+        functionName: dto.functionName ?? dto.businessName, author: dto.author,
+        tplCategory: dto.tplCategory ?? 'crud',
       },
     });
   }
@@ -69,7 +70,7 @@ export class GenService {
   }
 
   private buildCode(table: any) {
-    const entityName = table.entityName;
+    const entityName = table.className;
     return {
       backend: [
         `${entityName.toLowerCase()}.controller.ts`,
@@ -87,7 +88,7 @@ export class GenService {
   }
 
   private buildBackendFiles(table: any) {
-    const entity = table.entityName;
+    const entity = table.className;
     const lcEntity = entity.charAt(0).toLowerCase() + entity.slice(1);
     return {
       controller: `import { Controller } from '@nestjs/common';\nimport { ApiTags } from '@nestjs/swagger';\nimport { ${entity}Service } from './${lcEntity}.service';\n\n@ApiTags('${table.businessName}')\n@Controller('${table.moduleName}/${lcEntity}')\nexport class ${entity}Controller {\n  constructor(private readonly service: ${entity}Service) {}\n}`,
@@ -96,7 +97,7 @@ export class GenService {
   }
 
   private buildFrontendFiles(table: any) {
-    const entity = table.entityName;
+    const entity = table.className;
     const lcEntity = entity.charAt(0).toLowerCase() + entity.slice(1);
     return {
       indexVue: `<template>\n  <div class="${lcEntity}">\n    <!-- ${table.businessName} List -->\n  </div>\n</template>\n\n<script setup lang="ts">\n// ${table.author}\n</script>`,

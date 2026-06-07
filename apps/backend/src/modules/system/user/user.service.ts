@@ -18,7 +18,7 @@ export class UserService {
   async list(query: QueryUserDto) {
     const { username, nickname, status, deptId, page = 1, limit = 10 } = query;
 
-    const where: any = { isDelete: 0 };
+    const where: any = { deletedAt: null };
     if (username) where.username = { contains: username };
     if (nickname) where.nickname = { contains: nickname };
     if (status !== undefined) where.status = status;
@@ -28,7 +28,7 @@ export class UserService {
       this.prisma.sysUser.count({ where }),
       this.prisma.sysUser.findMany({
         where,
-        include: { dept: true, roles: true },
+        include: { dept: true, userRoles: { include: { role: true } } },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { id: 'desc' },
@@ -40,29 +40,30 @@ export class UserService {
       items: items.map((u) => ({
         ...u,
         password: undefined,
-        roles: u.roles.map((r) => ({ id: r.id, name: r.name, code: r.code })),
+        roles: u.userRoles.map((ur) => ({ id: ur.role.id, name: ur.role.name, code: ur.role.code })),
       })),
     };
   }
 
   async findOne(id: number) {
-    const user = await this.prisma.sysUser.findUnique({
-      where: { id, isDelete: 0 },
-      include: { dept: true, roles: true },
+    const user = await this.prisma.sysUser.findFirst({
+      where: { id, deletedAt: null },
+      include: { dept: true, userRoles: { include: { role: true } }, userPosts: { include: { post: true } } },
     });
     if (!user) throw new NotFoundException('User not found');
     return { ...user, password: undefined };
   }
 
   async create(dto: CreateUserDto) {
-    const existing = await this.prisma.sysUser.findUnique({
-      where: { username: dto.username },
+    const existing = await this.prisma.sysUser.findFirst({
+      where: { username: dto.username, tenantId: null, deletedAt: null },
     });
     if (existing) throw new BadRequestException('Username already exists');
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    return this.prisma.sysUser.create({
+    const user = await this.prisma.sysUser.create({
       data: {
+        tenantId: null,
         username: dto.username,
         password: hashedPassword,
         nickname: dto.nickname ?? '',
@@ -71,17 +72,22 @@ export class UserService {
         status: dto.status ?? 1,
         remark: dto.remark ?? null,
         deptId: dto.deptId ?? null,
-        postIds: dto.postIds ? JSON.stringify(dto.postIds) : "",
       },
       select: { id: true, username: true },
     });
+    if (dto.postIds?.length) {
+      await this.prisma.sysUserPost.createMany({
+        data: dto.postIds.map((postId) => ({ userId: user.id, postId: BigInt(postId) })),
+      });
+    }
+    return user;
   }
 
   async update(dto: UpdateUserDto) {
     if (!dto.id) throw new BadRequestException('User ID is required');
 
-    const user = await this.prisma.sysUser.findUnique({
-      where: { id: dto.id, isDelete: 0 },
+    const user = await this.prisma.sysUser.findFirst({
+      where: { id: dto.id, deletedAt: null },
     });
     if (!user) throw new NotFoundException('User not found');
 
@@ -92,24 +98,32 @@ export class UserService {
       status: dto.status,
       remark: dto.remark,
       deptId: dto.deptId,
-      postIds: dto.postIds ? JSON.stringify(dto.postIds) : undefined,
     };
 
     if (dto.password) {
       data.password = await bcrypt.hash(dto.password, 10);
     }
 
-    return this.prisma.sysUser.update({
+    const updated = await this.prisma.sysUser.update({
       where: { id: dto.id },
       data,
       select: { id: true, username: true },
     });
+    if (dto.postIds) {
+      await this.prisma.$transaction([
+        this.prisma.sysUserPost.deleteMany({ where: { userId: BigInt(dto.id) } }),
+        this.prisma.sysUserPost.createMany({
+          data: dto.postIds.map((postId) => ({ userId: BigInt(dto.id), postId: BigInt(postId) })),
+        }),
+      ]);
+    }
+    return updated;
   }
 
   async remove(id: number) {
     await this.prisma.sysUser.update({
       where: { id },
-      data: { isDelete: 1, deleteTime: new Date() },
+      data: { deletedAt: new Date() },
     });
     return { success: true };
   }
@@ -133,12 +147,12 @@ export class UserService {
   }
 
   async assignRoles(id: number, roleIds: number[]) {
-    await this.prisma.sysUser.update({
-      where: { id },
-      data: {
-        roles: { set: roleIds.map((rid) => ({ id: rid })) },
-      },
-    });
+    await this.prisma.$transaction([
+      this.prisma.sysUserRole.deleteMany({ where: { userId: BigInt(id) } }),
+      this.prisma.sysUserRole.createMany({
+        data: roleIds.map((roleId) => ({ userId: BigInt(id), roleId: BigInt(roleId) })),
+      }),
+    ]);
     return { success: true };
   }
 }
