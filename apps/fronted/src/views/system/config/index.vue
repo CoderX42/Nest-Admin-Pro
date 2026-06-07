@@ -103,7 +103,7 @@ const loadData = async () => {
   loading.value = true;
   try {
     const res: any = await configApi.list(queryParams);
-    tableData.value = res;
+    tableData.value = res.items || res;
   } catch {
     ElMessage.error(t('common.message.loadFailed'));
   } finally {

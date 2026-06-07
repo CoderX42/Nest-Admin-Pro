@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateDictTypeDto {
@@ -20,6 +20,8 @@ export class QueryDictTypeDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() code?: string;
   @Type(() => Number) @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() @Min(1) page?: number;
+  @Type(() => Number) @IsOptional() @IsInt() @Min(1) limit?: number;
 }
 
 export class CreateDictDataDto {

@@ -137,7 +137,7 @@ const dataForm = reactive<any>({ id: undefined, dictTypeId: 0, label: '', value:
 
 const loadTypes = async () => {
   const res: any = await dictApi.typeList({});
-  typeList.value = res;
+  typeList.value = res.items || res;
 };
 const loadDataItems = async (row: any) => {
   currentTypeId.value = row.id;

@@ -7,12 +7,21 @@ export class DictService {
   constructor(private prisma: PrismaService) {}
 
   async typeList(query: QueryDictTypeDto) {
-    const { name, code, status } = query;
-    const where: any = {};
+    const { name, code, status, page = 1, limit = 10 } = query;
+    const where: Record<string, unknown> = { deletedAt: null };
     if (name) where.name = { contains: name };
     if (code) where.code = { contains: code };
     if (status !== undefined) where.status = status;
-    return this.prisma.sysDictType.findMany({ where, orderBy: { id: 'asc' } });
+    const [total, items] = await Promise.all([
+      this.prisma.sysDictType.count({ where }),
+      this.prisma.sysDictType.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { id: 'asc' },
+      }),
+    ]);
+    return { total, items };
   }
 
   async typeFindOne(id: number) {

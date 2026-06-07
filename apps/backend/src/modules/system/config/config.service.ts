@@ -8,12 +8,21 @@ export class ConfigService {
   constructor(private prisma: PrismaService, private redis: RedisService) {}
 
   async list(query: QueryConfigDto) {
-    const { name, key, status } = query;
-    const where: any = { deletedAt: null };
+    const { name, key, status, page = 1, limit = 10 } = query;
+    const where: Record<string, unknown> = { deletedAt: null };
     if (name) where.name = { contains: name };
     if (key) where.configKey = { contains: key };
     if (status !== undefined) where.status = status;
-    return this.prisma.sysConfig.findMany({ where, orderBy: { id: 'asc' } });
+    const [total, items] = await Promise.all([
+      this.prisma.sysConfig.count({ where }),
+      this.prisma.sysConfig.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { id: 'asc' },
+      }),
+    ]);
+    return { total, items };
   }
 
   async findOne(id: number) {
