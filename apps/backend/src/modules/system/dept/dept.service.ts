@@ -2,13 +2,20 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../../common/prisma.service';
 import { CreateDeptDto, UpdateDeptDto, QueryDeptDto } from './dto/dept.dto';
 
+export type DeptTreeNode = {
+  id: number | bigint;
+  parentId: number | bigint;
+  children?: DeptTreeNode[];
+  [key: string]: unknown;
+};
+
 @Injectable()
 export class DeptService {
   constructor(private prisma: PrismaService) {}
 
   async list(query: QueryDeptDto) {
     const { name, status } = query;
-    const where: any = {};
+    const where: Record<string, unknown> = { id: { not: 0 } };
     if (name) where.name = { contains: name };
     if (status !== undefined) where.status = status;
     const depts = await this.prisma.sysDept.findMany({
@@ -20,19 +27,20 @@ export class DeptService {
 
   async tree() {
     const depts = await this.prisma.sysDept.findMany({
-      where: { status: 1 },
+      where: { id: { not: 0 }, status: 1 },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
     return this.buildTree(depts);
   }
 
-  private buildTree(depts: any[], parentId = 0): any[] {
-    const ids = new Set(depts.map((d) => Number(d.id)));
-    return depts
+  private buildTree(depts: DeptTreeNode[], parentId = 0): DeptTreeNode[] {
+    const realDepts = depts.filter((d) => Number(d.id) !== 0);
+    const ids = new Set(realDepts.map((d) => Number(d.id)));
+    return realDepts
       .filter((d) => Number(d.parentId) === parentId || (parentId === 0 && !ids.has(Number(d.parentId))))
       .map((d) => ({
         ...d,
-        children: this.buildTree(depts, Number(d.id)),
+        children: this.buildTree(realDepts, Number(d.id)),
       }));
   }
 
