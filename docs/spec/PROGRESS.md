@@ -66,7 +66,7 @@ T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略�
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
-T-133 待回填 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLocalStorage tenant context 已落地,build/lint/test 验收通过
+T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLocalStorage tenant context 已落地,build/lint/test 验收通过
 
 ---
 
