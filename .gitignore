@@ -27,3 +27,6 @@ coverage/
 # TypeScript incremental build cache
 **/tsconfig.build.tsbuildinfo
 **/tsconfig.tsbuildinfo
+apps/backend/prisma/seed.js
+apps/backend/prisma/seed.d.ts
+apps/backend/prisma/seed.js.map

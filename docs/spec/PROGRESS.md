@@ -64,7 +64,8 @@ T-104 待回填 2026-06-06 22:32:04 CST docker compose MySQL/Redis 基础服务�
 T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,用户外部 nginx -t 纯净验收通过
 T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略策略已落地,backend dev/pino/health 验收通过
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
-T-131 待回填 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
+T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
+T-132 待回填 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
 
 ---
 
