@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { tenantMiddleware } from './prisma/tenant.middleware';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
@@ -9,6 +10,7 @@ export class PrismaService extends PrismaClient {
     super({
       log: ['error', 'warn'],
     });
+    this.$use(tenantMiddleware);
   }
 
   async onModuleInit() {

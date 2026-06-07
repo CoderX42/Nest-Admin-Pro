@@ -7,9 +7,23 @@ export interface RequestContextStore {
   traceId: string;
   ip: string;
   userAgent: string;
+  user?: TenantContextUser;
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContextStore>();
+
+export interface TenantContextUser {
+  userId: bigint;
+  tenantId: bigint | null;
+  isPlatformAdmin: boolean;
+}
+
+export function setTenantContext(user: TenantContextUser) {
+  const store = requestContext.getStore();
+  if (store) {
+    store.user = user;
+  }
+}
 
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {

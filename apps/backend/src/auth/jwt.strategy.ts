@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
+import { setTenantContext } from '../common/middleware/request-context.middleware';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -29,6 +30,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const roles = user.userRoles.map((userRole) => userRole.role);
     const permissions = await this.extractPermissions(user.userRoles, user.isPlatformAdmin === 1);
+    setTenantContext({
+      userId: user.id,
+      tenantId: user.tenantId,
+      isPlatformAdmin: user.isPlatformAdmin === 1,
+    });
 
     return {
       id: user.id,

@@ -65,7 +65,8 @@ T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,�
 T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略策略已落地,backend dev/pino/health 验收通过
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
-T-132 待回填 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
+T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
+T-133 待回填 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLocalStorage tenant context 已落地,build/lint/test 验收通过
 
 ---
 
@@ -130,3 +131,14 @@ T-132 待回填 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户
 - T-051 vite build 大 chunk + 空 echarts chunk → S1 优化时按需加载 echarts(改成 dynamic import),并把 500KB+ 的 chunk 拆开。当前 warning 不阻塞,但生产体积偏大。
 - T-051 fronted dev / T-081 app dev 默认都占 5173 端口 → S1 起 backend (3000) 后,如果 fronted 与 app 需要并跑,要给其中一个换端口。建议:fronted 保持 5173,app dev:h5 改 5174(在 apps/app/vite.config.ts 加 server.port: 5174,或在 manifest.json h5 区域设)。S0 阶段两端不并跑,无冲突。
 - 部署文档:在 README 或 docs/ops/local-dev.md 增加排错小节,提示开发者:若 MySQL 容器健康但 prisma 连不上,首先用 lsof -iTCP:3306 检查是否有 brew 装的本机 mysql 占端口。
+
+## S1 欠账(deferred to later stages)
+
+- [BUG-001] captcha 不写 Redis → 在 T-133 完成后开维护卡修复。
+  现象:GET /api/auth/captcha 返回 200,但 redis-cli MONITOR 抓不到任何 SET 操作,redis 全 db scan 空,登录永远过不了 captcha 校验。
+  排查方向:
+  1. apps/backend/src/auth/auth.service.ts 的 getCaptcha() 是否真的 await this.redis.set(...)
+  2. RedisService 的 set 内部是否有 try/catch 静默吞错误
+  3. 注入的 RedisService 实例与实际写入的 Redis client 是否同一个
+  4. CacheModule / RedisModule 是否在多个地方各 new 了一个 Redis 实例
+     修复后必须能完成端到端登录:GET captcha → 从 redis 读出 text → POST login → 拿到 token
