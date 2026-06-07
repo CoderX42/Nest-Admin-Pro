@@ -8,7 +8,7 @@ export class MenuService {
 
   async list(query: QueryMenuDto) {
     const { name, type, status } = query;
-    const where: any = { deletedAt: null };
+    const where: any = { id: { not: 0 }, deletedAt: null };
     if (name) where.name = { contains: name };
     if (type !== undefined) where.type = type;
     if (status !== undefined) where.status = status;
@@ -18,17 +18,18 @@ export class MenuService {
 
   async tree() {
     const menus = await this.prisma.sysMenu.findMany({
-      where: { status: 1, deletedAt: null },
+      where: { id: { not: 0 }, status: 1, deletedAt: null },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
     return this.buildTree(menus);
   }
 
   private buildTree(menus: any[], parentId: number = 0): any[] {
-    const ids = new Set(menus.map((m) => Number(m.id)));
-    return menus
+    const realMenus = menus.filter((m) => Number(m.id) !== 0);
+    const ids = new Set(realMenus.map((m) => Number(m.id)));
+    return realMenus
       .filter((m) => Number(m.parentId) === parentId || (parentId === 0 && !ids.has(Number(m.parentId))))
-      .map((m) => ({ ...m, children: this.buildTree(menus, Number(m.id)) }));
+      .map((m) => ({ ...m, children: this.buildTree(realMenus, Number(m.id)) }));
   }
 
   async buildRoute(userId: number) {
@@ -46,7 +47,12 @@ export class MenuService {
     }
 
     const menus = await this.prisma.sysMenu.findMany({
-      where: { id: { in: Array.from(allMenuIds).map(BigInt) }, status: 1, type: { lte: 2 }, deletedAt: null },
+      where: {
+        id: { in: Array.from(allMenuIds).filter((id) => id !== 0).map(BigInt) },
+        status: 1,
+        type: { lte: 2 },
+        deletedAt: null,
+      },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
 

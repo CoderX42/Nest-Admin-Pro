@@ -64,7 +64,8 @@ T-104 待回填 2026-06-06 22:32:04 CST docker compose MySQL/Redis 基础服务�
 T-105 待回填 2026-06-06 22:54:54 CST nginx reverse proxy template 已落地,用户外部 nginx -t 纯净验收通过
 T-106 待回填 2026-06-07 01:02:42 CST 环境变量模板与本地 env 忽略策略已落地,backend dev/pino/health 验收通过
 T-099 35b2435 2026-06-07 12:07:02 CST JWT sign payload 已显式转为 JSON-safe 字符串,BigInt 用户登录 token 往返单测通过
-T-098 待回填 2026-06-07 12:35:23 CST controller `@RequirePermission` 已对齐 seed 权限点,build/lint/test 与权限字符串校验通过
+T-098 405b83d 2026-06-07 12:35:23 CST controller `@RequirePermission` 已对齐 seed 权限点,build/lint/test 与权限字符串校验通过
+T-097 待回填 2026-06-07 14:13:34 CST 菜单树构建已排除 id=0 占位根节点,build/lint/test 验收通过
 T-130 7eb51b5 2026-06-07 10:32:09 CST Prisma schema 21 个目标模型已落地,format/validate/generate 验收通过
 T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,业务代码已适配新 schema 且 build/lint/test/dev health 验收通过
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
@@ -146,3 +147,4 @@ T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLo
   4. CacheModule / RedisModule 是否在多个地方各 new 了一个 Redis 实例
      修复后必须能完成端到端登录:GET captcha → 从 redis 读出 text → POST login → 拿到 token
 - [BUG-002][resolved by T-098] controller `@RequirePermission` 与 seed `sys_menu.perms` 不一致 → 已统一回归 T-132 seed 权限命名,并把同一 controller 内 list/add/edit/remove/query/clean/forceLogout/clear 等拆为细粒度权限点。
+- [BUG-003][resolved by T-097] `/api/system/menu/list` 返回 500 Maximum call stack exceeded → T-132 seed 的 id=0 占位根节点已在菜单树查询和构建入口显式过滤,避免 `buildTree(menus, 0)` 对同一根节点无限递归。
