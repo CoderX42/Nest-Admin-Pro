@@ -219,6 +219,9 @@ importers:
       esdk-obs-nodejs:
         specifier: ^3.26.2
         version: 3.26.2
+      exceljs:
+        specifier: ^4.4.0
+        version: 4.4.0
       helmet:
         specifier: ^8.0.0
         version: 8.2.0

@@ -8,13 +8,26 @@ import {
   Query,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   ParseIntPipe,
   HttpCode,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import type { Response } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
+
+const userImportUploadOptions = {
+  storage: memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+};
 
 @ApiTags('System - User Management')
 @Controller('system/user')
@@ -27,6 +40,25 @@ export class UserController {
   @ApiOperation({ summary: 'Get user list' })
   async list(@Query() query: QueryUserDto) {
     return this.userService.list(query);
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file', userImportUploadOptions))
+  @RequirePermission('system:user:import')
+  @ApiOperation({ summary: 'Import users from xlsx' })
+  async import(@UploadedFile() file: Express.Multer.File) {
+    return this.userService.importUsers(file);
+  }
+
+  @Get('export')
+  @RequirePermission('system:user:export')
+  @ApiOperation({ summary: 'Export users to xlsx' })
+  async export(@Query() query: QueryUserDto, @Res() res: Response) {
+    const buffer = await this.userService.exportUsers(query);
+    const filename = `users-${Date.now()}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(buffer);
   }
 
   @Get(':id')
