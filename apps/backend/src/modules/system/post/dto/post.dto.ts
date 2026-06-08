@@ -13,6 +13,7 @@ export class CreatePostDto {
 export class UpdatePostDto {
   @ApiProperty() @IsInt() id: number;
   @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsString() code?: string;
   @IsOptional() @IsInt() sort?: number;
   @Type(() => Number) @IsOptional() @IsInt() status?: number;
   @IsOptional() @IsString() remark?: string;

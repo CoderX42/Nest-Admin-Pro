@@ -71,7 +71,7 @@ export class MenuService {
         name: dto.name, type: dto.type ?? 1, parentId: dto.parentId ?? 0,
         path: dto.path, component: dto.component, icon: dto.icon,
         sort: dto.sort ?? 0, perms: dto.perms, status: dto.status ?? 1,
-        isExternal: dto.external ?? 0, isCache: dto.keepAlive ?? 0, isVisible: dto.show ?? 1,
+        isExternal: dto.isExternal ?? 0, isCache: dto.isKeepAlive ?? 0, isVisible: dto.isVisible ?? 1,
       },
     });
   }
@@ -85,7 +85,7 @@ export class MenuService {
         name: dto.name, type: dto.type, parentId: dto.parentId,
         path: dto.path, component: dto.component, icon: dto.icon,
         sort: dto.sort, perms: dto.perms, status: dto.status,
-        isExternal: dto.external, isCache: dto.keepAlive, isVisible: dto.show,
+        isExternal: dto.isExternal, isCache: dto.isKeepAlive, isVisible: dto.isVisible,
       },
     });
   }

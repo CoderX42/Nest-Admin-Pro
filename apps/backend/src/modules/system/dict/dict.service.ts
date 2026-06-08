@@ -31,13 +31,13 @@ export class DictService {
   }
 
   async typeCreate(dto: CreateDictTypeDto) {
-    return this.prisma.sysDictType.create({ data: { name: dto.name, code: dto.code, status: dto.status ?? 1, remark: dto.remark } });
+    return this.prisma.sysDictType.create({ data: { name: dto.name, code: dto.type, status: dto.status ?? 1, remark: dto.remark } });
   }
 
   async typeUpdate(dto: UpdateDictTypeDto) {
     const type = await this.prisma.sysDictType.findUnique({ where: { id: dto.id } });
     if (!type) throw new NotFoundException('Dict type not found');
-    return this.prisma.sysDictType.update({ where: { id: dto.id }, data: { name: dto.name, status: dto.status, remark: dto.remark } });
+    return this.prisma.sysDictType.update({ where: { id: dto.id }, data: { name: dto.name, code: dto.type, status: dto.status, remark: dto.remark } });
   }
 
   async typeRemove(id: number) {

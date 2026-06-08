@@ -51,10 +51,15 @@ export class TenantService {
   async update(dto: UpdateTenantDto) {
     const tenant = await this.prisma.sysTenant.findFirst({ where: { id: dto.id, deletedAt: null } });
     if (!tenant) throw new NotFoundException('Tenant not found');
+    if (dto.code && dto.code !== tenant.code) {
+      const existing = await this.prisma.sysTenant.findUnique({ where: { code: dto.code } });
+      if (existing && existing.deletedAt === null) throw new BadRequestException('Tenant code already exists');
+    }
     return this.prisma.sysTenant.update({
       where: { id: dto.id },
       data: {
         name: dto.name,
+        code: dto.code,
         contactUser: dto.contactUser,
         contactPhone: dto.contactPhone,
         status: dto.status,

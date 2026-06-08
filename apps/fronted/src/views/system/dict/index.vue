@@ -12,7 +12,7 @@
 
           <el-table :data="typeList" border highlight-current-row @current-change="handleCurrentTypeChange">
             <el-table-column prop="name" :label="t('system.dict.dictName')" min-width="140" />
-            <el-table-column prop="code" :label="t('system.dict.dictCode')" min-width="140" />
+            <el-table-column prop="type" :label="t('system.dict.dictCode')" min-width="140" />
             <el-table-column :label="t('common.field.status')" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.status === 1 ? 'success' : 'danger'" effect="plain">
@@ -70,7 +70,7 @@
           <el-input v-model="typeForm.name" />
         </el-form-item>
         <el-form-item :label="t('system.dict.dictCode')">
-          <el-input v-model="typeForm.code" :disabled="!!typeForm.id" />
+          <el-input v-model="typeForm.type" :disabled="!!typeForm.id" />
         </el-form-item>
         <el-form-item :label="t('common.field.status')">
           <el-radio-group v-model="typeForm.status">
@@ -132,12 +132,12 @@ const currentTypeId = ref<number>();
 const currentTypeName = ref('');
 const typeDialogVisible = ref(false);
 const dataDialogVisible = ref(false);
-const typeForm = reactive<any>({ id: undefined, name: '', code: '', status: 1, remark: '' });
+const typeForm = reactive<any>({ id: undefined, name: '', type: '', status: 1, remark: '' });
 const dataForm = reactive<any>({ id: undefined, dictTypeId: 0, label: '', value: '', sort: 0, status: 1, remark: '' });
 
 const loadTypes = async () => {
   const res: any = await dictApi.typeList({});
-  typeList.value = res.items || res;
+  typeList.value = (res.items || res).map((item: any) => ({ ...item, type: item.type ?? item.code }));
 };
 const loadDataItems = async (row: any) => {
   currentTypeId.value = row.id;
@@ -159,20 +159,20 @@ const handleCurrentTypeChange = (row: any) => {
 };
 
 const handleCreateType = () => {
-  Object.assign(typeForm, { id: undefined, name: '', code: '', status: 1, remark: '' });
+  Object.assign(typeForm, { id: undefined, name: '', type: '', status: 1, remark: '' });
   typeDialogVisible.value = true;
 };
 const handleEditType = (row: any) => {
-  Object.assign(typeForm, row);
+  Object.assign(typeForm, { ...row, type: row.type ?? row.code });
   typeDialogVisible.value = true;
 };
 const handleTypeSubmit = async () => {
   try {
     if (typeForm.id) {
-      await dictApi.typeUpdate({ id: typeForm.id, name: typeForm.name, status: typeForm.status, remark: typeForm.remark });
+      await dictApi.typeUpdate({ id: typeForm.id, name: typeForm.name, type: typeForm.type, status: typeForm.status, remark: typeForm.remark });
       ElMessage.success(t('common.message.updateSuccess'));
     } else {
-      await dictApi.typeCreate({ name: typeForm.name, code: typeForm.code, status: typeForm.status, remark: typeForm.remark });
+      await dictApi.typeCreate({ name: typeForm.name, type: typeForm.type, status: typeForm.status, remark: typeForm.remark });
       ElMessage.success(t('common.message.addSuccess'));
     }
     typeDialogVisible.value = false;

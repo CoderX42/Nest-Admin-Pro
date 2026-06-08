@@ -118,14 +118,14 @@
         </el-form-item>
         <el-form-item v-if="form.type !== 3" :label="t('system.menu.visible')">
           <el-switch
-            :model-value="form.show === 1"
-            @change="(value: string | number | boolean) => (form.show = Boolean(value) ? 1 : 0)"
+            :model-value="form.isVisible === 1"
+            @change="(value: string | number | boolean) => (form.isVisible = Boolean(value) ? 1 : 0)"
           />
         </el-form-item>
         <el-form-item v-if="form.type === 2" :label="t('system.menu.keepAlive')">
           <el-switch
-            :model-value="form.keepAlive === 1"
-            @change="(value: string | number | boolean) => (form.keepAlive = Boolean(value) ? 1 : 0)"
+            :model-value="form.isKeepAlive === 1"
+            @change="(value: string | number | boolean) => (form.isKeepAlive = Boolean(value) ? 1 : 0)"
           />
         </el-form-item>
         <el-form-item :label="t('common.field.sort')">
@@ -175,8 +175,9 @@ const form = reactive<any>({
   icon: '',
   sort: 0,
   status: 1,
-  show: 1,
-  keepAlive: 0,
+  isVisible: 1,
+  isExternal: 0,
+  isKeepAlive: 0,
 });
 
 const loadData = async () => {
@@ -215,8 +216,9 @@ const handleCreate = (parentId: number) => {
     icon: '',
     sort: 0,
     status: 1,
-    show: 1,
-    keepAlive: 0,
+    isVisible: 1,
+    isExternal: 0,
+    isKeepAlive: 0,
   });
   dialogVisible.value = true;
 };
@@ -233,8 +235,9 @@ const handleEdit = (row: any) => {
     icon: row.icon,
     sort: row.sort,
     status: row.status,
-    show: row.show,
-    keepAlive: row.keepAlive,
+    isVisible: row.isVisible ?? row.show ?? 1,
+    isExternal: row.isExternal ?? 0,
+    isKeepAlive: row.isKeepAlive ?? row.isCache ?? row.keepAlive ?? 0,
   });
   dialogVisible.value = true;
 };

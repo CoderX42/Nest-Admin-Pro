@@ -36,7 +36,13 @@ export class PostService {
   async update(dto: UpdatePostDto) {
     const post = await this.prisma.sysPost.findFirst({ where: { id: dto.id, deletedAt: null } });
     if (!post) throw new NotFoundException('Post not found');
-    return this.prisma.sysPost.update({ where: { id: dto.id }, data: { name: dto.name, sort: dto.sort, status: dto.status, remark: dto.remark } });
+    if (dto.code && dto.code !== post.code) {
+      const existing = await this.prisma.sysPost.findFirst({
+        where: { code: dto.code, tenantId: null, deletedAt: null },
+      });
+      if (existing) throw new BadRequestException('Post code already exists');
+    }
+    return this.prisma.sysPost.update({ where: { id: dto.id }, data: { name: dto.name, code: dto.code, sort: dto.sort, status: dto.status, remark: dto.remark } });
   }
 
   async remove(id: number) {

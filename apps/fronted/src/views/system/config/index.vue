@@ -3,7 +3,7 @@
     <el-card class="filter-form">
       <el-form :inline="true" :model="queryParams">
         <el-form-item :label="t('system.config.configKey')">
-          <el-input v-model="queryParams.key" :placeholder="t('system.config.configKey')" clearable @keyup.enter="loadData" />
+          <el-input v-model="queryParams.configKey" :placeholder="t('system.config.configKey')" clearable @keyup.enter="loadData" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="loadData">{{ t('common.action.search') }}</el-button>
@@ -22,11 +22,11 @@
       <el-table :data="tableData" v-loading="loading" border>
         <el-table-column prop="id" :label="t('common.field.id')" min-width="90" />
         <el-table-column prop="name" :label="t('system.config.configName')" min-width="160" />
-        <el-table-column prop="key" :label="t('system.config.configKey')" min-width="180" />
-        <el-table-column prop="value" :label="t('system.config.configValue')" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="type" :label="t('common.field.type')" width="120">
+        <el-table-column prop="configKey" :label="t('system.config.configKey')" min-width="180" />
+        <el-table-column prop="configValue" :label="t('system.config.configValue')" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="valueType" :label="t('common.field.type')" width="120">
           <template #default="{ row }">
-            <el-tag effect="plain">{{ row.type }}</el-tag>
+            <el-tag effect="plain">{{ row.valueType }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="t('common.field.status')" width="120">
@@ -52,16 +52,16 @@
     <el-dialog v-model="dialogVisible" :title="form.id ? t('system.config.editConfig') : t('system.config.addConfig')" width="620px">
       <el-form :model="form" label-width="110px">
         <el-form-item :label="t('system.config.configName')">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.configName" />
         </el-form-item>
         <el-form-item :label="t('system.config.configKey')">
-          <el-input v-model="form.key" :disabled="!!form.id" />
+          <el-input v-model="form.configKey" :disabled="!!form.id" />
         </el-form-item>
         <el-form-item :label="t('system.config.configValue')">
-          <el-input v-model="form.value" type="textarea" :rows="4" />
+          <el-input v-model="form.configValue" type="textarea" :rows="4" />
         </el-form-item>
         <el-form-item :label="t('common.field.type')">
-          <el-select v-model="form.type">
+          <el-select v-model="form.configType">
             <el-option :label="t('system.config.typeString')" value="string" />
             <el-option :label="t('system.config.typeNumber')" value="number" />
             <el-option :label="t('system.config.typeBoolean')" value="boolean" />
@@ -96,8 +96,8 @@ const { t } = useI18n();
 const loading = ref(false);
 const tableData = ref<any[]>([]);
 const dialogVisible = ref(false);
-const queryParams = reactive({ key: '' });
-const form = reactive<any>({ id: undefined, name: '', key: '', value: '', type: 'string', status: 1, remark: '' });
+const queryParams = reactive({ configKey: '' });
+const form = reactive<any>({ id: undefined, configName: '', configKey: '', configValue: '', configType: 'string', status: 1, remark: '' });
 
 const loadData = async () => {
   loading.value = true;
@@ -112,21 +112,29 @@ const loadData = async () => {
 };
 
 const handleCreate = () => {
-  Object.assign(form, { id: undefined, name: '', key: '', value: '', type: 'string', status: 1, remark: '' });
+  Object.assign(form, { id: undefined, configName: '', configKey: '', configValue: '', configType: 'string', status: 1, remark: '' });
   dialogVisible.value = true;
 };
 const handleEdit = (row: any) => {
-  Object.assign(form, row);
+  Object.assign(form, {
+    id: row.id,
+    configName: row.configName ?? row.name,
+    configKey: row.configKey,
+    configValue: row.configValue,
+    configType: row.configType ?? row.valueType,
+    status: row.status,
+    remark: row.remark,
+  });
   dialogVisible.value = true;
 };
 
 const handleSubmit = async () => {
   try {
     if (form.id) {
-      await configApi.update({ id: form.id, name: form.name, value: form.value, type: form.type, status: form.status, remark: form.remark });
+      await configApi.update({ id: form.id, configName: form.configName, configValue: form.configValue, configType: form.configType, status: form.status, remark: form.remark });
       ElMessage.success(t('common.message.updateSuccess'));
     } else {
-      await configApi.create({ name: form.name, key: form.key, value: form.value, type: form.type, status: form.status, remark: form.remark });
+      await configApi.create({ configName: form.configName, configKey: form.configKey, configValue: form.configValue, configType: form.configType, status: form.status, remark: form.remark });
       ElMessage.success(t('common.message.addSuccess'));
     }
     dialogVisible.value = false;

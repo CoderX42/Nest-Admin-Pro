@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 
 export class CreateDictTypeDto {
   @ApiProperty({ example: 'User Status' }) @IsString() name: string;
-  @ApiProperty({ example: 'user_status' }) @IsString() code: string;
+  @ApiProperty({ example: 'user_status' }) @IsString() type: string;
   @IsOptional() @IsInt() status?: number;
   @IsOptional() @IsString() remark?: string;
 }
@@ -12,6 +12,7 @@ export class CreateDictTypeDto {
 export class UpdateDictTypeDto {
   @ApiProperty() @IsInt() id: number;
   @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsString() type?: string;
   @IsOptional() @IsInt() status?: number;
   @IsOptional() @IsString() remark?: string;
 }

@@ -9,8 +9,9 @@ export class CreateRoleDto {
   @ApiProperty({ example: 'super_admin' })
   @IsString()
   code: string;
-  @IsOptional()
-  dataScope?: number;
+  @Type(() => Number) @IsOptional() @IsInt() sort?: number;
+  @Type(() => Number) @IsOptional() @IsInt() status?: number;
+  @Type(() => Number) @IsOptional() @IsInt() dataScope?: number;
 }
 
 export class UpdateRoleDto {
@@ -18,6 +19,8 @@ export class UpdateRoleDto {
   @IsInt()
   id: number;
   @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsString() code?: string;
+  @Type(() => Number) @IsOptional() @IsInt() sort?: number;
   @IsOptional() @IsInt() dataScope?: number;
   @Type(() => Number) @IsOptional() @IsInt() status?: number;
 }

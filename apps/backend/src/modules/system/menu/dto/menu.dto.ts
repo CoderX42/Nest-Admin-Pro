@@ -12,9 +12,9 @@ export class CreateMenuDto {
   @IsOptional() @IsInt() sort?: number;
   @IsOptional() @IsString() perms?: string;
   @IsOptional() @IsInt() status?: number;
-  @IsOptional() @IsInt() external?: number;
-  @IsOptional() @IsInt() keepAlive?: number;
-  @IsOptional() @IsInt() show?: number;
+  @IsOptional() @IsInt() isExternal?: number;
+  @IsOptional() @IsInt() isKeepAlive?: number;
+  @IsOptional() @IsInt() isVisible?: number;
 }
 
 export class UpdateMenuDto {
@@ -28,9 +28,9 @@ export class UpdateMenuDto {
   @IsOptional() @IsInt() sort?: number;
   @IsOptional() @IsString() perms?: string;
   @IsOptional() @IsInt() status?: number;
-  @IsOptional() @IsInt() external?: number;
-  @IsOptional() @IsInt() keepAlive?: number;
-  @IsOptional() @IsInt() show?: number;
+  @IsOptional() @IsInt() isExternal?: number;
+  @IsOptional() @IsInt() isKeepAlive?: number;
+  @IsOptional() @IsInt() isVisible?: number;
 }
 
 export class QueryMenuDto {

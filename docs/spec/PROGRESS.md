@@ -72,6 +72,7 @@ T-131 3cd472e 2026-06-07 10:41:33 CST 首次 init migration 已应用到 MySQL,�
 T-132 12c59be 2026-06-07 10:48:53 CST Prisma seed 已注入默认租户/用户/角色/104 条菜单/字典/配置且幂等验收通过
 T-133 9c9cd9d 2026-06-07 11:57:03 CST Prisma 多租户中间件骨架与 AsyncLocalStorage tenant context 已落地,build/lint/test 验收通过
 T-091 2004c1f 2026-06-08 01:05:00 CST S2 业务接口补洞:dept 占位根递归、dict/config 分页 DTO、tenant CRUD 路由已修复
+T-090 2c8f600 2026-06-08 21:35:00 CST Create/Update DTO 已按 Prisma schema 字段补齐并同步前端提交字段
 
 ---
 

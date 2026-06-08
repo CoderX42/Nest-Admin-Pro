@@ -39,7 +39,14 @@ export class RoleService {
     });
     if (existing) throw new BadRequestException('Role code already exists');
     return this.prisma.sysRole.create({
-      data: { tenantId: null, name: dto.name, code: dto.code, status: 1, dataScope: dto.dataScope ?? 1 },
+      data: {
+        tenantId: null,
+        name: dto.name,
+        code: dto.code,
+        sort: dto.sort ?? 0,
+        status: dto.status ?? 1,
+        dataScope: dto.dataScope ?? 1,
+      },
     });
   }
 
@@ -47,9 +54,15 @@ export class RoleService {
     if (!dto.id) throw new BadRequestException('Role ID is required');
     const role = await this.prisma.sysRole.findFirst({ where: { id: dto.id, deletedAt: null } });
     if (!role) throw new NotFoundException('Role not found');
+    if (dto.code && dto.code !== role.code) {
+      const existing = await this.prisma.sysRole.findFirst({
+        where: { code: dto.code, tenantId: null, deletedAt: null },
+      });
+      if (existing) throw new BadRequestException('Role code already exists');
+    }
     return this.prisma.sysRole.update({
       where: { id: dto.id },
-      data: { name: dto.name, dataScope: dto.dataScope, status: dto.status },
+      data: { name: dto.name, code: dto.code, sort: dto.sort, dataScope: dto.dataScope, status: dto.status },
     });
   }
 

@@ -8,10 +8,10 @@ export class ConfigService {
   constructor(private prisma: PrismaService, private redis: RedisService) {}
 
   async list(query: QueryConfigDto) {
-    const { name, key, status, page = 1, limit = 10 } = query;
+    const { configName, configKey, status, page = 1, limit = 10 } = query;
     const where: Record<string, unknown> = { deletedAt: null };
-    if (name) where.name = { contains: name };
-    if (key) where.configKey = { contains: key };
+    if (configName) where.name = { contains: configName };
+    if (configKey) where.configKey = { contains: configKey };
     if (status !== undefined) where.status = status;
     const [total, items] = await Promise.all([
       this.prisma.sysConfig.count({ where }),
@@ -39,15 +39,15 @@ export class ConfigService {
 
   async create(dto: CreateConfigDto) {
     return this.prisma.sysConfig.create({
-      data: { name: dto.name, configKey: dto.key, configValue: dto.value, valueType: dto.type ?? 'string', remark: dto.remark, status: dto.status ?? 1 },
+      data: { name: dto.configName, configKey: dto.configKey, configValue: dto.configValue, valueType: dto.configType ?? 'string', remark: dto.remark, status: dto.status ?? 1 },
     });
   }
 
   async update(dto: UpdateConfigDto) {
     const config = await this.prisma.sysConfig.findUnique({ where: { id: dto.id } });
     if (!config) throw new NotFoundException('Config not found');
-    await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.name, configValue: dto.value, valueType: dto.type, status: dto.status, remark: dto.remark } });
-    if (config.configKey) await this.redis.set(`config:${config.configKey}`, dto.value);
+    await this.prisma.sysConfig.update({ where: { id: dto.id }, data: { name: dto.configName, configValue: dto.configValue, valueType: dto.configType, status: dto.status, remark: dto.remark } });
+    if (config.configKey && dto.configValue !== undefined) await this.redis.set(`config:${config.configKey}`, dto.configValue);
   }
 
   async remove(id: number) {

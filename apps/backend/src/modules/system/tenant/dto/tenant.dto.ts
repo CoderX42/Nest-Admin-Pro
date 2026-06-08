@@ -54,6 +54,10 @@ export class UpdateTenantDto {
 
   @IsOptional()
   @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsString()
   contactUser?: string;
 
   @IsOptional()

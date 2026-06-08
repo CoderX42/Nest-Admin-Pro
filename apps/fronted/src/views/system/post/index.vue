@@ -137,7 +137,7 @@ const handleEdit = (row: any) => {
 const handleSubmit = async () => {
   try {
     if (form.id) {
-      await postApi.update({ id: form.id, name: form.name, sort: form.sort, status: form.status, remark: form.remark });
+      await postApi.update({ id: form.id, name: form.name, code: form.code, sort: form.sort, status: form.status, remark: form.remark });
       ElMessage.success(t('common.message.updateSuccess'));
     } else {
       await postApi.create({ name: form.name, code: form.code, sort: form.sort, status: form.status, remark: form.remark });
