@@ -2,7 +2,7 @@ import {
   Injectable, BadRequestException, NotFoundException
 } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma.service';
-import { CreateRoleDto, UpdateRoleDto, QueryRoleDto } from './dto/role.dto';
+import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, SetDataScopeDto } from './dto/role.dto';
 
 @Injectable()
 export class RoleService {
@@ -87,6 +87,32 @@ export class RoleService {
         data: (deptIds ?? []).map((deptId) => ({ roleId: BigInt(id), deptId: BigInt(deptId) })),
       }),
     ]);
+    return { success: true };
+  }
+
+  async setDataScope(id: number, dto: SetDataScopeDto) {
+    if (![1, 2, 3, 4, 5].includes(dto.dataScope)) {
+      throw new BadRequestException('Invalid data scope');
+    }
+    if (dto.dataScope === 2 && !dto.deptIds?.length) {
+      throw new BadRequestException('Custom data scope requires deptIds');
+    }
+    await this.findOne(id);
+    const operations = [
+      this.prisma.sysRole.update({
+        where: { id },
+        data: { dataScope: dto.dataScope },
+      }),
+      this.prisma.sysRoleDept.deleteMany({ where: { roleId: BigInt(id) } }),
+    ];
+    if (dto.dataScope === 2) {
+      operations.push(this.prisma.sysRoleDept.createMany({
+        data: dto.dataScope === 2
+          ? (dto.deptIds ?? []).map((deptId) => ({ roleId: BigInt(id), deptId: BigInt(deptId) }))
+          : [],
+      }));
+    }
+    await this.prisma.$transaction(operations);
     return { success: true };
   }
 

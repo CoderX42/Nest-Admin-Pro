@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RoleService } from './role.service';
-import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, AssignPermDto } from './dto/role.dto';
+import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, AssignPermDto, SetDataScopeDto } from './dto/role.dto';
 import { PermissionGuard, RequirePermission } from '../../../auth/guards';
 
 @ApiTags('System - Role Management')
@@ -60,6 +60,16 @@ export class RoleController {
     @Body() dto: AssignPermDto,
   ) {
     return this.roleService.assignPermissions(id, dto.menuIds, dto.deptIds);
+  }
+
+  @Put('set-data-scope/:id')
+  @RequirePermission('system:role:setDataScope')
+  @ApiOperation({ summary: 'Set role data scope' })
+  async setDataScope(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SetDataScopeDto,
+  ) {
+    return this.roleService.setDataScope(id, dto);
   }
 
   @Get('menu/:id')

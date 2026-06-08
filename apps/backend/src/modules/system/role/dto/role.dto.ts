@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt, Min } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateRoleDto {
@@ -37,4 +37,14 @@ export class AssignPermDto {
   @ApiProperty({ type: [String] })
   menuIds: string[];
   @IsOptional() deptIds?: string[];
+}
+
+export class SetDataScopeDto {
+  @Type(() => Number)
+  @IsInt()
+  dataScope: number;
+
+  @IsOptional()
+  @IsArray()
+  deptIds?: string[];
 }
