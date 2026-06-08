@@ -36,6 +36,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: user.id,
       tenantId: user.tenantId,
       isPlatformAdmin: user.isPlatformAdmin === 1,
+      deptId: user.deptId,
+      roles: roles.map((role) => ({ id: role.id, dataScope: role.dataScope })),
     });
 
     return {
@@ -46,7 +48,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       phone: user.phone,
       deptId: user.deptId,
-      roles: roles.map((r) => ({ id: r.id, code: r.code, name: r.name })),
+      roles: roles.map((r) => ({ id: r.id, code: r.code, name: r.name, dataScope: r.dataScope })),
       permissions,
     };
   }

@@ -16,6 +16,8 @@ export interface TenantContextUser {
   userId: bigint;
   tenantId: bigint | null;
   isPlatformAdmin: boolean;
+  deptId?: bigint | null;
+  roles?: { id: bigint; dataScope: number }[];
 }
 
 export function setTenantContext(user: TenantContextUser) {

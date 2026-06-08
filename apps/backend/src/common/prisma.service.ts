@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { dataScopeMiddleware } from './prisma/data-scope.middleware';
 import { tenantMiddleware } from './prisma/tenant.middleware';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class PrismaService extends PrismaClient {
       log: ['error', 'warn'],
     });
     this.$use(tenantMiddleware);
+    this.$use(dataScopeMiddleware(this));
   }
 
   async onModuleInit() {
