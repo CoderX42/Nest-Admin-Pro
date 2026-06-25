@@ -481,3 +481,9 @@ To restart at any time, enter rs.
 [Nest] 85795  - 06/25/2026, 10:00:10 PM     LOG [NestApplication] Nest application successfully started +1ms
 🚀 Server running on http://localhost:3000
 📚 API Docs: http://localhost:3000/api-docs
+[2J[3J[H[[90m10:29:24 PM[0m] File change detected. Starting incremental compilation...
+
+To restart at any time, enter rs.
+
+[[90m10:29:25 PM[0m] Found 0 errors. Watching for file changes.
+
