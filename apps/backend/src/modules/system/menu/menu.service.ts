@@ -24,11 +24,10 @@ export class MenuService {
     return this.buildTree(menus);
   }
 
-  private buildTree(menus: any[], parentId: number = 0): any[] {
-    const ids = new Set(menus.map((m) => Number(m.id)));
-    return menus
-      .filter((m) => Number(m.parentId) === parentId || (parentId === 0 && !ids.has(Number(m.parentId))))
-      .map((m) => ({ ...m, children: this.buildTree(menus, Number(m.id)) }));
+  private buildTree(items: any[], parentId = 0): any[] {
+    return items
+      .filter((m) => Number(m.parentId) === parentId)
+      .map((m) => ({ ...m, children: this.buildTree(items, Number(m.id)) }));
   }
 
   async buildRoute(userId: number) {

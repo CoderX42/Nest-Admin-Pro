@@ -35,7 +35,7 @@ export class LoginLogController {
   }
 
   @Delete('clean')
-  @RequirePermission('monitor:login:list')
+  @RequirePermission('monitor:login:clean')
   @HttpCode(200)
   @ApiOperation({ summary: 'Clean all login logs' })
   async clean() {

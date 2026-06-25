@@ -36,21 +36,21 @@ export class DeptController {
   }
 
   @Post()
-  @RequirePermission('system:dept:list')
+  @RequirePermission('system:dept:add')
   @ApiOperation({ summary: 'Create department' })
   async create(@Body() dto: CreateDeptDto) {
     return this.deptService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:dept:list')
+  @RequirePermission('system:dept:edit')
   @ApiOperation({ summary: 'Update department' })
   async update(@Body() dto: UpdateDeptDto) {
     return this.deptService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:dept:list')
+  @RequirePermission('system:dept:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete department' })
   async remove(@Param('id', ParseIntPipe) id: number) {

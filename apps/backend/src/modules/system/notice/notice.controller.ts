@@ -26,21 +26,21 @@ export class NoticeController {
   }
 
   @Post()
-  @RequirePermission('system:notice:list')
+  @RequirePermission('system:notice:add')
   @ApiOperation({ summary: 'Create notice' })
   async create(@Body() dto: CreateNoticeDto) {
     return this.noticeService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:notice:list')
+  @RequirePermission('system:notice:edit')
   @ApiOperation({ summary: 'Update notice' })
   async update(@Body() dto: UpdateNoticeDto) {
     return this.noticeService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:notice:list')
+  @RequirePermission('system:notice:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete notice' })
   async remove(@Param('id', ParseIntPipe) id: number) {

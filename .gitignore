@@ -1,0 +1,48 @@
+# ===== Node / pnpm =====
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Build outputs =====
+dist/
+build/
+.output/
+.nitro/
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# ===== Backend runtime =====
+apps/backend/uploads/
+apps/backend/backend.log
+apps/backend/*.log
+apps/backend/.prisma/
+
+# ===== Editor / OS =====
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# ===== Env / secrets =====
+.env
+.env.local
+.env.*.local
+apps/backend/.env
+
+# ===== Coverage / temp =====
+coverage/
+*.lcov
+.tmp/
+.temp/
+*.tgz
+
+# ===== Other tooling =====
+.claude/
+.qoder/

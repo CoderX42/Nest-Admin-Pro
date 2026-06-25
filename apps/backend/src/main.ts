@@ -5,6 +5,13 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 
+// BigInt serialization: Prisma returns BigInt for @db.BigInt fields but JSON
+// does not support BigInt. Convert to Number (safe for auto-increment IDs).
+// If IDs exceed Number.MAX_SAFE_INTEGER, change this to String conversion.
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 

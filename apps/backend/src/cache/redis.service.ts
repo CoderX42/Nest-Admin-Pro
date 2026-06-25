@@ -1,16 +1,17 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
   private client: Redis;
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.client = new Redis({
-      host: process.env.REDIS_HOST || '127.0.0.1',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || undefined,
-      db: parseInt(process.env.REDIS_DB || '0', 10),
+      host: configService.get<string>('redis.host', '127.0.0.1'),
+      port: configService.get<number>('redis.port', 6379),
+      password: configService.get<string>('redis.password') || undefined,
+      db: configService.get<number>('redis.db', 0),
     });
 
     this.client.on('connect', () => {

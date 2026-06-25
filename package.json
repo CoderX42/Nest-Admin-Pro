@@ -11,9 +11,9 @@
     "app:dev:h5": "npm --prefix apps/app run dev:h5",
     "app:dev:mp-weixin": "npm --prefix apps/app run dev:mp-weixin",
     "app:build:h5": "npm --prefix apps/app run build:h5",
-    "vben:install": "pnpm --dir apps/vben-admin install",
-    "vben:dev": "pnpm --dir apps/vben-admin dev:antd",
-    "vben:build": "pnpm --dir apps/vben-admin build:antd"
+    "fronted:install": "pnpm --dir apps/fronted install",
+    "fronted:dev": "pnpm --dir apps/fronted dev:antd",
+    "fronted:build": "pnpm --dir apps/fronted build:antd"
   },
   "engines": {
     "node": ">=22.18.0"

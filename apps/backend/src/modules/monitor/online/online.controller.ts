@@ -18,7 +18,7 @@ export class OnlineController {
   }
 
   @Post('force-logout/:token')
-  @RequirePermission('monitor:online:list')
+  @RequirePermission('monitor:online:forceLogout')
   @HttpCode(200)
   @ApiOperation({ summary: 'Force logout user' })
   async forceLogout(@Param('token') token: string) {

@@ -22,21 +22,21 @@ export class RoleController {
   }
 
   @Post()
-  @RequirePermission('system:role:list')
+  @RequirePermission('system:role:add')
   @ApiOperation({ summary: 'Create role' })
   async create(@Body() dto: CreateRoleDto) {
     return this.roleService.create(dto);
   }
 
   @Put()
-  @RequirePermission('system:role:list')
+  @RequirePermission('system:role:edit')
   @ApiOperation({ summary: 'Update role' })
   async update(@Body() dto: UpdateRoleDto) {
     return this.roleService.update(dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:role:list')
+  @RequirePermission('system:role:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete role' })
   async remove(@Param('id', ParseIntPipe) id: number) {
@@ -44,7 +44,7 @@ export class RoleController {
   }
 
   @Put('change-status/:id')
-  @RequirePermission('system:role:list')
+  @RequirePermission('system:role:edit')
   @ApiOperation({ summary: 'Change role status' })
   async changeStatus(
     @Param('id', ParseIntPipe) id: number,
@@ -54,7 +54,7 @@ export class RoleController {
   }
 
   @Put('assign-permissions/:id')
-  @RequirePermission('system:role:list')
+  @RequirePermission('system:role:edit')
   @ApiOperation({ summary: 'Assign permissions to role' })
   async assignPermissions(
     @Param('id', ParseIntPipe) id: number,

@@ -25,7 +25,7 @@ export class OperLogController {
   }
 
   @Delete('clean')
-  @RequirePermission('monitor:oper:list')
+  @RequirePermission('monitor:oper:clean')
   @HttpCode(200)
   @ApiOperation({ summary: 'Clean all operation logs' })
   async clean() {

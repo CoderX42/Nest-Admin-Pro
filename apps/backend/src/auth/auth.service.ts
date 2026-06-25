@@ -12,11 +12,6 @@ import * as svgCaptcha from 'svg-captcha';
 import { ApiResponse } from '../common/api-response';
 import { LoginDto } from './dto/auth.dto';
 
-// Fix BigInt serialization
-(BigInt.prototype as any).toJSON = function () {
-  return Number(this);
-};
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -26,7 +21,7 @@ export class AuthService {
     private redis: RedisService,
   ) {}
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip = '') {
     const valid = await this.validateCaptcha(dto.captchaKey, dto.captchaText);
     if (!valid) {
       throw new BadRequestException('Invalid or expired captcha');
@@ -51,7 +46,7 @@ export class AuthService {
         data: {
           userId: user.id,
           username: user.username,
-          ip: 'unknown',
+          ip: ip || 'unknown',
           status: 0,
           msg: 'Password mismatch',
         },
@@ -67,7 +62,7 @@ export class AuthService {
       data: {
         userId: user.id,
         username: user.username,
-        ip: '127.0.0.1',
+        ip: ip || 'unknown',
         status: 1,
         msg: 'Login successful',
       },

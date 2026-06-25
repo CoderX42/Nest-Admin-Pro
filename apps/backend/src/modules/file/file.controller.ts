@@ -13,6 +13,7 @@ import {
   Param,
   ParseIntPipe,
   Res,
+  HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -20,6 +21,7 @@ import { memoryStorage } from 'multer';
 import { FileService } from './file.service';
 import { JwtAuthGuard } from '../../auth/jwt.guard';
 import { PermissionGuard, Public, RequirePermission } from '../../auth/guards';
+import { ApiResponse } from '../../common/api-response';
 import type { Multer } from 'multer';
 
 const uploadOptions = {
@@ -94,6 +96,12 @@ export class FileController {
   @Get(':filename')
   @ApiOperation({ summary: 'Preview/download file' })
   async preview(@Param('filename') filename: string, @Res() res: any) {
-    return this.fileService.preview(filename, res);
+    try {
+      await this.fileService.preview(filename, res);
+    } catch (e: any) {
+      const status = e instanceof HttpException ? e.getStatus() : 500;
+      const message = e.message || 'Internal server error';
+      res.status(status).json(ApiResponse.error(message, status));
+    }
   }
 }

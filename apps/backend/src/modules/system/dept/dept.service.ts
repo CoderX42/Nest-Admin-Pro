@@ -26,13 +26,12 @@ export class DeptService {
     return this.buildTree(depts);
   }
 
-  private buildTree(depts: any[], parentId = 0): any[] {
-    const ids = new Set(depts.map((d) => Number(d.id)));
-    return depts
-      .filter((d) => Number(d.parentId) === parentId || (parentId === 0 && !ids.has(Number(d.parentId))))
+  private buildTree(items: any[], parentId = 0): any[] {
+    return items
+      .filter((d) => Number(d.parentId) === parentId)
       .map((d) => ({
         ...d,
-        children: this.buildTree(depts, Number(d.id)),
+        children: this.buildTree(items, Number(d.id)),
       }));
   }
 

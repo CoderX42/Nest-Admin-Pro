@@ -27,21 +27,21 @@ export class DictController {
   }
 
   @Post('type')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:add')
   @ApiOperation({ summary: 'Create dict type' })
   async typeCreate(@Body() dto: CreateDictTypeDto) {
     return this.dictService.typeCreate(dto);
   }
 
   @Put('type')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:edit')
   @ApiOperation({ summary: 'Update dict type' })
   async typeUpdate(@Body() dto: UpdateDictTypeDto) {
     return this.dictService.typeUpdate(dto);
   }
 
   @Delete('type/:id')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete dict type' })
   async typeRemove(@Param('id', ParseIntPipe) id: number) {
@@ -57,21 +57,21 @@ export class DictController {
   }
 
   @Post('data')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:add')
   @ApiOperation({ summary: 'Create dict data' })
   async dataCreate(@Body() dto: CreateDictDataDto) {
     return this.dictService.dataCreate(dto);
   }
 
   @Put('data')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:edit')
   @ApiOperation({ summary: 'Update dict data' })
   async dataUpdate(@Body() dto: UpdateDictDataDto) {
     return this.dictService.dataUpdate(dto);
   }
 
   @Delete('data/:id')
-  @RequirePermission('system:dict:list')
+  @RequirePermission('system:dict:remove')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete dict data' })
   async dataRemove(@Param('id', ParseIntPipe) id: number) {
