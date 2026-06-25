@@ -6,26 +6,26 @@
 
 **后端：**
 ```bash
-cd apps/api
-pnpm install
-pnpm prisma generate
-pnpm start:dev
+cd apps/backend
+npm install
+npx prisma generate
+npm run start:dev
 # 访问 http://localhost:3000
 ```
 
-**前端：**
+**前端（Vben Admin）：**
 ```bash
-cd apps/web
-pnpm install
-pnpm dev
+cd apps/vben-admin
+npm install
+pnpm dev:antd
 # 访问 http://localhost:5173
 ```
 
 **移动端：**
 ```bash
 cd apps/app
-pnpm install
-pnpm dev:h5
+npm install
+npm run dev:h5
 # 访问 http://localhost:5170
 ```
 
@@ -36,25 +36,25 @@ pnpm dev:h5
 ### Q: 数据库连接失败？
 
 1. 检查 MySQL 服务是否启动
-2. 验证 `.env` 中的 `DATABASE_URL` 配置
-3. 确保数据库已创建：`CREATE DATABASE ruoyi_vue_plus`
+2. 验证 `apps/backend/.env` 中的 `DATABASE_URL` 配置
+3. 确保数据库已创建：`CREATE DATABASE nest_admin_pro`
 
 ### Q: 如何初始化数据库？
 
 ```bash
-cd apps/api
+cd apps/backend
 npx prisma migrate dev --name init
 ```
 
 或导入 SQL：
 ```bash
-mysql -u root -p ruoyi_vue_plus < ../../scripts/seed.sql
+mysql -u root -p nest_admin_pro < ../../scripts/seed.sql
 ```
 
 ### Q: 如何重置数据库？
 
 ```bash
-cd apps/api
+cd apps/backend
 npx prisma migrate reset
 ```
 
@@ -85,7 +85,7 @@ Token 默认 7 天过期，过期后需要重新登录。
 
 1. 检查浏览器控制台是否有错误
 2. 确认后端 API 是否正常运行
-3. 检查 `.env` 中的 `VITE_API_BASE_URL` 配置
+3. 检查 `apps/vben-admin/apps/web-antd/.env.development` 中的 `VITE_GLOB_API_URL` 配置
 
 ### Q: 菜单不显示？
 
@@ -179,9 +179,9 @@ server {
 
 ```bash
 git pull origin main
-pnpm install
-pnpm prisma generate
-pnpm build
+npm install
+npx prisma generate
+npm run build
 pm2 restart nest-api
 ```
 
@@ -198,5 +198,5 @@ tail -f /var/log/nginx/access.log
 ### Q: 如何备份数据库？
 
 ```bash
-mysqldump -u root -p ruoyi_vue_plus > backup.sql
+mysqldump -u root -p nest_admin_pro > backup.sql
 ```

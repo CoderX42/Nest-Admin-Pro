@@ -8,7 +8,7 @@ DB_HOST=${DB_HOST:-"localhost"}
 DB_PORT=${DB_PORT:-3306}
 DB_USER=${DB_USER:-"root"}
 DB_PASSWORD=${DB_PASSWORD:-""}
-DB_NAME=${DB_NAME:-"ruoyi_vue_plus"}
+DB_NAME=${DB_NAME:-"nest_admin_pro"}
 
 # 颜色
 GREEN='\033[0;32m'
@@ -32,7 +32,7 @@ fi
 
 # 2. 安装后端依赖
 echo -e "\n${YELLOW}[2/5] 安装后端依赖...${NC}"
-cd ../apps/api && npm install 2>/dev/null
+cd ../apps/backend && npm install 2>/dev/null
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ 依赖安装完成${NC}"
 else

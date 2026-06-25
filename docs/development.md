@@ -5,27 +5,27 @@
 ```
 Nest-Admin-Pro/
 ├── apps/
-│   ├── api/           # NestJS 后端
+│   ├── backend/       # NestJS 后端
 │   │   └── src/
 │   │       ├── auth/        # 认证模块
 │   │       ├── cache/       # 缓存服务
-│   │       ├── captcha/      # 验证码
 │   │       ├── common/      # 通用（拦截器、异常、响应）
-│   │       ├── config/       # 配置
+│   │       ├── config/      # 配置
 │   │       ├── file/        # 文件上传
-│   │       ├── mail/        # 邮件
-│   │       └── modules/      # 业务模块
+│   │       └── modules/     # 业务模块
 │   │           ├── system/   # 系统管理
 │   │           ├── monitor/  # 监控管理
 │   │           └── gen/      # 代码生成
-│   ├── web/           # Vue 3 前端
-│   │   └── src/
-│   │       ├── api/         # 接口
-│   │       ├── components/   # 组件
-│   │       ├── router/      # 路由
-│   │       ├── store/        # 状态管理
-│   │       ├── styles/       # 样式
-│   │       └── views/        # 页面
+│   ├── vben-admin/    # Vben Admin 管理后台（pnpm + turbo monorepo）
+│   │   ├── apps/
+│   │   │   └── web-antd/    # Ant Design Vue 应用入口
+│   │   │       └── src/
+│   │   │           ├── api/        # 接口封装
+│   │   │           ├── router/     # 路由（含动态菜单守卫）
+│   │   │           ├── store/      # Pinia 状态
+│   │   │           └── views/      # 页面（system/monitor/profile/dashboard）
+│   │   ├── packages/             # 共享包：@core / effects / stores / utils / styles ...
+│   │   └── internal/             # vite-config / tsconfig / eslint-config ...
 │   └── app/           # UniApp 移动端
 │       └── src/
 │           ├── api/         # 接口
@@ -97,7 +97,7 @@ mkdir -p src/modules/{module}
 
 ### 数据模型
 
-使用 Prisma schema 定义数据模型，参考 `apps/api/prisma/schema.prisma`
+使用 Prisma schema 定义数据模型，参考 `apps/backend/prisma/schema.prisma`
 
 ### DTO 设计
 
@@ -122,71 +122,51 @@ export class UpdateDemoDto extends PartialType(CreateDemoDto) {}
 @RequirePermission('system:user:add')
 ```
 
-## 前端开发
+## 前端开发（Vben Admin / Ant Design Vue）
 
-### 页面创建
+Vben Admin 采用 pnpm + turbo monorepo，业务代码集中在 `apps/vben-admin/apps/web-antd` 下，共享组件、工具、store 等位于 `apps/vben-admin/packages/*` 与 `apps/vben-admin/internal/*`。
+
+### 添加一个业务页面
+
+1. 在 `apps/vben-admin/apps/web-antd/src/views/<module>/<page>/index.vue` 创建页面组件
+2. （如需菜单）后端菜单管理中维护菜单项，组件路径填 `module/page/index`
+3. 页面里通过 `#/api` 下的封装方法调用后端接口
+
+### 主题与偏好
+
+- 主题由 `apps/vben-admin/apps/web-antd/src/preferences.ts` 覆盖默认配置
+- 偏好持久化使用 `pinia-plugin-persistedstate` + `@vben/stores`
+
+### 调试
 
 ```bash
-# 1. 创建页面目录
-mkdir -p src/views/demo
-
-# 2. 创建文件
-# src/views/demo/index.vue
-# src/views/demo/components/
-
-# 3. 注册路由
-```
-
-### 组件规范
-
-```vue
-<template>
-  <div class="demo-container">
-    <el-table :data="list">
-      <el-table-column prop="name" label="名称" />
-    </el-table>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { demoApi } from '@/api';
-
-const list = ref([]);
-const loading = ref(false);
-
-const fetchData = async () => {
-  loading.value = true;
-  try {
-    const res = await demoApi.list();
-    list.value = res;
-  } finally {
-    loading.value = false;
-  }
-};
-</script>
+cd apps/vben-admin
+pnpm dev:antd   # 默认监听 http://localhost:5173
 ```
 
 ## 常用命令
 
 ```bash
-# 后端
-pnpm start:dev      # 开发模式
-pnpm build          # 生产构建
-pnpm start:prod     # 生产运行
-pnpm prisma generate # 生成 Prisma Client
-pnpm prisma migrate  # 数据库迁移
-pnpm lint           # 代码检查
+# 后端（apps/backend）
+npm run start:dev          # 开发模式
+npm run build              # 生产构建
+npm run start:prod         # 生产运行
+npx prisma generate        # 生成 Prisma Client
+npx prisma db push         # 同步表结构
 
-# 前端
-pnpm dev            # 开发模式
-pnpm build          # 生产构建
-pnpm preview        # 预览构建结果
+# 前端（apps/vben-admin）
+pnpm install               # 首次安装（Vben Admin 自带 monorepo）
+pnpm dev:antd              # 开发模式（Ant Design Vue）
+pnpm build:antd            # 生产构建
 
-# 移动端
-pnpm dev:h5         # H5 开发
-pnpm build:h5       # H5 构建
-pnpm dev:mp-weixin  # 微信小程序
+# 移动端（apps/app）
+npm run dev:h5             # H5 开发
+npm run build:h5           # H5 构建
+npm run dev:mp-weixin      # 微信小程序
+
+# 根目录快捷方式
+pnpm backend:dev           # 等价于 npm --prefix apps/backend run start:dev
+pnpm vben:dev              # 等价于 pnpm --dir apps/vben-admin dev:antd
 ```
 
 ## 环境变量
@@ -195,7 +175,7 @@ pnpm dev:mp-weixin  # 微信小程序
 
 ```env
 # 数据库
-DATABASE_URL=mysql://root:password@localhost:3306/ruoyi_vue_plus
+DATABASE_URL=mysql://root:password@localhost:3306/nest_admin_pro
 
 # Redis
 REDIS_HOST=localhost
@@ -221,10 +201,13 @@ FILE_CLOUD_PUBLIC_URL=https://cdn.example.com
 FILE_CLOUD_SECURE=true
 ```
 
-### 前端 (.env.local)
+### 前端 (apps/vben-admin/apps/web-antd/.env.development)
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_PORT=5173
+VITE_BASE=/
+VITE_GLOB_API_URL=/api
+VITE_NITRO_MOCK=false
 ```
 
 ## 测试

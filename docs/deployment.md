@@ -4,20 +4,21 @@
 
 | 环境 | 版本 | 说明 |
 |------|------|------|
-| Node.js | 18.x+ | 后端运行环境 |
+| Node.js | 22.18+ | 后端 / Vben Admin 运行 |
 | MySQL | 8.0+ | 数据库 |
 | Redis | 7.0+ | 缓存（可选） |
-| pnpm | 8.x | 包管理器 |
+| pnpm | 11.x | Vben Admin 强制要求 |
+| npm | 10+ | 后端 / 移动端使用 |
 
 ## 后端部署
 
 ### 1. 环境配置
 
 ```bash
-cd apps/api
+cd apps/backend
 
-# 复制环境配置
-cp .env.example .env
+# 复制环境配置（如有 .env.example）
+cp .env.example .env 2>/dev/null || true
 
 # 编辑 .env 配置数据库和 Redis
 ```
@@ -26,7 +27,7 @@ cp .env.example .env
 
 ```env
 # 数据库
-DATABASE_URL="mysql://root:password@localhost:3306/ruoyi_vue_plus"
+DATABASE_URL="mysql://root:password@localhost:3306/nest_admin_pro"
 
 # Redis
 REDIS_HOST=localhost
@@ -45,217 +46,118 @@ FILE_STORAGE=local
 # 对象存储通用配置（FILE_STORAGE 非 local 时填写）
 FILE_CLOUD_REGION=oss-cn-hangzhou
 FILE_CLOUD_BUCKET=your-bucket
-FILE_CLOUD_ACCESS_KEY_ID=your-access-key-id
-FILE_CLOUD_ACCESS_KEY_SECRET=your-access-key-secret
-FILE_CLOUD_ENDPOINT=
-FILE_CLOUD_PREFIX=uploads
-FILE_CLOUD_PUBLIC_URL=https://cdn.example.com
-FILE_CLOUD_SECURE=true
-```
+FI# Nest-Admin-Pro 部署文档
 
-### 3. 数据库初始化
+## 环境要求
 
+| 环境 | 版本 | 说明 |
+|------|------|--FI
+## 环境要求
+
+| 环境 |D_P
+| 环境 | ?IL|------|------|------|
+| Nocd| Node.js | 22.18+ | OU| MySQL | 8.0+ | 数据库 |
+| Redis | 7.0+ | ?b| Redis | 7.0+ | 缓存（?l| pnpm | 11.x | Vben Admin 强制要 g| npm | 10+ | 后端 / 移动端使用 |te
+## 后端部署
+
+### 1. 环境配置
+
+???### 1. 环境 -u
 ```bash
-# 安装依赖
-pnpm install
+cd apps/bn_pcd app./
+# 复制环?.scp .env.example .env 2>/dev/null || true
 
-# 生成 Prisma Client
-pnpm prisma generate
+# ??# 编辑 .env 配置数据库和 Redis
+np```
 
-# 执行迁移
-pnpm prisma migrate dev --name init
+### 2. 环境变量说明
 
-# 导入种子数据（可选）
-mysql -u root -p ruoyi_vue_plus < ../../scripts/seed.sql
-```
+```en##
+#. P
+```env
+# 数据库
+DATA）# 数baDATABASE_U? 
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 
-### 4. 启动服务
+# ameREDIS_apREDIS_PORT=6379
+RED??EDIS_PASSWORD ?# JWT
+JWT_SEC动JWT_ sJWT_EXPIRES_IN=7d
 
+# 上佲
+# 上传
+UPLOAD??
+UPLOAD_ ?AX_FILE_SIZE=10485h
+FILE_STORAGE=local
+
+#re
+# 对象存储?epFILE_CLOUD_REGION=oss-cn-hangzhou
+FILE_CLOUD_BUCKET=your-bucket?ILE_CLOUD_BUCKET=your-bucket
+FI/aFI# Nest-Admin-Pro 部署文`?## 环境要求
+
+| 环境 | ?BA
+| 环境 | ?AP|------|------|--FI
+## 环?a## 环境要求
+
+|??| 环境 |D_Ppm | 环境 | ?`| Nocd| Node.js | 22.18+ | OU| MySQL mi| Redis | 7.0+ | ?b| Redis | 7.0+ | 缓存（?l| pnpmse## 后端部署
+
+### 1. 环境配置
+
+???### 1. 环境 -u
 ```bash
-# 开发环境
-pnpm start:dev
+cd apps/bn_pcd app./
+# 复制环?.scp .env.example .env 2>/dn-
+### 1. 环境adm
+???### 1. 环境ist```bash
+cd apps/bn_excd app
+ # 复制环?.scp ri
+# ??# 编辑 .env 配置数据库和 Redis
+np```
 
-# 生产环境
-pnpm build
-pnpm start:prod
-```
+###ocanp```
 
-### 5. PM2 部署（生产环境）
+### 2. 环境变量说明
 
+```en##
+lh
+###300
+```en##
+#. P
+```env
+# ?er#. P
+`$h```;
+# 数  DATA）# ?h# Redis
+REDIS_HOST=localhddREDIS_  REDIS_PORT=6379
+RED XREDIS_PASSWORD $
+# ameREDIS_aprwaRED??EDIS_PASSWORD ?# JWT??JWT_SEC动JWT_ sJWT_EXPIRE/u
+# 上佲
+# 上传
+UPLOAD??
+UPLOnes# 上?pUPLOAD?/bUPLOAD_upFILE_STORAGE=local
+
+#re
+# ? 
+#re
+# 对象存?ke# ?ILE_CLOUD_BUCKET=your-bucket?ILE_CLOUD_BUCKET=yoe:FI/aFI# Nest-Admin-Pro 部署文`?## 环境要求
+
+| 环?-
+| 环境 | ?BA
+| 环境 | ?AP|------|------|-un | 环境 | ?de## 环?a## 环境要求
+
+|??| ?=
+|??| 环境 |D_Ppm | t
+C
+### 1. 环境配置
+
+???### 1. 环境 -u
 ```bash
-# 安装 PM2
-npm install -g pm2
-
-# 启动服务
-pm2 start dist/main.js --name nest-api
-
-# 保存进程列表
-pm2 save
-
-# 设置开机启动
-pm2 startup
-```
-
-## 前端部署
-
-### 1. 安装依赖
-
-```bash
-cd apps/web
-pnpm install
-```
-
-### 2. 配置环境
-
-```bash
-cp .env.example .env.local
-```
-
-### 3. 构建
-
-```bash
-# 开发构建
-pnpm build:dev
-
-# 生产构建
-pnpm build
-```
-
-### 4. Nginx 配置
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    # 前端静态文件
-    location / {
-        root /path/to/nest-admin-pro/apps/web/dist;
-        index index.html;
-        try_files $uri $uri/ /index.html;
-    }
-
-    # API 反向代理
-    location /api {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
-    # 上传文件访问
-    location /uploads {
-        alias /path/to/nest-admin-pro/apps/api/uploads;
-        autoindex on;
-    }
-}
-```
-
-## Docker 部署
-
-### 后端 Dockerfile
-
-```dockerfile
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install
-
-COPY . .
-RUN pnpm build
-
-FROM node:18-alpine
-WORKDIR /app
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-
-RUN npx prisma generate
-EXPOSE 3000
-
-CMD ["node", "dist/main.js"]
-```
-
-### docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-  api:
-    build: ./apps/api
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=mysql://root:password@mysql:3306/ruoyi_vue_plus
-      - REDIS_HOST=redis
-    depends_on:
-      - mysql
-      - redis
-
-  web:
-    build: ./apps/web
-    ports:
-      - "80:80"
-    depends_on:
-      - api
-
-  mysql:
-    image: mysql:8
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: ruoyi_vue_plus
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-volumes:
-  mysql_data:
-  redis_data:
-```
-
-## 常见问题
-
-### 1. 端口被占用
-
-```bash
-# Linux/Mac 查看端口
-lsof -i :3000
-
-# Windows
-netstat -ano | findstr :3000
-
-# 杀死进程
-kill -9 <PID>
-```
-
-### 2. 数据库连接失败
-
-- 检查 MySQL 服务是否启动
-- 验证用户名密码是否正确
-- 确认数据库已创建
-
-### 3. Redis 连接失败
-
-- 如果不使用 Redis，可以关闭相关功能
-- 或使用 `REDIS_ENABLED=false` 禁用
-
-### 4. 跨域问题
-
-后端已配置 CORS，如需调整修改 `apps/api/src/main.ts`
-
-### 5. 静态资源404
-
-```nginx
-# 确保 Nginx 配置了 try_files
-try_files $uri $uri/ /index.html;
-```
+cd apps/bn_pcd app./
+# 复制环?.scp .env.example .env 2>/dn-
+### 1. 环境adm
+???### 1. ?is
+???### 1. 环境## ```bash
+cd apps/bn_
+`cd app
+v# 复制环?.scp "### 1. 环境adm

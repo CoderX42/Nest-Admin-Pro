@@ -1,0 +1,6 @@
+packages:
+  - 'apps/vben-admin'
+  - 'scripts/*'
+
+# apps/backend 与 apps/app 仍以 npm 单独管理，不纳入根 workspace。
+# vben-admin 自带完整 monorepo（apps + packages + internal + scripts）。

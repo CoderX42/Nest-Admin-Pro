@@ -1,16 +1,16 @@
 # Nest-Admin-Pro
 
-Nest-Admin-Pro 是一个基于 NestJS、Prisma、Vue 3、Element Plus 和 UniApp 的全栈后台管理系统模板。项目采用多应用目录组织，将后端 API、Web 管理后台和移动端应用放在同一个仓库中，适合作为中小型管理系统、接单项目或二次开发脚手架。
+Nest-Admin-Pro 是一个基于 NestJS、Prisma、Vben Admin（Vue 3 + Ant Design Vue）和 UniApp 的全栈后台管理系统模板。项目采用多应用目录组织，将后端 API、Web 管理后台和移动端应用放在同一个仓库中，适合作为中小型管理系统、接单项目或二次开发脚手架。
 
 ## 功能特性
 
-- **前后端分离**：NestJS 后端 + Vue 3 管理后台 + UniApp 移动端，三端同仓库维护
+- **前后端分离**：NestJS 后端 + Vben Admin 管理后台 + UniApp 移动端，三端同仓库维护
 - **RBAC 权限控制**：JWT 认证、角色权限、按钮级权限守卫，支持动态菜单渲染
 - **系统管理**：用户、角色、部门、岗位、菜单、字典、参数、通知公告
 - **系统监控**：登录日志、操作日志、在线用户、服务器信息、Redis 缓存监控
 - **代码生成器**：表配置、字段配置、预览生成、接口生成（模板化）
 - **文件上传**：图片/文件上传、静态文件访问
-- **主题系统**：6 套玻璃拟态风格主题（professional、midnight、compact、sunset、cyber、purple），支持一键切换
+- **主题系统**：Vben Admin 偏好系统（主题、布局、动画、tab 风格等），支持偏好持久化
 - **国际化**：Web 前端内置 zh-CN / en-US 双语支持
 - **移动端**：UniApp 支持 H5 及 13 个小程序平台，含登录、首页、个人中心、资料修改、密码修改
 - **开发体验**：Swagger 接口文档、全局参数校验、统一响应格式、全局异常过滤、接口限流
@@ -20,7 +20,7 @@ Nest-Admin-Pro 是一个基于 NestJS、Prisma、Vue 3、Element Plus 和 UniApp
 | 层级 | 技术 |
 | --- | --- |
 | 后端 | NestJS 11、TypeScript、Prisma 5、MySQL、Redis、JWT、Swagger、class-validator、ioredis、svg-captcha |
-| Web 前端 | Vue 3、Vite 8、Element Plus 2、Pinia 3、Vue Router 5、Axios、Tailwind CSS 4、ECharts 6、vue-i18n 11、@vueuse/core |
+| Web 前端 | Vben Admin 5、Ant Design Vue 4、Vue 3、Vite 8、Pinia 3、Vue Router 5、Axios、Turbo、pnpm、ECharts 6、vue-i18n 11、@vueuse/core |
 | 移动端 | UniApp 3、Vue 3 |
 
 ## 目录结构
@@ -42,17 +42,19 @@ Nest-Admin-Pro/
 │   │   │   └── main.ts          # 应用入口
 │   │   └── prisma/
 │   │       └── schema.prisma    # Prisma 数据模型
-│   ├── fronted/          # Vue 3 + Element Plus 管理后台
-│   │   ├── src/
-│   │   │   ├── api/             # 接口封装
-│   │   │   ├── components/      # 公共组件
-│   │   │   ├── router/          # 路由配置
-│   │   │   ├── store/           # Pinia 状态管理
-│   │   │   ├── styles/          # 全局样式（玻璃拟态主题系统）
-│   │   │   ├── utils/           # 请求封装、主题定义
-│   │   │   ├── i18n/            # 国际化
-│   │   │   └── views/           # 页面视图
-│   │   └── vite.config.ts       # Vite 配置（含代理）
+│   ├── vben-admin/       # Vben Admin 管理后台（pnpm + turbo monorepo）
+│   │   ├── apps/
+│   │   │   └── web-antd/        # Ant Design Vue 应用入口
+│   │   │       └── src/
+│   │   │           ├── api/     # 接口封装（core/monitor/system）
+│   │   │           ├── layouts/ # 基础布局、登录布局
+│   │   │           ├── locales/ # 国际化
+│   │   │           ├── router/  # 路由（含动态菜单守卫）
+│   │   │           ├── store/   # Pinia 状态
+│   │   │           └── views/   # 页面（system/monitor/profile/dashboard）
+│   │   ├── packages/            # 共享包：@core、effects、stores、utils、styles ...
+│   │   ├── internal/            # vite-config / tsconfig / eslint-config ...
+│   │   └── scripts/             # turbo-run / vsh / deploy
 │   └── app/              # UniApp 移动端
 │       ├── src/
 │       │   ├── api/             # 接口封装
@@ -65,6 +67,8 @@ Nest-Admin-Pro/
 │   ├── init-db.sh              # 一键初始化脚本
 │   └── seed.sql                # 种子数据 SQL
 ├── docs/                 # 项目文档
+├── pnpm-workspace.yaml   # 根 pnpm workspace
+├── package.json          # 根快捷命令
 └── README.md
 ```
 
@@ -78,24 +82,25 @@ Nest-Admin-Pro/
 - **代码生成**：生成表配置、字段配置、代码预览、生成接口
 - **文件管理**：文件上传、图片上传、上传文件访问
 - **全局能力**：统一响应格式 `ApiResponse`、全局异常过滤器、ValidationPipe 参数校验、Throttler 限流（60 秒 60 次）、Swagger 文档（Bearer Token 认证）、JWT Guard、RolesGuard、PermissionGuard
-- **定时任务**：`ScheduleModule` 已注册，`SysJob` / `SysJobLog` 模型已定义，但具体业务处理器尚未实现
+- **定时任务**：`SysJob` / `SysJobLog` 模型已定义，`ScheduleModule` 未注册，业务处理器尚未实现
 
 全局 API 前缀为 `/api`，默认端口 `3000`。Swagger 访问地址：`http://localhost:3000/doc.html` 或 `/api-docs`。
 
-### Web 管理后台（`apps/fronted`）
+### Web 管理后台（`apps/vben-admin`）
 
-已包含 16 个页面：
+基于 [Vben Admin 5](https://github.com/vbenjs/vue-vben-admin) 的 pnpm + turbo monorepo，当前使用 `apps/web-antd`（Ant Design Vue 4 风格）。已实现与本项目后端的对接：
 
-- 登录页、首页仪表盘、个人中心
-- 系统管理：用户管理、角色管理、部门管理、岗位管理、菜单管理、字典管理、参数管理、通知公告
-- 系统监控：登录日志、操作日志、在线用户、服务监控、缓存监控
-
-**特性**：
-- 动态侧边栏菜单：登录后从后端获取菜单树渲染
-- 权限路由守卫：根据 `localStorage` token 和 `userStore.menus` 控制访问
-- 6 套玻璃拟态主题：professional、midnight、compact、sunset、cyber、purple，通过 `data-theme` 属性切换
+- 动态侧边栏菜单：通过后端 `/auth/user/info` 拉取菜单树，转换为 Vben 路由
+- 权限路由守卫：基于 RBAC，按钮级权限码（`perms`）控制
+- 偏好系统：主题、布局、动画、Tab 风格、面包屑等通过 `pinia-plugin-persistedstate` 持久化
 - 国际化：zh-CN（默认）/ en-US
 - ECharts：仪表盘与服务监控图表
+
+**已对接页面**（位于 `apps/vben-admin/apps/web-antd/src/views`）：
+- Dashboard：分析页
+- 系统管理：用户、部门、岗位、菜单、角色、字典、参数、通知公告
+- 系统监控：登录日志、操作日志、在线用户、服务监控、缓存监控
+- 个人中心：基础资料、安全设置、消息通知
 
 开发服务器默认端口 `5173`，已配置代理：`/api` 和 `/file` 均转发至 `http://localhost:3000`。
 
@@ -120,10 +125,10 @@ Nest-Admin-Pro/
 
 ### 环境要求
 
-- Node.js >= 18
+- Node.js >= 22.18（Vben Admin 5 强制要求；后端与移动端仍可在 18+ 上运行）
+- pnpm >= 11（Vben Admin 5 强制要求，后端与移动端使用 npm）
 - MySQL
 - Redis
-- npm
 
 ### 1. 启动后端
 
@@ -188,10 +193,13 @@ npm run start:dev
 
 ### 2. 启动 Web 管理后台
 
+Vben Admin 5 是 pnpm 11+ monorepo，需在 `apps/vben-admin` 子目录独立安装与启动：
+
 ```bash
-cd apps/fronted
-npm install
-npm run dev
+cd apps/vben-admin
+corepack enable && corepack prepare pnpm@11.2.2 --activate
+pnpm install
+pnpm dev:antd
 ```
 
 访问地址：`http://localhost:5173`
@@ -239,6 +247,7 @@ chmod +x init-db.sh
 | DB_PORT | 3306 | MySQL 端口 |
 | DB_USER | root | 用户名 |
 | DB_PASSWORD | （空） | 密码 |
+| DB_NAME | nest_admin_pro | 数据库名 |
 
 示例：
 
@@ -351,7 +360,7 @@ Schema 文件位于 `apps/backend/prisma/schema.prisma`，共定义 15 个模型
 - 系统管理全部 CRUD 接口与前端页面
 - 系统监控全部接口与前端页面
 - 文件上传与管理
-- Web 管理后台 16 个页面及动态菜单、权限路由、主题切换
+- Web 管理后台（Vben Admin）：登录、Dashboard、个人中心、系统管理与监控页面、动态菜单、权限路由、偏好持久化
 - 移动端基础页面（登录、首页、个人中心、资料、密码）
 
 ### 部分实现
@@ -360,14 +369,14 @@ Schema 文件位于 `apps/backend/prisma/schema.prisma`，共定义 15 个模型
 
 ### 预留未实现
 
-- **定时任务**：`SysJob`、`SysJobLog` 模型和 `ScheduleModule` 已注册，尚无具体业务处理器和前端页面。
-- **租户**：`SysTenant` 模型已定义，无完整业务接口和前端页面。
+- **定时任务**：`SysJob`、`SysJobLog` 模型已建，源码中未引用 `ScheduleModule`，无业务处理器和前端页面。
+- **租户**：`SysTenant` 模型已定义，无业务接口和前端页面。
 
 ### 已知问题
 
 1. 移动端 `apps/app/package.json` 未声明 `pinia` 依赖，但源码中已使用，需手动安装。
-2. `docs/` 目录下的部分文档（如 `development.md`、`deployment.md`、`faq.md`）仍沿用旧目录名 `apps/api` 和 `apps/web`，使用时请以实际源码目录 `apps/backend` 和 `apps/fronted` 为准。
-3. 仓库未配置根目录 workspace（如 pnpm workspace / npm workspace），三个应用需分别进入目录安装依赖和启动。
+2. 仓库根目录仅把 `apps/backend` 与 `apps/app` 纳入 pnpm workspace；`apps/vben-admin` 是自带 workspace 的子 monorepo，需要在该子目录独立 `pnpm install`。
+3. Vben Admin 5 强制要求 Node ≥ 22.18 与 pnpm ≥ 11，可通过 `corepack prepare pnpm@11.2.2 --activate` 一键启用。
 
 ## 文档
 
@@ -378,7 +387,7 @@ Schema 文件位于 `apps/backend/prisma/schema.prisma`，共定义 15 个模型
 - `docs/deployment.md` — 部署指南（含 Docker、Nginx、PM2）
 - `docs/faq.md` — 常见问题
 
-> 注意：部分文档中的目录名仍使用旧名称 `apps/api` 和 `apps/web`，请以当前实际目录 `apps/backend` 和 `apps/fronted` 为准。
+> 历史文档 `.qoder/repowiki/zh/content/` 中部分文件可能仍引用旧目录 `apps/api` 和 `apps/web`，该目录由 Qoder 自动生成，可通过对应工具重新扫描仓库刷新。
 
 ## 常用命令
 
@@ -392,13 +401,21 @@ npx prisma generate
 npx prisma db push
 ```
 
-Web 管理后台：
+Web 管理后台（Vben Admin 5 / pnpm）：
 
 ```bash
-cd apps/fronted
-npm run dev
-npm run build
-npm run preview
+cd apps/vben-admin
+pnpm install
+pnpm dev:antd
+pnpm build:antd
+```
+
+或使用根目录快捷命令：
+
+```bash
+pnpm vben:install    # 首次安装
+pnpm vben:dev        # 等价于 pnpm --dir apps/vben-admin dev:antd
+pnpm vben:build      # 等价于 pnpm --dir apps/vben-admin build:antd
 ```
 
 移动端：

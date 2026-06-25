@@ -10,7 +10,7 @@ chmod +x init-db.sh
 ./init-db.sh
 
 # 方式二：手动执行
-mysql -u root -p ruoyi_vue_plus < seed.sql
+mysql -u root -p nest_admin_pro < seed.sql
 ```
 
 ## 环境变量
