@@ -29,16 +29,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message;
       httpStatus = HttpStatus.OK;
     } else if (exception instanceof HttpException) {
-      const res = exception.getResponse() as any;
-      message = typeof res === 'string' ? res : (res.message ?? exception.message);
-      code = this.statusToCode(exception.getStatus());
+      const resp = exception.getResponse() as any;
+      const rawMsg = typeof resp === 'string' ? resp : (resp?.message ?? exception.message);
+      message = Array.isArray(rawMsg) ? rawMsg.join('; ') : rawMsg;
+      // class-validator 抛 BadRequestException(400) + message: string[]
+      const isValidationError =
+        exception.getStatus() === HttpStatus.BAD_REQUEST && Array.isArray(resp?.message);
+      code = isValidationError
+        ? ErrorEnum.PARAMS_INVALID.split(':')[0]
+        : this.statusToCode(exception.getStatus());
       httpStatus = exception.getStatus();
     } else if (exception instanceof Error) {
       this.logger.error(`[${req?.method} ${req?.url}] ${exception.stack ?? exception.message}`);
     }
 
     res.status(httpStatus).send({
-      code,
+      code: code.split(':')[0],
       data,
       message: this.productionSafeMessage(message, code),
       timestamp: Date.now(),
@@ -48,7 +54,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private statusToCode(status: number): string {
     const found = Object.entries(HttpStatusMap).find(([, v]) => v === status);
-    return found?.[0] ?? ErrorEnum.INTERNAL;
+    return found?.[0] ?? ErrorEnum.INTERNAL.split(':')[0];
   }
 
   private productionSafeMessage(msg: string, code: string) {
