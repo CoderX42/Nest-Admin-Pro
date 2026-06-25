@@ -10,6 +10,7 @@ export interface IAuthUser {
   exp?: number;
   iat?: number;
   roles?: string[];
+  jti?: string;
 }
 
 export const CurrentUser = createParamDecorator(
