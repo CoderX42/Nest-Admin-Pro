@@ -28,6 +28,7 @@ import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-prox
 import { AuthModule } from './modules/auth/auth.module';
 import { SystemModule } from './modules/system/system.module';
 import { HealthModule } from './modules/health/health.module';
+import { SeedModule } from './shared/database/seed/seed.module';
 import { ToolsModule } from './modules/tools/tools.module';
 import { TodoModule } from './modules/todo/todo.module';
 
@@ -70,6 +71,7 @@ import { TodoModule } from './modules/todo/todo.module';
     ToolsModule,
     TodoModule,
     HealthModule,
+    SeedModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerBehindProxyGuard },
