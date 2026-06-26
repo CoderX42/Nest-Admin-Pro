@@ -6,6 +6,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
 import fastifyCookie from '@fastify/cookie';
 import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import * as path from 'node:path';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exception.filter';
@@ -40,6 +42,12 @@ async function bootstrap() {
       fileSize: config.get<number>('app.maxFileSize') ?? 104857600,
       files: 20,
     },
+  });
+  await app.register(fastifyStatic as any, {
+    root: path.resolve(config.get<string>('app.uploadDir') ?? './uploads'),
+    prefix: '/uploads/',
+    decorateReply: false,
+    serve: true,
   });
 
   app.useGlobalPipes(
