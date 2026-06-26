@@ -39,6 +39,7 @@ import { BusinessException } from '@/common/exceptions/business.exception';
 import { JwtTokenService } from '@/shared/jwt/jwt.service';
 import { RedisService } from '@/shared/redis/redis.service';
 import { MailerService } from '@/shared/mailer/mailer.service';
+import { LoginLogService } from '@/modules/system/log/log.service';
 
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -70,6 +71,7 @@ export class AuthService {
     private readonly redis: RedisService,
     private readonly mailer: MailerService,
     private readonly config: ConfigService,
+    private readonly loginLog: LoginLogService,
   ) {
     this.adminRole = this.config.get<string>('app.adminRole') ?? 'super_admin';
   }
@@ -110,63 +112,88 @@ export class AuthService {
     dto: LoginDto,
     meta: { ip?: string; ua?: string },
   ): Promise<{ token: ITokenPairResponse; user: IUserInfo }> {
-    if (dto.captchaId && dto.captchaCode) {
-      const ok = await this.verifyCaptcha(dto.captchaId, dto.captchaCode);
-      if (!ok) throw new BusinessException(ErrorEnum.CAPTCHA_INVALID);
-    }
+    let successUid: number | undefined;
+    try {
+      if (dto.captchaId && dto.captchaCode) {
+        const ok = await this.verifyCaptcha(dto.captchaId, dto.captchaCode);
+        if (!ok) throw new BusinessException(ErrorEnum.CAPTCHA_INVALID);
+      }
 
-    const user = await this.userRepo.findOne({ where: { username: dto.username } });
-    if (!user) throw new BusinessException(ErrorEnum.USER_PASSWORD_ERROR);
-    if (user.status === 0) throw new BusinessException(ErrorEnum.USER_DISABLED);
+      const user = await this.userRepo.findOne({ where: { username: dto.username } });
+      if (!user) throw new BusinessException(ErrorEnum.USER_PASSWORD_ERROR);
+      if (user.status === 0) throw new BusinessException(ErrorEnum.USER_DISABLED);
 
-    if (!checkPassword(dto.password, user.salt, user.password)) {
-      throw new BusinessException(ErrorEnum.USER_PASSWORD_ERROR);
-    }
+      if (!checkPassword(dto.password, user.salt, user.password)) {
+        throw new BusinessException(ErrorEnum.USER_PASSWORD_ERROR);
+      }
 
-    const roleLinks = await this.userRoleRepo.find({ where: { userId: user.id } });
-    const roleIds = roleLinks.map((r) => r.roleId);
-    const roles = roleIds.length
-      ? (await this.roleRepo.find({ where: { id: In(roleIds), status: 1 } })).map((r) => r.code)
-      : [];
+      const roleLinks = await this.userRoleRepo.find({ where: { userId: user.id } });
+      const roleIds = roleLinks.map((r) => r.roleId);
+      const roles = roleIds.length
+        ? (await this.roleRepo.find({ where: { id: In(roleIds), status: 1 } })).map((r) => r.code)
+        : [];
 
-    const pair = this.jwtToken.signPair({ uid: user.id, pv: user.pv, roles });
-    const accessJti = this.extractJti(pair.accessToken);
-    const refreshJti = this.extractJti(pair.refreshToken);
+      const pair = this.jwtToken.signPair({ uid: user.id, pv: user.pv, roles });
+      const accessJti = this.extractJti(pair.accessToken);
+      const refreshJti = this.extractJti(pair.refreshToken);
 
-    await this.accessRepo.save(
-      this.accessRepo.create({
-        uid: user.id,
-        jti: accessJti,
-        token: pair.accessToken,
-        expiresAt: new Date(Date.now() + pair.accessExpiresIn * 1000),
+      await this.accessRepo.save(
+        this.accessRepo.create({
+          uid: user.id,
+          jti: accessJti,
+          token: pair.accessToken,
+          expiresAt: new Date(Date.now() + pair.accessExpiresIn * 1000),
+          ip: meta.ip,
+          ua: meta.ua,
+        }),
+      );
+      await this.refreshRepo.save(
+        this.refreshRepo.create({
+          uid: user.id,
+          jti: refreshJti,
+          token: pair.refreshToken,
+          expiresAt: new Date(Date.now() + pair.refreshExpiresIn * 1000),
+        }),
+      );
+
+      await this.redis.set(genTokenKey(user.id, accessJti), pair.accessToken, pair.accessExpiresIn * 1000);
+      await this.redis.set(genRefreshTokenKey(user.id, refreshJti), pair.refreshToken, pair.refreshExpiresIn * 1000);
+      await this.redis.set(genPasswordVersionKey(user.id), String(user.pv));
+      await this.markOnline(user.id, accessJti, meta);
+
+      await this.userRepo.update(user.id, {
+        lastLoginAt: new Date(),
+        lastLoginIp: meta.ip,
+      });
+
+      const perms = await this.loadUserPerms(user.id, roles);
+      await this.redis.set(genPermKey(user.id), JSON.stringify(perms), CACHE_TTL.ONE_HOUR * 1000);
+
+      const userInfo = await this.buildUserInfo(user, roles, perms);
+      successUid = user.id;
+      return { token: pair, user: userInfo };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'unknown';
+      await this.loginLog.record({
+        uid: successUid ?? 0,
+        username: dto.username,
         ip: meta.ip,
         ua: meta.ua,
-      }),
-    );
-    await this.refreshRepo.save(
-      this.refreshRepo.create({
-        uid: user.id,
-        jti: refreshJti,
-        token: pair.refreshToken,
-        expiresAt: new Date(Date.now() + pair.refreshExpiresIn * 1000),
-      }),
-    );
-
-    await this.redis.set(genTokenKey(user.id, accessJti), pair.accessToken, pair.accessExpiresIn * 1000);
-    await this.redis.set(genRefreshTokenKey(user.id, refreshJti), pair.refreshToken, pair.refreshExpiresIn * 1000);
-    await this.redis.set(genPasswordVersionKey(user.id), String(user.pv));
-    await this.markOnline(user.id, accessJti, meta);
-
-    await this.userRepo.update(user.id, {
-      lastLoginAt: new Date(),
-      lastLoginIp: meta.ip,
-    });
-
-    const perms = await this.loadUserPerms(user.id, roles);
-    await this.redis.set(genPermKey(user.id), JSON.stringify(perms), CACHE_TTL.ONE_HOUR * 1000);
-
-    const userInfo = await this.buildUserInfo(user, roles, perms);
-    return { token: pair, user: userInfo };
+        status: 0,
+        message,
+      });
+      throw e;
+    } finally {
+      if (successUid !== undefined) {
+        await this.loginLog.record({
+          uid: successUid,
+          username: dto.username,
+          ip: meta.ip,
+          ua: meta.ua,
+          status: 1,
+        });
+      }
+    }
   }
 
   async register(dto: RegisterDto): Promise<IUserInfo> {

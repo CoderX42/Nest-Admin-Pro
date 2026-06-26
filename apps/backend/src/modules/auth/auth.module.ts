@@ -8,6 +8,7 @@ import { UserEntity } from '@/modules/system/user/user.entity';
 import { SysUserRoleEntity } from '@/modules/system/user/user-role.entity';
 import { RoleEntity } from '@/modules/system/role/role.entity';
 import { MenuEntity } from '@/modules/system/menu/menu.entity';
+import { LogModule } from '@/modules/system/log/log.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MenuEntity } from '@/modules/system/menu/menu.entity';
       RoleEntity,
       MenuEntity,
     ]),
+    LogModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

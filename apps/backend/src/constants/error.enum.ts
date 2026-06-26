@@ -52,6 +52,10 @@ export enum ErrorEnum {
   FILE_TOO_LARGE = '6003:文件超出大小限制',
   FILE_NOT_FOUND = '6004:文件不存在',
 
+  // ===== 日志 8xxx =====
+  LOGIN_LOG_NOT_FOUND = '8001:登录日志不存在',
+  OPER_LOG_NOT_FOUND = '8101:操作日志不存在',
+
   // ===== 任务/邮件 7xxx =====
   TASK_NOT_FOUND = '7001:任务不存在',
   TASK_RUN_FAILED = '7002:任务执行失败',

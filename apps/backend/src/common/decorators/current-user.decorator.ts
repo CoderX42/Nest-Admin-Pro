@@ -7,6 +7,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 export interface IAuthUser {
   uid: number;
   pv: number;
+  username?: string;
   exp?: number;
   iat?: number;
   roles?: string[];

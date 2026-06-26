@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Perm } from '@/common/decorators/perm.decorator';
 import { IdParam } from '@/common/decorators/id-param.decorator';
 import { Public } from '@/common/decorators/public.decorator';
+import { OperLog } from '@/common/decorators/oper-log.decorator';
 
 import { ParamConfigService } from './param-config.service';
 import {
@@ -53,6 +54,7 @@ export class ParamConfigController {
   @HttpCode(200)
   @ApiOperation({ summary: '创建参数' })
   @Perm('system:param-config:create')
+  @OperLog({ module: '参数配置', action: '创建' })
   async create(@Body() dto: CreateParamConfigDto) {
     return await this.service.create(dto);
   }
@@ -60,6 +62,7 @@ export class ParamConfigController {
   @Patch(':id')
   @ApiOperation({ summary: '更新参数' })
   @Perm('system:param-config:update')
+  @OperLog({ module: '参数配置', action: '更新' })
   async update(@IdParam() id: number, @Body() dto: UpdateParamConfigDto) {
     return await this.service.update(id, dto);
   }
@@ -67,6 +70,7 @@ export class ParamConfigController {
   @Delete(':id')
   @ApiOperation({ summary: '删除参数' })
   @Perm('system:param-config:delete')
+  @OperLog({ module: '参数配置', action: '删除' })
   async remove(@IdParam() id: number) {
     return await this.service.remove(id);
   }
