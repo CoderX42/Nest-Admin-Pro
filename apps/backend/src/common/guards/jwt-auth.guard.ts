@@ -7,6 +7,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ALLOW_ANON_KEY } from '../decorators/allow-anon.decorator';
 import { RedisService } from '@/shared/redis/redis.service';
@@ -24,6 +26,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly redis: RedisService,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -48,8 +51,16 @@ export class JwtAuthGuard implements CanActivate {
       if (blacklisted) throw new UnauthorizedException({ code: '1007', message: '令牌已失效' });
 
       // 2. 密码版本校验（修改密码后旧 token 失效）
-      const pv = await this.redis.get(genPasswordVersionKey(payload.uid));
-      if (pv && Number(pv) !== payload.pv) {
+      let pv = await this.redis.get(genPasswordVersionKey(payload.uid));
+      if (pv === null) {
+        // Redis 缓存缺失（被踢下线 / 缓存被清）→ 回源 DB 校验
+        const rows = await this.dataSource.query(
+          'SELECT `pv` FROM sys_user WHERE `id` = ? LIMIT 1',
+          [Number(payload.uid)],
+        );
+        pv = rows?.[0]?.pv != null ? String(rows[0].pv) : null;
+      }
+      if (pv !== null && Number(pv) !== payload.pv) {
         throw new UnauthorizedException({ code: '2009', message: '密码已变更，请重新登录' });
       }
 

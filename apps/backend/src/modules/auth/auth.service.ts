@@ -379,13 +379,13 @@ export class AuthService {
     const roleEntities = await this.roleRepo.find({ where: { code: In(roles) } });
     const roleIds = roleEntities.map((r) => r.id);
     if (roleIds.length === 0) return [];
-    const menus = await this.dataSource.query(
-      `SELECT DISTINCT m.perms FROM sys_menu m
-       INNER JOIN sys_role_menu rm ON rm.menu_id = m.id
-       WHERE rm.role_id IN (${roleIds.map(() => '?').join(',')})
-         AND m.status = 1 AND m.perms IS NOT NULL AND m.perms <> ''`,
-      roleIds,
-    );
+      const menus = await this.dataSource.query(
+        `SELECT DISTINCT m.perms FROM sys_menu m
+        INNER JOIN sys_role_menu rm ON rm.\`menuId\` = m.\`id\`
+        WHERE rm.\`roleId\` IN (${roleIds.map(() => '?').join(',')})
+          AND m.\`status\` = 1 AND m.\`perms\` IS NOT NULL AND m.\`perms\` <> ''`,
+        roleIds,
+      );
     const set = new Set<string>();
     for (const row of menus) {
       const p = (row as any).perms as string;
@@ -422,12 +422,12 @@ export class AuthService {
       if (roles.length === 0) return [];
       const rows = await this.dataSource.query(
         `SELECT DISTINCT m.* FROM sys_menu m
-         INNER JOIN sys_role_menu rm ON rm.menu_id = m.id
-         INNER JOIN sys_role r ON r.id = rm.role_id
-         WHERE r.code IN (${roles.map(() => '?').join(',')})
-           AND m.status = 1
-           AND m.type IN (1,2)
-         ORDER BY m.sort ASC`,
+         INNER JOIN sys_role_menu rm ON rm.\`menuId\` = m.\`id\`
+         INNER JOIN sys_role r ON r.\`id\` = rm.\`roleId\`
+         WHERE r.\`code\` IN (${roles.map(() => '?').join(',')})
+           AND m.\`status\` = 1
+           AND m.\`type\` IN (1,2)
+         ORDER BY m.\`sort\` ASC`,
         roles,
       );
       list = (rows as any[]).map((r) => this.menuRepo.create(r as MenuEntity));
