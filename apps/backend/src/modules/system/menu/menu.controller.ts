@@ -1,66 +1,69 @@
 import {
-  Controller, Get, Post, Put, Delete,
-  Body, Param, Query, ParseIntPipe, UseGuards, HttpCode
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { MenuService } from './menu.service';
-import { CreateMenuDto, UpdateMenuDto, QueryMenuDto } from './dto/menu.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
-import { PermissionGuard, RequirePermission } from '../../../auth/guards';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('System - Menu Management')
-@Controller('system/menu')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+import { Perm } from '@/common/decorators/perm.decorator';
+import { IdParam } from '@/common/decorators/id-param.decorator';
+import { Public } from '@/common/decorators/public.decorator';
+
+import { MenuService } from './menu.service';
+import { CreateMenuDto, ListMenuQueryDto, UpdateMenuDto } from './dto/menu.dto';
+
+@ApiTags('System - 菜单管理')
+@ApiBearerAuth()
+@Controller('system/menus')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Get('list')
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Get menu list' })
-  async list(@Query() query: QueryMenuDto) {
-    return this.menuService.list(query);
+  @Get()
+  @ApiOperation({ summary: '菜单列表（默认树形，format=list 时扁平）' })
+  @Perm('system:menu:list')
+  async list(@Query() query: ListMenuQueryDto) {
+    return await this.menuService.list(query);
   }
 
-  @Get('tree')
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Get menu tree' })
-  async tree() {
-    return this.menuService.tree();
-  }
-
-  @Get('build-route')
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Build menu route for current user' })
-  async buildRoute(@Query('userId') userId: number) {
-    return this.menuService.buildRoute(userId);
+  @Get('all')
+  @ApiOperation({ summary: '全部菜单（下拉用）' })
+  @Public()
+  async all() {
+    return await this.menuService.list({ format: 'list' });
   }
 
   @Get(':id')
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Get menu by ID' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.menuService.findOne(id);
+  @ApiOperation({ summary: '菜单详情' })
+  @Perm('system:menu:detail')
+  async detail(@IdParam() id: number) {
+    return await this.menuService.detail(id);
   }
 
   @Post()
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Create menu' })
+  @HttpCode(200)
+  @ApiOperation({ summary: '创建菜单' })
+  @Perm('system:menu:create')
   async create(@Body() dto: CreateMenuDto) {
-    return this.menuService.create(dto);
+    return await this.menuService.create(dto);
   }
 
-  @Put()
-  @RequirePermission('system:menu:list')
-  @ApiOperation({ summary: 'Update menu' })
-  async update(@Body() dto: UpdateMenuDto) {
-    return this.menuService.update(dto);
+  @Patch(':id')
+  @ApiOperation({ summary: '更新菜单' })
+  @Perm('system:menu:update')
+  async update(@IdParam() id: number, @Body() dto: UpdateMenuDto) {
+    return await this.menuService.update(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermission('system:menu:list')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Delete menu' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.menuService.remove(id);
+  @ApiOperation({ summary: '删除菜单' })
+  @Perm('system:menu:delete')
+  async remove(@IdParam() id: number) {
+    return await this.menuService.remove(id);
   }
 }

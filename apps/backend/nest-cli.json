@@ -5,16 +5,12 @@
   "sourceRoot": "src",
   "entryFile": "main",
   "language": "ts",
-  "generateOptions": {
-    "spec": false
-  },
   "compilerOptions": {
     "manualRestart": true,
     "tsConfigPath": "./tsconfig.build.json",
     "webpack": false,
     "deleteOutDir": true,
     "assets": [],
-    "watchAssets": false,
-    "plugins": []
+    "watchAssets": false
   }
 }

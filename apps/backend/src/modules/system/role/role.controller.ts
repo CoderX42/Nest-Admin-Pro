@@ -1,79 +1,83 @@
 import {
-  Controller, Get, Post, Put, Delete,
-  Body, Param, Query, ParseIntPipe, UseGuards, HttpCode
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { RoleService } from './role.service';
-import { CreateRoleDto, UpdateRoleDto, QueryRoleDto, AssignPermDto } from './dto/role.dto';
-import { JwtAuthGuard } from '../../../auth/jwt.guard';
-import { PermissionGuard, RequirePermission } from '../../../auth/guards';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('System - Role Management')
-@Controller('system/role')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+import { Perm } from '@/common/decorators/perm.decorator';
+import { IdParam } from '@/common/decorators/id-param.decorator';
+import { Public } from '@/common/decorators/public.decorator';
+
+import { RoleService } from './role.service';
+import {
+  AssignMenusDto,
+  CreateRoleDto,
+  ListRoleQueryDto,
+  UpdateRoleDto,
+} from './dto/role.dto';
+
+@ApiTags('System - 角色管理')
+@ApiBearerAuth()
+@Controller('system/roles')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Get('list')
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Get role list' })
-  async list(@Query() query: QueryRoleDto) {
-    return this.roleService.list(query);
+  @Get()
+  @ApiOperation({ summary: '角色列表' })
+  @Perm('system:role:list')
+  async list(@Query() query: ListRoleQueryDto) {
+    return await this.roleService.list(query);
   }
 
-  @Post()
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Create role' })
-  async create(@Body() dto: CreateRoleDto) {
-    return this.roleService.create(dto);
-  }
-
-  @Put()
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Update role' })
-  async update(@Body() dto: UpdateRoleDto) {
-    return this.roleService.update(dto);
-  }
-
-  @Delete(':id')
-  @RequirePermission('system:role:list')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Delete role' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.roleService.remove(id);
-  }
-
-  @Put('change-status/:id')
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Change role status' })
-  async changeStatus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: number,
-  ) {
-    return this.roleService.changeStatus(id, status);
-  }
-
-  @Put('assign-permissions/:id')
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Assign permissions to role' })
-  async assignPermissions(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: AssignPermDto,
-  ) {
-    return this.roleService.assignPermissions(id, dto.menuIds, dto.deptIds);
-  }
-
-  @Get('menu/:id')
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Get role menu IDs' })
-  async getRoleMenus(@Param('id', ParseIntPipe) id: number) {
-    return this.roleService.getRoleMenus(id);
+  @Get('all')
+  @ApiOperation({ summary: '所有角色（下拉用）' })
+  @Public()
+  async all() {
+    const roles = await this.roleService.list({ page: 1, pageSize: 500 } as any);
+    return roles.items.map((r) => ({ id: r.id, name: r.name, code: r.code }));
   }
 
   @Get(':id')
-  @RequirePermission('system:role:list')
-  @ApiOperation({ summary: 'Get role by ID' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roleService.findOne(id);
+  @ApiOperation({ summary: '角色详情' })
+  @Perm('system:role:detail')
+  async detail(@IdParam() id: number) {
+    return await this.roleService.detail(id);
+  }
+
+  @Post()
+  @HttpCode(200)
+  @ApiOperation({ summary: '创建角色' })
+  @Perm('system:role:create')
+  async create(@Body() dto: CreateRoleDto) {
+    return await this.roleService.create(dto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: '更新角色' })
+  @Perm('system:role:update')
+  async update(@IdParam() id: number, @Body() dto: UpdateRoleDto) {
+    return await this.roleService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '删除角色' })
+  @Perm('system:role:delete')
+  async remove(@IdParam() id: number) {
+    return await this.roleService.remove(id);
+  }
+
+  @Post(':id/menus')
+  @HttpCode(200)
+  @ApiOperation({ summary: '分配菜单' })
+  @Perm('system:role:assign-menu')
+  async assignMenus(@IdParam() id: number, @Body() dto: AssignMenusDto) {
+    return await this.roleService.assignMenus(id, dto);
   }
 }

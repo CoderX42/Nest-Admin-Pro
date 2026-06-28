@@ -1,48 +1,92 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ConfigService } from '@nestjs/config';
+import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import * as path from 'node:path';
+
 import { AppModule } from './app.module';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import * as path from 'path';
+import { AllExceptionsFilter } from './common/filters/all-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const adapter = new FastifyAdapter({
+    logger: false,
+    trustProxy: true,
+    bodyLimit: 10485760,
+  });
 
-  // Enable CORS
-  app.enableCors();
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter, {
+    bufferLogs: true,
+  });
 
-  // Global prefix
-  app.setGlobalPrefix('api');
+  const reflector = app.get(Reflector);
+  const config = app.get(ConfigService);
+  const port = config.get<number>('app.port') ?? 3000;
+  const apiPrefix = 'api';
 
-  // Global validation pipe
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.enableCors({ origin: true, credentials: true });
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+  app.setGlobalPrefix(apiPrefix);
+
+  await app.register(fastifyCookie as any);
+  await app.register(fastifyMultipart as any, {
+    limits: {
+      fileSize: config.get<number>('app.maxFileSize') ?? 104857600,
+      files: 20,
+    },
+  });
+  await app.register(fastifyStatic as any, {
+    root: path.resolve(config.get<string>('app.uploadDir') ?? './uploads'),
+    prefix: '/uploads/',
+    decorateReply: false,
+    serve: true,
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle('Nest-Admin-Pro API')
-    .setDescription('全栈快速开发框架接口文档')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc.html', app, document);
-  SwaggerModule.setup('api-docs', app, document);
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TimeoutInterceptor(),
+    new TransformInterceptor(reflector),
+  );
 
-  // Static file serving for uploads
-  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
-    prefix: '/file/',
+  const swaggerCfg = config.get('swagger');
+  const docBuilder = new DocumentBuilder()
+    .setTitle(swaggerCfg.title)
+    .setDescription(swaggerCfg.desc)
+    .setVersion(swaggerCfg.version)
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'Authorization')
+    .addBasicAuth({ type: 'http', scheme: 'basic' }, 'Basic');
+  const document = SwaggerModule.createDocument(app, docBuilder.build());
+  SwaggerModule.setup(`${apiPrefix}/doc`, app, document, {
+    swaggerOptions: { persistAuthorization: true },
   });
 
-  const port = process.env.APP_PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 Server running on http://localhost:${port}`);
-  console.log(`📚 API Docs: http://localhost:${port}/api-docs`);
+  await app.listen(port, '0.0.0.0');
+  // eslint-disable-next-line no-console
+  console.log(`\n[bootstrap] Nest-Admin-Pro listening on http://localhost:${port}/${apiPrefix}`);
+  // eslint-disable-next-line no-console
+  console.log(`[bootstrap] Swagger UI:   http://localhost:${port}/${apiPrefix}/doc`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('[bootstrap] failed:', err);
+  process.exit(1);
+});
